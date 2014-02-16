@@ -5,15 +5,24 @@
  * rows in a table. Can be extended by individual table classes.
  *
  * @author Theodore Brown <https://github.com/theodorejb>
- * @version 0.5
+ * @version 0.5.0
  */
 class PeachySQL {
 
+    const DBTYPE_TSQL = 'tsql';
+    const DBTYPE_MYSQL = 'mysql';
+
     /**
-     * An SQLSRV database connection
-     * @var SQLSRV
+     * A mysqli or sqlsrv database connection
+     * @var mixed
      */
     private $connection;
+
+    /**
+     * 'mysql' or 'tsql'
+     * @var string
+     */
+    private $dbType;
 
     /**
      * The name of the table to query
@@ -21,9 +30,45 @@ class PeachySQL {
      */
     private $tableName;
 
-    public function __construct($connection, $tableName = NULL) {
+    /**
+     * @param mixed  $connection A SQLSRV or mysqli database connection
+     * @param string $dbType     The type of database being accessed ('tsql' or
+     *                           'mysql')
+     * @param string $tableName (optional) The name of the table to be queried.
+     * @throws Exception if the database type is invalid.
+     */
+    public function __construct($connection, $dbType, $tableName = NULL) {
         $this->connection = $connection;
         $this->tableName = $tableName;
+
+        if ($dbType === self::DBTYPE_MYSQL || $dbType === self::DBTYPE_TSQL) {
+            $this->dbType = $dbType;
+        } else {
+            throw new Exception("Invalid database type");
+        }
+    }
+
+    /**
+     * Executes a single query and passes any errors, selected rows, and the 
+     * number of affected rows to the callback function. Transactions are not 
+     * supported. Errors are passed rather than thrown to support more flexible 
+     * handling.
+     * 
+     * T-SQL only: supports multiple queries separated by semicolons.
+     * MySQL only: If an INSERT or UPDATE query is performed on a table with an
+     *             auto-incremented column, the $rows parameter passed to the
+     *             callback will contain the insert ID of the first inserted row.
+     * 
+     * @param string   $sql
+     * @param array    $params
+     * @param callable $callback function (array $error, array $rows, int $affected)
+     */
+    public function query($sql, array $params, callable $callback) {
+        if ($this->dbType === self::DBTYPE_TSQL) {
+            $this->tsqlQuery($sql, $params, $callback);
+        } else {
+            $this->mysqlQuery($sql, $params, $callback);
+        }
     }
 
     /**
@@ -33,15 +78,15 @@ class PeachySQL {
      * 
      * @param string   $sql
      * @param array    $params
-     * @param callable $callback function (array $errors, array $rows, int $affected)
+     * @param callable $callback function (array $error, array $rows, int $affected)
      */
-    public function query($sql, array $params, callable $callback) {
-        $errors = NULL;
+    private function tsqlQuery($sql, array $params, callable $callback) {
+        $error = NULL;
         $rows = [];
         $affected = 0;
 
         if (!$stmt = sqlsrv_query($this->connection, $sql, $params)) {
-            $errors = sqlsrv_errors();
+            $error = sqlsrv_errors();
         } else {
 
             do {
@@ -58,14 +103,95 @@ class PeachySQL {
             } while ($nextResult = sqlsrv_next_result($stmt));
 
             if ($nextResult === FALSE) {
-                $errors = sqlsrv_errors();
+                $error = sqlsrv_errors();
             }
 
             sqlsrv_free_stmt($stmt);
         }
 
-        // errors are passed rather than thrown to support more flexible usage
-        $callback($errors, $rows, $affected);
+        $callback($error, $rows, $affected);
+    }
+
+    /**
+     * Executes a single query and passes any errors, selected rows (or insert 
+     * id if performing an insert/update), and the number of affected rows to 
+     * the callback function. Transactions are not supported.
+     * 
+     * @param string   $sql
+     * @param array    $params
+     * @param callable $callback function (array $error, array $rows, int $affected)
+     */
+    private function mysqlQuery($sql, array $params, callable $callback) {
+        $error = NULL;
+        $rows = [];
+        $affected = 0;
+
+        // prepare the statement
+        if (!$stmt = $this->connection->prepare($sql)) {
+            $error = array("Failed to prepare statement", $this->connection->errno, $this->connection->error);
+        } else {
+
+            if (!empty($params)) {
+                $typesValues = array(self::getMysqlParamTypes($params));
+
+                for ($i = 0; $i < count($params); $i++) {
+                    // use variable variables so that passing by reference will work
+                    $bindName = 'bind' . $i;
+                    $$bindName = $params[$i];
+                    $typesValues[] = &$$bindName;
+                }
+
+                if (!call_user_func_array(array($stmt, 'bind_param'), $typesValues)) {
+                    $error = array("Failed to bind parameters", $stmt->errno, $stmt->error);
+                }
+            }
+
+            if ($error === NULL && !$stmt->execute()) {
+                $error = array("Failed to execute prepared statement", $stmt->errno, $stmt->error);
+            } else {
+                $insertId = $stmt->insert_id; // id of first inserted row
+                $stmt->store_result();
+                $affected = $stmt->affected_rows;
+
+                if ($insertId !== 0) {
+                    // An insert or update statement was executed on a table
+                    // with an auto-incremented column. Just return the insert ID.
+                    $rows[] = $insertId;
+                } else {
+
+                    $variables = [];
+                    $data = [];
+                    $meta = $stmt->result_metadata();
+
+                    // add a variable for each selected field
+                    while ($field = $meta->fetch_field()) {
+                        $variables[] = &$data[$field->name]; // pass by reference
+                    }
+
+                    if (!call_user_func_array(array($stmt, 'bind_result'), $variables)) {
+                        $error = array("Failed to bind results", $stmt->errno, $stmt->error);
+                    } else {
+                        $i = 0;
+                        while ($stmt->fetch()) {
+                            // loop through all the fields and values to prevent
+                            // PHP from just copying the same $data reference (see
+                            // http://www.php.net/manual/en/mysqli-stmt.bind-result.php#92505).
+
+                            $rows[$i] = [];
+                            foreach ($data as $k => $v) {
+                                $rows[$i][$k] = $v;
+                            }
+
+                            $i++;
+                        }
+                    }
+                }
+            }
+
+            $stmt->close();
+        }
+
+        $callback($error, $rows, $affected);
     }
 
     /**
@@ -75,7 +201,7 @@ class PeachySQL {
      * @param callable $callback   Same as query() callback
      */
     public function select(array $columnVals, callable $callback) {
-        $query = self::buildSelectQuery($this->tableName, $columnVals);
+        $query = self::buildSelectQuery($this->tableName, $this->dbType, $columnVals);
         $this->query($query["sql"], $query["params"], $callback);
     }
 
@@ -88,19 +214,28 @@ class PeachySQL {
      *                           values for each column. E.g.
      *                           [ ["user1", "pass1"], ["user2", "pass2"] ]
      * @param string   $idCol    If specified, an array of insert IDs from this
-     *                           column will be passed to the callback.
+     *                           column will be passed to the callback (has no 
+     *                           effect when using mysql).
      * @param callable $callback function (array $errors, array $insertIDs)
      */
     public function insert(array $columns, array $values, $idCol, callable $callback) {
-        $query = self::buildInsertQuery($this->tableName, $columns, $values, $idCol);
+        $query = self::buildInsertQuery($this->tableName, $this->dbType, $columns, $values, $idCol);
         $sql = $query["sql"];
         $params = $query["params"];
 
-        $this->query($sql, $params, function ($err, $rows) use ($callback) {
-            $ids = [];
+        $this->query($sql, $params, function ($err, $rows) use ($values, $callback) {
+            if ($this->dbType === self::DBTYPE_TSQL) {
+                // $rows contains an array of insert ID rows
+                $ids = [];
 
-            foreach ($rows as $row) {
-                $ids[] = $row["RowID"];
+                foreach ($rows as $row) {
+                    $ids[] = $row["RowID"];
+                }
+            } else {
+                // $rows contains the insert ID of the first inserted row
+                $firstInsertId = $rows[0];
+                $lastInsertId = $firstInsertId + (count($values) - 1);
+                $ids = range($firstInsertId, $lastInsertId);
             }
 
             $callback($err, $ids);
@@ -115,7 +250,7 @@ class PeachySQL {
      * @param callable $callback Same as callback for query()
      */
     public function update(array $set, array $where, callable $callback) {
-        $query = self::buildUpdateQuery($this->tableName, $set, $where);
+        $query = self::buildUpdateQuery($this->tableName, $this->dbType, $set, $where);
         $this->query($query["sql"], $query["params"], $callback);
     }
 
@@ -126,7 +261,7 @@ class PeachySQL {
      * @param callable $callback function (array $errors, array $rows, array $affected)
      */
     public function delete(array $where, callable $callback) {
-        $query = self::buildDeleteQuery($this->tableName, $where);
+        $query = self::buildDeleteQuery($this->tableName, $this->dbType, $where);
         $this->query($query["sql"], $query["params"], $callback);
     }
 
@@ -135,19 +270,18 @@ class PeachySQL {
      * filter by the column values
      * 
      * @param string $tableName The name of the table to query
-     * @param array  $where An array of columns/values to filter the select query.
+     * @param string $dbType    The database type ('mysql' or 'tsql')
+     * @param array  $where     An array of columns/values to filter the select query.
      * 
      * @param  string $orderBy The column to order results by
      * @return array  An array containing the SELECT query and bound parameters.
      */
-    public static function buildSelectQuery($tableName, array $where = []) {
-        $sql = "SELECT * FROM [$tableName]";
-        $where = self::buildWhereClause($where);
-
-        $params = $where["params"];
+    public static function buildSelectQuery($tableName, $dbType, array $where = []) {
+        $sql = "SELECT * FROM " . self::quoteName($dbType, $tableName);
+        $where = self::buildWhereClause($dbType, $where);
         $sql .= $where["sql"];
 
-        return array("sql" => $sql, "params" => $params);
+        return array("sql" => $sql, "params" => $where["params"]);
     }
 
     /**
@@ -155,37 +289,36 @@ class PeachySQL {
      * @param  array  $where An array of columns/values to restrict the delete to.
      * @return array  An array containing the sql string and bound parameters.
      */
-    public static function buildDeleteQuery($tableName, array $where = []) {
-        $sql = "DELETE FROM [$tableName]";
-        $where = self::buildWhereClause($where);
-
-        $params = $where["params"];
+    public static function buildDeleteQuery($tableName, $dbType, array $where = []) {
+        $sql = "DELETE FROM " . self::quoteName($dbType, $tableName);
+        $where = self::buildWhereClause($dbType, $where);
         $sql .= $where["sql"];
 
-        return array("sql" => $sql, "params" => $params);
+        return array("sql" => $sql, "params" => $where["params"]);
     }
 
     /**
-     * @param  string $tableName
-     * @param  array  $set   An array of columns/values to update
-     * @param  array  $where An array of columns/values to restrict the update to.
+     * @param  string $tableName The name of the table to update.
+     * @param  string $dbType    The database type ('mysql' or 'tsql')
+     * @param  array  $set       An array of columns/values to update
+     * @param  array  $where     An array of columns/values to restrict the update to.
      * @return array  An array containing the sql string and bound parameters.
      */
-    public static function buildUpdateQuery($tableName, array $set, array $where = []) {
+    public static function buildUpdateQuery($tableName, $dbType, array $set, array $where = []) {
         $sql = '';
         $params = [];
 
         if (!empty($set) && !empty($where)) {
-            $sql = "UPDATE [$tableName] SET ";
+            $sql = "UPDATE " . self::quoteName($dbType, $tableName) . " SET ";
 
             foreach ($set as $column => $value) {
-                $sql .= "[$column] = ?, ";
+                $sql .= self::quoteName($dbType, $column) . " = ?, ";
                 $params[] = $value;
             }
 
             $sql = substr_replace($sql, "", -2); // remove trailing comma
 
-            $where = self::buildWhereClause($where);
+            $where = self::buildWhereClause($dbType, $where);
             $sql .= $where["sql"];
             $params = array_merge($params, $where["params"]);
         }
@@ -194,12 +327,13 @@ class PeachySQL {
     }
 
     /**
-     * @param array $columnVals An associative array of columns and values to
-     *                          filter selected rows. E.g. ["id" => 3] to only
-     *                          return rows where id is equal to 3.
+     * @param string $dbType     The database type ('tsql' or 'mysql')
+     * @param array  $columnVals An associative array of columns and values to
+     *                           filter selected rows. E.g. ["id" => 3] to only
+     *                           return rows where id is equal to 3.
      * @return array An array containing the SQL WHERE clause and bound parameters.
      */
-    private static function buildWhereClause(array $columnVals) {
+    private static function buildWhereClause($dbType, array $columnVals) {
         $sql = "";
         $params = [];
 
@@ -214,7 +348,7 @@ class PeachySQL {
                     $params[] = $value;
                 }
 
-                $sql .= " [$column] $comparison AND";
+                $sql .= " " . self::quoteName($dbType, $column) . " $comparison AND";
             }
 
             // remove the trailing AND
@@ -231,22 +365,22 @@ class PeachySQL {
      *                         the columns.
      * @return array  An array containing the SQL string and bound parameters.
      */
-    public static function buildInsertQuery($tableName, array $columns, array $values, $insertIdCol = NULL) {
+    public static function buildInsertQuery($tableName, $dbType, array $columns, array $values, $insertIdCol = NULL) {
         $sql = '';
         $params = [];
 
-        if ($insertIdCol) {
+        if ($insertIdCol && $dbType === self::DBTYPE_TSQL) {
             $sql .= "DECLARE @ids TABLE(RowID int);";
         }
 
         foreach ($columns as $i => $col) {
-            $columns[$i] = "[$col]";
+            $columns[$i] = self::quoteName($dbType, $col);
         }
 
         $insertCols = implode(', ', $columns);
-        $sql .= "INSERT INTO [$tableName] ($insertCols)";
+        $sql .= "INSERT INTO " . self::quoteName($dbType, $tableName) . " ($insertCols)";
 
-        if ($insertIdCol) {
+        if ($insertIdCol && $dbType === self::DBTYPE_TSQL) {
             $sql .= " OUTPUT inserted.[$insertIdCol] INTO @ids(RowID)";
         }
 
@@ -267,11 +401,38 @@ class PeachySQL {
 
         $sql = substr_replace($sql, ';', -1); // replace trailing comma
 
-        if ($insertIdCol) {
+        if ($insertIdCol && $dbType === self::DBTYPE_TSQL) {
             $sql .= "SELECT * FROM @ids;";
         }
 
         return array("sql" => $sql, "params" => $params);
+    }
+
+    /**
+     * To bind parameters in mysqli, the type of each parameter must be specified.
+     * See http://php.net/manual/en/mysqli-stmt.bind-param.php.
+     * 
+     * @param  array  $params
+     * @return string A string containing the type character for each parameter
+     */
+    private static function getMysqlParamTypes(array $params) {
+        // just treat all the parameters as strings since mysql "automatically 
+        // converts strings to the column's actual datatype when processing 
+        // queries" (see http://stackoverflow.com/a/14370546/1170489).
+
+        return str_repeat("s", count($params));
+    }
+
+    /**
+     * Quotes the table/column name based on the database type
+     * @param string $name
+     */
+    private static function quoteName($dbType, $name) {
+        if ($dbType === self::DBTYPE_TSQL) {
+            return "[$name]";
+        } else {
+            return "`$name`";
+        }
     }
 
     /**

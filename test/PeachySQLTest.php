@@ -3,12 +3,12 @@
 /**
  * Tests for the DatabaseTable class.
  * @author Theodore Brown <https://github.com/theodorejb>
- * @version 0.5
+ * @version 0.5.0
  */
 class DatabaseTableTest extends PHPUnit_Framework_TestCase {
 
     public function testBuildSelectQueryAllRows() {
-        $actual = PeachySQL::buildSelectQuery("TestTable");
+        $actual = PeachySQL::buildSelectQuery("TestTable", 'tsql');
         $expected = "SELECT * FROM [TestTable]";
         $this->assertSame($actual["sql"], $expected);
     }
@@ -20,9 +20,9 @@ class DatabaseTableTest extends PHPUnit_Framework_TestCase {
             "othercol" => NULL
         );
 
-        $actual = PeachySQL::buildSelectQuery("TestTable", $columnVals);
-        $expected = "SELECT * FROM [TestTable] WHERE "
-                . "[username] = ? AND [password] = ? AND [othercol] IS NULL";
+        $actual = PeachySQL::buildSelectQuery("TestTable", 'mysql', $columnVals);
+        $expected = "SELECT * FROM `TestTable` WHERE "
+                . "`username` = ? AND `password` = ? AND `othercol` IS NULL";
         $this->assertSame($actual["sql"], $expected);
         $this->assertSame($actual["params"], array('TestUser', 'TestPassword'));
     }
@@ -35,7 +35,7 @@ class DatabaseTableTest extends PHPUnit_Framework_TestCase {
 
         $where = array("id" => 21);
 
-        $actual = PeachySQL::buildUpdateQuery("TestTable", $set, $where);
+        $actual = PeachySQL::buildUpdateQuery("TestTable", 'tsql', $set, $where);
         $expected = "UPDATE [TestTable] SET [username] = ?, [othercol] = ? "
                 . "WHERE [id] = ?";
         $this->assertSame($actual["sql"], $expected);
@@ -44,7 +44,7 @@ class DatabaseTableTest extends PHPUnit_Framework_TestCase {
 
     public function testBuildDeleteQuery() {
         $where = array("id" => 5);
-        $actual = PeachySQL::buildDeleteQuery("TestTable", $where);
+        $actual = PeachySQL::buildDeleteQuery("TestTable", 'tsql', $where);
         $expected = "DELETE FROM [TestTable] WHERE [id] = ?";
 
         $this->assertSame($actual["sql"], $expected);
@@ -58,8 +58,8 @@ class DatabaseTableTest extends PHPUnit_Framework_TestCase {
             array('val3', 'val4')
         );
 
-        $actual = PeachySQL::buildInsertQuery('TestTable', $columns, $values);
-        $expected = "INSERT INTO [TestTable] ([col1], [col2]) VALUES "
+        $actual = PeachySQL::buildInsertQuery('TestTable', 'mysql', $columns, $values);
+        $expected = "INSERT INTO `TestTable` (`col1`, `col2`) VALUES "
                 . "(?,?), (?,?);";
         $this->assertSame($actual["sql"], $expected);
         $this->assertSame($actual["params"], array('val1', 'val2', 'val3', 'val4'));
@@ -72,7 +72,7 @@ class DatabaseTableTest extends PHPUnit_Framework_TestCase {
             array('val3', 'val4')
         );
 
-        $actual = PeachySQL::buildInsertQuery('TestTable', $columns, $values, "pkColumn");
+        $actual = PeachySQL::buildInsertQuery('TestTable', 'tsql', $columns, $values, "pkColumn");
 
         $expected = "DECLARE @ids TABLE(RowID int);"
                   . "INSERT INTO [TestTable] ([col1], [col2]) "
