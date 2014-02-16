@@ -216,14 +216,14 @@ class PeachySQL {
      * @param string   $idCol    If specified, an array of insert IDs from this
      *                           column will be passed to the callback (has no 
      *                           effect when using mysql).
-     * @param callable $callback function (array $errors, array $insertIDs)
+     * @param callable $callback function (array $errors, array $insertIDs, int $affected)
      */
     public function insert(array $columns, array $values, $idCol, callable $callback) {
         $query = self::buildInsertQuery($this->tableName, $this->dbType, $columns, $values, $idCol);
         $sql = $query["sql"];
         $params = $query["params"];
 
-        $this->query($sql, $params, function ($err, $rows) use ($values, $callback) {
+        $this->query($sql, $params, function ($err, $rows, $affected) use ($values, $callback) {
             if ($this->dbType === self::DBTYPE_TSQL) {
                 // $rows contains an array of insert ID rows
                 $ids = [];
@@ -238,7 +238,7 @@ class PeachySQL {
                 $ids = range($firstInsertId, $lastInsertId);
             }
 
-            $callback($err, $ids);
+            $callback($err, $ids, $affected);
         });
     }
 
