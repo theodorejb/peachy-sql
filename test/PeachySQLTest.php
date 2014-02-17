@@ -1,9 +1,9 @@
 <?php
 
 /**
- * Tests for the DatabaseTable class.
+ * Tests for the PeachySQL library.
  * @author Theodore Brown <https://github.com/theodorejb>
- * @version 0.5.0
+ * @version 0.8.0
  */
 class DatabaseTableTest extends PHPUnit_Framework_TestCase {
 

@@ -1,11 +1,13 @@
 <?php
 
 /**
- * Provides abstract methods for inserting, selecting, updating, and deleting
- * rows in a table. Can be extended by individual table classes.
+ * Provides simple methods for executing queries with bound parameters and 
+ * inserting, selecting, updating, and deleting rows in a table. Supports both
+ * MySQL (via mysqli) and T-SQL (via Microsoft's SQLSRV extension) and can be 
+ * extended by classes for individual tables.
  *
  * @author Theodore Brown <https://github.com/theodorejb>
- * @version 0.5.0
+ * @version 0.8.0
  */
 class PeachySQL {
 
