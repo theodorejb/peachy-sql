@@ -163,26 +163,28 @@ class PeachySQL {
                     $data = [];
                     $meta = $stmt->result_metadata();
 
-                    // add a variable for each selected field
-                    while ($field = $meta->fetch_field()) {
-                        $variables[] = &$data[$field->name]; // pass by reference
-                    }
+                    if ($meta !== FALSE) {
+                        // add a variable for each selected field
+                        while ($field = $meta->fetch_field()) {
+                            $variables[] = &$data[$field->name]; // pass by reference
+                        }
 
-                    if (!call_user_func_array(array($stmt, 'bind_result'), $variables)) {
-                        $error = array("Failed to bind results", $stmt->errno, $stmt->error);
-                    } else {
-                        $i = 0;
-                        while ($stmt->fetch()) {
-                            // loop through all the fields and values to prevent
-                            // PHP from just copying the same $data reference (see
-                            // http://www.php.net/manual/en/mysqli-stmt.bind-result.php#92505).
+                        if (!call_user_func_array(array($stmt, 'bind_result'), $variables)) {
+                            $error = array("Failed to bind results", $stmt->errno, $stmt->error);
+                        } else {
+                            $i = 0;
+                            while ($stmt->fetch()) {
+                                // loop through all the fields and values to prevent
+                                // PHP from just copying the same $data reference (see
+                                // http://www.php.net/manual/en/mysqli-stmt.bind-result.php#92505).
 
-                            $rows[$i] = [];
-                            foreach ($data as $k => $v) {
-                                $rows[$i][$k] = $v;
+                                $rows[$i] = [];
+                                foreach ($data as $k => $v) {
+                                    $rows[$i][$k] = $v;
+                                }
+
+                                $i++;
                             }
-
-                            $i++;
                         }
                     }
                 }
