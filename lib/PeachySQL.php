@@ -7,7 +7,7 @@
  * extended by classes for individual tables.
  *
  * @author Theodore Brown <https://github.com/theodorejb>
- * @version 0.8.0
+ * @version 0.9.0
  */
 class PeachySQL {
 
