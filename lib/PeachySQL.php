@@ -7,7 +7,7 @@
  * extended by classes for individual tables.
  *
  * @author Theodore Brown <https://github.com/theodorejb>
- * @version 0.9.0
+ * @version 0.9.1
  */
 class PeachySQL {
 
@@ -207,7 +207,7 @@ class PeachySQL {
      * @param callable $callback Same as query() callback
      */
     public function select(array $columns, array $where, callable $callback) {
-        $query = self::buildSelectQuery($this->tableName, $this->dbType, $columns, $where);
+        $query = self::buildSelectQuery($this->tableName, $columns, $where);
         $this->query($query["sql"], $query["params"], $callback);
     }
 
@@ -256,7 +256,7 @@ class PeachySQL {
      * @param callable $callback Same as callback for query()
      */
     public function update(array $set, array $where, callable $callback) {
-        $query = self::buildUpdateQuery($this->tableName, $this->dbType, $set, $where);
+        $query = self::buildUpdateQuery($this->tableName, $set, $where);
         $this->query($query["sql"], $query["params"], $callback);
     }
 
@@ -267,7 +267,7 @@ class PeachySQL {
      * @param callable $callback function (array $errors, array $rows, array $affected)
      */
     public function delete(array $where, callable $callback) {
-        $query = self::buildDeleteQuery($this->tableName, $this->dbType, $where);
+        $query = self::buildDeleteQuery($this->tableName, $where);
         $this->query($query["sql"], $query["params"], $callback);
     }
 
@@ -276,26 +276,21 @@ class PeachySQL {
      * filter by the column values
      * 
      * @param string   $tableName The name of the table to query
-     * @param string   $dbType    The database type ('mysql' or 'tsql')
      * @param string[] $columns   An array of columns to select from. If empty
      *                            all columns will be selected.
      * @param array    $where     An array of columns/values to filter the select 
      *                            query.
      * @return array  An array containing the SELECT query and bound parameters.
      */
-    public static function buildSelectQuery($tableName, $dbType, array $columns = [], array $where = []) {
+    public static function buildSelectQuery($tableName, array $columns = [], array $where = []) {
         if (!empty($columns)) {
-            foreach ($columns as $i => $col) {
-                $columns[$i] = self::quoteName($dbType, $col);
-            }
-
             $insertCols = implode(', ', $columns);
         } else {
             $insertCols = '*';
         }
 
-        $sql = "SELECT " . $insertCols . " FROM " . self::quoteName($dbType, $tableName);
-        $where = self::buildWhereClause($dbType, $where);
+        $sql = "SELECT $insertCols FROM $tableName";
+        $where = self::buildWhereClause($where);
         $sql .= $where["sql"];
 
         return array("sql" => $sql, "params" => $where["params"]);
@@ -306,9 +301,9 @@ class PeachySQL {
      * @param  array  $where An array of columns/values to restrict the delete to.
      * @return array  An array containing the sql string and bound parameters.
      */
-    public static function buildDeleteQuery($tableName, $dbType, array $where = []) {
-        $sql = "DELETE FROM " . self::quoteName($dbType, $tableName);
-        $where = self::buildWhereClause($dbType, $where);
+    public static function buildDeleteQuery($tableName, array $where = []) {
+        $sql = "DELETE FROM $tableName";
+        $where = self::buildWhereClause($where);
         $sql .= $where["sql"];
 
         return array("sql" => $sql, "params" => $where["params"]);
@@ -316,26 +311,25 @@ class PeachySQL {
 
     /**
      * @param  string $tableName The name of the table to update.
-     * @param  string $dbType    The database type ('mysql' or 'tsql')
      * @param  array  $set       An array of columns/values to update
      * @param  array  $where     An array of columns/values to restrict the update to.
      * @return array  An array containing the sql string and bound parameters.
      */
-    public static function buildUpdateQuery($tableName, $dbType, array $set, array $where = []) {
+    public static function buildUpdateQuery($tableName, array $set, array $where = []) {
         $sql = '';
         $params = [];
 
         if (!empty($set) && !empty($where)) {
-            $sql = "UPDATE " . self::quoteName($dbType, $tableName) . " SET ";
+            $sql = "UPDATE $tableName SET ";
 
             foreach ($set as $column => $value) {
-                $sql .= self::quoteName($dbType, $column) . " = ?, ";
+                $sql .= "$column = ?, ";
                 $params[] = $value;
             }
 
             $sql = substr_replace($sql, "", -2); // remove trailing comma
 
-            $where = self::buildWhereClause($dbType, $where);
+            $where = self::buildWhereClause($where);
             $sql .= $where["sql"];
             $params = array_merge($params, $where["params"]);
         }
@@ -344,14 +338,13 @@ class PeachySQL {
     }
 
     /**
-     * @param string $dbType     The database type ('tsql' or 'mysql')
      * @param array  $columnVals An associative array of columns and values to
      *                           filter selected rows. E.g. ["id" => 3] to only
      *                           return rows where id is equal to 3. If the value
      *                           is an array, an IN(...) clause will be used.
      * @return array An array containing the SQL WHERE clause and bound parameters.
      */
-    private static function buildWhereClause($dbType, array $columnVals) {
+    private static function buildWhereClause(array $columnVals) {
         $sql = "";
         $params = [];
 
@@ -376,7 +369,7 @@ class PeachySQL {
                     $params[] = $value;
                 }
 
-                $sql .= " " . self::quoteName($dbType, $column) . " $comparison AND";
+                $sql .= " $column $comparison AND";
             }
             
             $sql = substr_replace($sql, "", -4); // remove the trailing AND
@@ -386,29 +379,28 @@ class PeachySQL {
     }
 
     /**
-     * @param  string $tableName
-     * @param  array  $columns An array of columns to insert into.
-     * @param  array  $values  A multi-dimensional array of values to insert into
-     *                         the columns.
-     * @return array  An array containing the SQL string and bound parameters.
+     * @param string $tableName The name of the table to insert into
+     * @param string $dbType    The database type ('mysql' or 'tsql')
+     * @param array  $columns   An array of columns to insert into.
+     * @param array  $values    A multi-dimensional array of values to insert 
+     *                          into the columns.
+     * @param string $idCol     The name of the table's primary key column. Must
+     *                          be specified when using T-SQL to get insert IDs.
+     * @return array An array containing the SQL string and bound parameters.
      */
-    public static function buildInsertQuery($tableName, $dbType, array $columns, array $values, $insertIdCol = NULL) {
+    public static function buildInsertQuery($tableName, $dbType, array $columns, array $values, $idCol = NULL) {
         $sql = '';
         $params = [];
 
-        if ($insertIdCol && $dbType === self::DBTYPE_TSQL) {
+        if ($idCol && $dbType === self::DBTYPE_TSQL) {
             $sql .= "DECLARE @ids TABLE(RowID int);";
         }
 
-        foreach ($columns as $i => $col) {
-            $columns[$i] = self::quoteName($dbType, $col);
-        }
-
         $insertCols = implode(', ', $columns);
-        $sql .= "INSERT INTO " . self::quoteName($dbType, $tableName) . " ($insertCols)";
+        $sql .= "INSERT INTO $tableName ($insertCols)";
 
-        if ($insertIdCol && $dbType === self::DBTYPE_TSQL) {
-            $sql .= " OUTPUT inserted.[$insertIdCol] INTO @ids(RowID)";
+        if ($idCol && $dbType === self::DBTYPE_TSQL) {
+            $sql .= " OUTPUT inserted.$idCol INTO @ids(RowID)";
         }
 
         $sql .= " VALUES";
@@ -428,7 +420,7 @@ class PeachySQL {
 
         $sql = substr_replace($sql, '', -1); // remove trailing comma
 
-        if ($insertIdCol && $dbType === self::DBTYPE_TSQL) {
+        if ($idCol && $dbType === self::DBTYPE_TSQL) {
             $sql .= ";SELECT * FROM @ids;";
         }
 
@@ -448,18 +440,6 @@ class PeachySQL {
         // queries" (see http://stackoverflow.com/a/14370546/1170489).
 
         return str_repeat("s", count($params));
-    }
-
-    /**
-     * Quotes the table/column name based on the database type
-     * @param string $name
-     */
-    private static function quoteName($dbType, $name) {
-        if ($dbType === self::DBTYPE_TSQL) {
-            return "[$name]";
-        } else {
-            return "`$name`";
-        }
     }
 
     /**
