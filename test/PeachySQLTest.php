@@ -45,12 +45,13 @@ class DatabaseTableTest extends PHPUnit_Framework_TestCase {
     }
 
     public function testBuildDeleteQuery() {
-        $where = array("id" => 5);
+        $where = array("id" => 5, "username" => ["tester", "tester2"]);
         $actual = PeachySQL::buildDeleteQuery("TestTable", 'tsql', $where);
-        $expected = "DELETE FROM [TestTable] WHERE [id] = ?";
+        $expected = "DELETE FROM [TestTable] WHERE [id] = ? "
+                  . "AND [username] IN(?,?)";
 
         $this->assertSame($actual["sql"], $expected);
-        $this->assertSame($actual["params"], array(5));
+        $this->assertSame($actual["params"], array(5, "tester", "tester2"));
     }
 
     public function testBuildInsertQuery() {

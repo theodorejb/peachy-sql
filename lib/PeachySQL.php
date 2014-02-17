@@ -347,7 +347,8 @@ class PeachySQL {
      * @param string $dbType     The database type ('tsql' or 'mysql')
      * @param array  $columnVals An associative array of columns and values to
      *                           filter selected rows. E.g. ["id" => 3] to only
-     *                           return rows where id is equal to 3.
+     *                           return rows where id is equal to 3. If the value
+     *                           is an array, an IN(...) clause will be used.
      * @return array An array containing the SQL WHERE clause and bound parameters.
      */
     private static function buildWhereClause($dbType, array $columnVals) {
@@ -360,6 +361,16 @@ class PeachySQL {
             foreach ($columnVals as $column => $value) {
                 if ($value === NULL) {
                     $comparison = "IS NULL";
+                } elseif (is_array($value) && !empty($value)) {
+                    // use IN(...) syntax
+                    $comparison = "IN(";
+
+                    foreach ($value as $val) {
+                        $comparison .= '?,';
+                        $params[] = $val;
+                    }
+
+                    $comparison = substr_replace($comparison, ")", -1); // replace trailing comma
                 } else {
                     $comparison = "= ?";
                     $params[] = $value;
@@ -367,9 +378,8 @@ class PeachySQL {
 
                 $sql .= " " . self::quoteName($dbType, $column) . " $comparison AND";
             }
-
-            // remove the trailing AND
-            $sql = substr_replace($sql, "", -4);
+            
+            $sql = substr_replace($sql, "", -4); // remove the trailing AND
         }
 
         return array("sql" => $sql, "params" => $params);
