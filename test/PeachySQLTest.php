@@ -13,15 +13,17 @@ class DatabaseTableTest extends PHPUnit_Framework_TestCase {
         $this->assertSame($actual["sql"], $expected);
     }
 
-    public function testBuildSelectQueryColumnVals() {
-        $columnVals = array(
+    public function testBuildSelectQueryWhere() {
+        $cols = ["username", "password"];
+
+        $where = array(
             "username" => "TestUser",
             "password" => "TestPassword",
             "othercol" => NULL
         );
 
-        $actual = PeachySQL::buildSelectQuery("TestTable", 'mysql', $columnVals);
-        $expected = "SELECT * FROM `TestTable` WHERE "
+        $actual = PeachySQL::buildSelectQuery("TestTable", 'mysql', $cols, $where);
+        $expected = "SELECT `username`, `password` FROM `TestTable` WHERE "
                 . "`username` = ? AND `password` = ? AND `othercol` IS NULL";
         $this->assertSame($actual["sql"], $expected);
         $this->assertSame($actual["params"], array('TestUser', 'TestPassword'));

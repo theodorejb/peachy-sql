@@ -195,13 +195,15 @@ class PeachySQL {
     }
 
     /**
-     * @param array    $columnVals An associative array of columns and values to
-     *                             filter selected rows. E.g. ["id" => 3] to only
-     *                             return rows where id is equal to 3.
-     * @param callable $callback   Same as query() callback
+     * @param string[] $columns  An array of columns to select (empty to select
+     *                           all columns).
+     * @param array    $where    An associative array of columns and values to
+     *                           filter selected rows. E.g. ["id" => 3] to only
+     *                           return rows where id is equal to 3.
+     * @param callable $callback Same as query() callback
      */
-    public function select(array $columnVals, callable $callback) {
-        $query = self::buildSelectQuery($this->tableName, $this->dbType, $columnVals);
+    public function select(array $columns, array $where, callable $callback) {
+        $query = self::buildSelectQuery($this->tableName, $this->dbType, $columns, $where);
         $this->query($query["sql"], $query["params"], $callback);
     }
 
@@ -269,15 +271,26 @@ class PeachySQL {
      * If the array is empty, the query should select all rows. If not empty,
      * filter by the column values
      * 
-     * @param string $tableName The name of the table to query
-     * @param string $dbType    The database type ('mysql' or 'tsql')
-     * @param array  $where     An array of columns/values to filter the select query.
-     * 
-     * @param  string $orderBy The column to order results by
+     * @param string   $tableName The name of the table to query
+     * @param string   $dbType    The database type ('mysql' or 'tsql')
+     * @param string[] $columns   An array of columns to select from. If empty
+     *                            all columns will be selected.
+     * @param array    $where     An array of columns/values to filter the select 
+     *                            query.
      * @return array  An array containing the SELECT query and bound parameters.
      */
-    public static function buildSelectQuery($tableName, $dbType, array $where = []) {
-        $sql = "SELECT * FROM " . self::quoteName($dbType, $tableName);
+    public static function buildSelectQuery($tableName, $dbType, array $columns = [], array $where = []) {
+        if (!empty($columns)) {
+            foreach ($columns as $i => $col) {
+                $columns[$i] = self::quoteName($dbType, $col);
+            }
+
+            $insertCols = implode(', ', $columns);
+        } else {
+            $insertCols = '*';
+        }
+
+        $sql = "SELECT " . $insertCols . " FROM " . self::quoteName($dbType, $tableName);
         $where = self::buildWhereClause($dbType, $where);
         $sql .= $where["sql"];
 
