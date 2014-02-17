@@ -412,10 +412,10 @@ class PeachySQL {
             $sql .= '),';
         }
 
-        $sql = substr_replace($sql, ';', -1); // replace trailing comma
+        $sql = substr_replace($sql, '', -1); // remove trailing comma
 
         if ($insertIdCol && $dbType === self::DBTYPE_TSQL) {
-            $sql .= "SELECT * FROM @ids;";
+            $sql .= ";SELECT * FROM @ids;";
         }
 
         return array("sql" => $sql, "params" => $params);

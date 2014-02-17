@@ -62,7 +62,7 @@ class DatabaseTableTest extends PHPUnit_Framework_TestCase {
 
         $actual = PeachySQL::buildInsertQuery('TestTable', 'mysql', $columns, $values);
         $expected = "INSERT INTO `TestTable` (`col1`, `col2`) VALUES "
-                . "(?,?), (?,?);";
+                . "(?,?), (?,?)";
         $this->assertSame($actual["sql"], $expected);
         $this->assertSame($actual["params"], array('val1', 'val2', 'val3', 'val4'));
     }
