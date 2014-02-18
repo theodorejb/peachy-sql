@@ -1,7 +1,14 @@
 {
     "name": "theodorejb/peachy-sql",
-    "description": "A PHP SQL abstraction for simpler queries",
+    "description": "A small, speedy database abstraction layer for PHP",
     "license": "MIT",
+    "keywords": [
+        "database",
+        "abstraction",
+        "mysql",
+        "tsql",
+        "sqlsrv"
+    ],
     "authors": [
         {
             "name": "Theodore Brown",
