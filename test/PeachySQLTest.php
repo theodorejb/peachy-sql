@@ -3,7 +3,6 @@
 /**
  * Tests for the PeachySQL library.
  * @author Theodore Brown <https://github.com/theodorejb>
- * @version 0.9.1
  */
 class DatabaseTableTest extends PHPUnit_Framework_TestCase {
 
