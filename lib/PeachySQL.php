@@ -51,6 +51,21 @@ class PeachySQL {
     }
 
     /**
+     * @return string The name of the specified table
+     */
+    public function getTableName() {
+        return $this->tableName;
+    }
+
+    /**
+     * Allows the name of the queried table to be changed.
+     * @param string $name The name of the table to query
+     */
+    public function setTableName($name) {
+        $this->tableName = $name;
+    }
+
+    /**
      * Executes a single query and passes any errors, selected rows, and the 
      * number of affected rows to the callback function. Transactions are not 
      * supported. Errors are passed rather than thrown to support more flexible 
