@@ -24,7 +24,7 @@ Start by instantiating the class with a database connection (mysqli or SQLSRV), 
 $userTable = new PeachySQL($conn, 'mysql', 'Users');
 ```
 
-After instantiation, arbitrary SQL queries can be executed using the `query()` method, which accepts a SQL string, list of bound parameters, and a callback function (see PHPDoc comments for details):
+After instantiation, arbitrary SQL queries can be executed using the `query()` method, which accepts a SQL string, list of bound parameters, and a callback function:
 
 ```php
 $userTable->query('SELECT * FROM Users WHERE name LIKE ?', ['test%'], function ($err, $rows) {
@@ -86,7 +86,65 @@ $userTable->delete(['user_id' => [7, 8, 9]], function ($err, $rows, $affected) {
     }
 
     echo $affected . " rows were affected."; // 3 rows were affected
-}); 
+});
+```
+
+### Other methods
+
+PeachySQL comes with `setTableName()` and `getTableName()` methods to change and retrieve the name of the queried table, in addition to a static method called `splitRows()` which is helpful for splitting result sets from joined tables into groups. For example, suppose you have a query like the following:
+
+```sql
+SELECT u.name, p.petName
+FROM Users AS u
+LEFT JOIN Pets AS p ON p.owner_id = u.user_id
+ORDER BY u.name
+```
+
+...which might return the following rows:
+
+```php
+$peoplePets = [
+    ["name" => "Jack", "petName" => "Scruffy"],
+    ["name" => "Jack", "petName" => "Spot"],
+    ["name" => "Jack", "petName" => "Paws"],
+    ["name" => "Amy",  "petName" => "Blackie"],
+    ["name" => "Amy",  "petName" => "Whiskers"]
+    // ...
+];
+```
+
+Now you have an array containing all users as well as their pets, but you want to group the pets under their owners for easier usage. This is where `splitRows()` comes in. 
+
+The function accepts three parameters: an array of rows, a column name, and a callback function. The callback will be executed once every time the value of the specified column changes:
+
+```php
+$peoplePetsAssoc = [];
+
+// the callback will be passed the set of rows for each name in the $peoplePets array  
+PeachySQL::splitRows($peoplePets, "name", function ($personPets) use (&$peoplePetsAssoc) {
+    $owner = $personPets[0]["name"];
+    $petsArray = [];
+
+    foreach ($personPets as $personPet) {
+        $petsArray[] = $personPet["petName"];
+    }
+    
+    $peoplePetsAssoc[$owner] = $petsArray;
+});
+
+// $peoplePetsAssoc now contains the following:
+
+$peoplePetsAssoc = [
+    "Jack" => [
+        "Scruffy",
+        "Spot",
+        "Paws"
+    ],
+    "Amy" => [
+        "Blackie",
+        "Whiskers"
+    ]
+];
 ```
 
 ## Development
