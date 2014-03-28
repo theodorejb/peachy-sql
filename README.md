@@ -49,11 +49,11 @@ $userTable->select([], ['user_id' => 5], function ($err, $rows) {
 });
 
 // insert 3 rows into the Users table
-$userData = array(
-    array('user1', 21),
-    array('user2', 55),
-    array('user3', 30)
-);
+$userData = [
+    ['user1', 21],
+    ['user2', 55],
+    ['user3', 30]
+];
 
 $userTable->insert(['name', 'age'], $userData, 'user_id', function ($err, $ids) {
     if ($err) {
@@ -66,10 +66,10 @@ $userTable->insert(['name', 'age'], $userData, 'user_id', function ($err, $ids) 
 });
 
 // update the user with user_id 10
-$newData = array(
+$newData = [
     'name' => 'Matt',
     'age'  => 29
-);
+];
 
 $userTable->update($newData, ['user_id' => 10], function ($err, $rows, $affected) {
     if ($err) {
@@ -122,14 +122,12 @@ $peoplePetsAssoc = [];
 
 // the callback will be passed the set of rows for each name in the $peoplePets array  
 PeachySQL::splitRows($peoplePets, "name", function ($personPets) use (&$peoplePetsAssoc) {
-    $owner = $personPets[0]["name"];
-    $petsArray = [];
-
     foreach ($personPets as $personPet) {
         $petsArray[] = $personPet["petName"];
     }
-    
-    $peoplePetsAssoc[$owner] = $petsArray;
+
+    $person = $personPets[0]["name"];
+    $peoplePetsAssoc[$person] = $petsArray;
 });
 
 // $peoplePetsAssoc now contains the following:
