@@ -9,38 +9,38 @@ class PeachySQLTest extends PHPUnit_Framework_TestCase {
     public function testBuildSelectQueryAllRows() {
         $actual = PeachySQL::buildSelectQuery("TestTable");
         $expected = "SELECT * FROM TestTable";
-        $this->assertSame($actual["sql"], $expected);
+        $this->assertSame($expected, $actual["sql"]);
     }
 
     public function testBuildSelectQueryWhere() {
         $cols = ["username", "password"];
 
-        $where = array(
+        $where = [
             "username" => "TestUser",
             "password" => "TestPassword",
             "othercol" => NULL
-        );
+        ];
 
         $actual = PeachySQL::buildSelectQuery("TestTable", $cols, $where);
         $expected = "SELECT username, password FROM TestTable WHERE "
                   . "username = ? AND password = ? AND othercol IS NULL";
-        $this->assertSame($actual["sql"], $expected);
-        $this->assertSame($actual["params"], array('TestUser', 'TestPassword'));
+        $this->assertSame($expected, $actual["sql"]);
+        $this->assertSame(['TestUser', 'TestPassword'], $actual["params"]);
     }
 
     public function testBuildUpdateQuery() {
-        $set = array(
+        $set = [
             "username" => "TestUser",
             "othercol" => NULL
-        );
+        ];
 
-        $where = array("id" => 21);
+        $where = ["id" => 21];
 
         $actual = PeachySQL::buildUpdateQuery("TestTable", $set, $where);
         $expected = "UPDATE TestTable SET username = ?, othercol = ? "
                   . "WHERE id = ?";
-        $this->assertSame($actual["sql"], $expected);
-        $this->assertSame($actual["params"], array('TestUser', NULL, 21));
+        $this->assertSame($expected, $actual["sql"]);
+        $this->assertSame(['TestUser', NULL, 21], $actual["params"]);
     }
 
     public function testBuildDeleteQuery() {
@@ -49,30 +49,30 @@ class PeachySQLTest extends PHPUnit_Framework_TestCase {
         $expected = "DELETE FROM TestTable WHERE id = ? "
                   . "AND username IN(?,?)";
 
-        $this->assertSame($actual["sql"], $expected);
-        $this->assertSame($actual["params"], array(5, "tester", "tester2"));
+        $this->assertSame($expected, $actual["sql"]);
+        $this->assertSame([5, "tester", "tester2"], $actual["params"]);
     }
 
     public function testBuildInsertQuery() {
         $columns = ['col1', 'col2'];
-        $values = array(
-            array('val1', 'val2'),
-            array('val3', 'val4')
-        );
+        $values = [
+            ['val1', 'val2'],
+            ['val3', 'val4']
+        ];
 
         $actual = PeachySQL::buildInsertQuery('TestTable', PeachySQL::DBTYPE_MYSQL, $columns, $values);
         $expected = "INSERT INTO TestTable (col1, col2) "
                   . "VALUES (?,?), (?,?)";
-        $this->assertSame($actual["sql"], $expected);
-        $this->assertSame($actual["params"], array('val1', 'val2', 'val3', 'val4'));
+        $this->assertSame($expected, $actual["sql"]);
+        $this->assertSame(['val1', 'val2', 'val3', 'val4'], $actual["params"]);
     }
 
     public function testBuildInsertQueryTsqlInsertIDs() {
         $columns = ['col1', 'col2'];
-        $values = array(
-            array('val1', 'val2'),
-            array('val3', 'val4')
-        );
+        $values = [
+            ['val1', 'val2'],
+            ['val3', 'val4']
+        ];
 
         $actual = PeachySQL::buildInsertQuery('TestTable', PeachySQL::DBTYPE_TSQL, $columns, $values, "pkColumn");
 
@@ -81,10 +81,10 @@ class PeachySQLTest extends PHPUnit_Framework_TestCase {
                   . "OUTPUT inserted.pkColumn INTO @ids(RowID) "
                   . "VALUES (?,?), (?,?);"
                   . "SELECT * FROM @ids;";
-        $this->assertSame($actual["sql"], $expected);
-        $this->assertSame($actual["params"], array('val1', 'val2', 'val3', 'val4'));
+        $this->assertSame($expected, $actual["sql"]);
+        $this->assertSame(['val1', 'val2', 'val3', 'val4'], $actual["params"]);
     }
-    
+
     public function testSplitRows() {
         // an array retrived by joining people and pets tables
         $peoplePets = [
@@ -94,7 +94,7 @@ class PeachySQLTest extends PHPUnit_Framework_TestCase {
             ["name" => "Amy", "petName" => "Blackie"],
             ["name" => "Amy", "petName" => "Whiskers"]
         ];
-        
+
         $expected = [
             "Jack" => [
                 "Scruffy",
@@ -106,22 +106,20 @@ class PeachySQLTest extends PHPUnit_Framework_TestCase {
                 "Whiskers"
             ]
         ];
-        
-        $actual = [];
-        
-        // the callback should be called once per person
-        PeachySQL::splitRows($peoplePets, "name", function ($personPets) use (&$actual) {
-            $person = $personPets[0]["name"];
-            $petsArray = [];
 
+        $peoplePetsAssoc = [];
+
+        // the callback should be called once per person
+        PeachySQL::splitRows($peoplePets, "name", function ($personPets) use (&$peoplePetsAssoc) {
             foreach ($personPets as $personPet) {
                 $petsArray[] = $personPet["petName"];
             }
-            
-            $actual[$person] = $petsArray;
+
+            $person = $personPets[0]["name"];
+            $peoplePetsAssoc[$person] = $petsArray;
         });
 
-        $this->assertSame($expected, $actual);
+        $this->assertSame($expected, $peoplePetsAssoc);
     }
 
 }
