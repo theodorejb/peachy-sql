@@ -4,7 +4,7 @@
  * Tests for the PeachySQL library.
  * @author Theodore Brown <https://github.com/theodorejb>
  */
-class DatabaseTableTest extends PHPUnit_Framework_TestCase {
+class PeachySQLTest extends PHPUnit_Framework_TestCase {
 
     public function testBuildSelectQueryAllRows() {
         $actual = PeachySQL::buildSelectQuery("TestTable");
