@@ -82,9 +82,9 @@ class PeachySQL {
      */
     public function query($sql, array $params, callable $callback) {
         if ($this->dbType === self::DBTYPE_TSQL) {
-            $this->tsqlQuery($sql, $params, $callback);
+            return $this->tsqlQuery($sql, $params, $callback);
         } else {
-            $this->mysqlQuery($sql, $params, $callback);
+            return $this->mysqlQuery($sql, $params, $callback);
         }
     }
 
@@ -126,7 +126,7 @@ class PeachySQL {
             sqlsrv_free_stmt($stmt);
         }
 
-        $callback($error, $rows, $affected);
+        return $callback($error, $rows, $affected);
     }
 
     /**
@@ -210,7 +210,7 @@ class PeachySQL {
             $stmt->close();
         }
 
-        $callback($error, $rows, $affected);
+        return $callback($error, $rows, $affected);
     }
 
     /**
@@ -223,7 +223,7 @@ class PeachySQL {
      */
     public function select(array $columns, array $where, callable $callback) {
         $query = self::buildSelectQuery($this->tableName, $columns, $where);
-        $this->query($query["sql"], $query["params"], $callback);
+        return $this->query($query["sql"], $query["params"], $callback);
     }
 
     /**
@@ -244,7 +244,7 @@ class PeachySQL {
         $sql = $query["sql"];
         $params = $query["params"];
 
-        $this->query($sql, $params, function ($err, $rows, $affected) use ($values, $callback) {
+        return $this->query($sql, $params, function ($err, $rows, $affected) use ($values, $callback) {
             if ($this->dbType === self::DBTYPE_TSQL) {
                 // $rows contains an array of insert ID rows
                 $ids = [];
@@ -259,7 +259,7 @@ class PeachySQL {
                 $ids = range($firstInsertId, $lastInsertId);
             }
 
-            $callback($err, $ids, $affected);
+            return $callback($err, $ids, $affected);
         });
     }
 
@@ -272,7 +272,7 @@ class PeachySQL {
      */
     public function update(array $set, array $where, callable $callback) {
         $query = self::buildUpdateQuery($this->tableName, $set, $where);
-        $this->query($query["sql"], $query["params"], $callback);
+        return $this->query($query["sql"], $query["params"], $callback);
     }
 
     /**
@@ -283,7 +283,7 @@ class PeachySQL {
      */
     public function delete(array $where, callable $callback) {
         $query = self::buildDeleteQuery($this->tableName, $where);
-        $this->query($query["sql"], $query["params"], $callback);
+        return $this->query($query["sql"], $query["params"], $callback);
     }
 
     /**
