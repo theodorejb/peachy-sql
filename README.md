@@ -1,6 +1,6 @@
 # PeachySQL
 
-PeachySQL is a small and speedy database abstraction layer with a goal of simplifying the experience of working with common SQL queries in PHP. It currently supports both MySQL and T-SQL (via Microsoft's [SQLSRV extension](http://www.php.net/manual/en/book.sqlsrv.php)) and runs on PHP 5.4+.
+PeachySQL is a small and speedy database abstraction layer with a goal of simplifying the experience of working with common SQL queries in PHP. It currently supports both MySQL (via MySQLi) and T-SQL (via Microsoft's [SQLSRV extension](http://www.php.net/manual/en/book.sqlsrv.php)) and runs on PHP 5.4+.
 
 ## Installation
 
@@ -87,6 +87,25 @@ $userTable->delete(['user_id' => [7, 8, 9]], function ($err, $rows, $affected) {
 
     echo $affected . " rows were affected."; // 3 rows were affected
 });
+```
+
+To prevent SQL injection, the above four methods always generate prepared statements with bound parameters for inserted/queried values. However, since table and column names cannot be bound never set them dynamically from user input without careful validation/sanitization.
+
+### Return values
+
+The `query()`, `select()`, `insert()`, `update()`, and `delete()` methods all return the value of the callback function, which makes it easy to use selected/inserted data outside the callback. For example:
+
+```php
+// this method could be created in a user table class extending PeachySQL 
+public function getNameById($userId) {
+    return $this->select(['name'], ['user_id' => $userId], function ($err, $rows) {
+	    if ($err) {
+	        throw new Exception("Failed to select username by ID: " . print_r($err, TRUE));
+	    }
+
+	    return $rows[0]['name'];
+	});
+}
 ```
 
 ### Other methods

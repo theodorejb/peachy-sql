@@ -69,7 +69,7 @@ class PeachySQL {
      * Executes a single query and passes any errors, selected rows, and the 
      * number of affected rows to the callback function. Transactions are not 
      * supported. Errors are passed rather than thrown to support more flexible 
-     * handling.
+     * handling. Returns the return value of the callback function.
      * 
      * T-SQL only: supports multiple queries separated by semicolons.
      * MySQL only: If an INSERT or UPDATE query is performed on a table with an
@@ -91,7 +91,7 @@ class PeachySQL {
     /**
      * Executes multiple queries separated by semicolons, and passes any errors,
      * selected rows, and the number of affected rows to the callback function. 
-     * Transactions are not supported.
+     * Transactions are not supported. Returns the return value of the callback.
      * 
      * @param string   $sql
      * @param array    $params
@@ -132,7 +132,8 @@ class PeachySQL {
     /**
      * Executes a single query and passes any errors, selected rows (or insert 
      * id if performing an insert/update), and the number of affected rows to 
-     * the callback function. Transactions are not supported.
+     * the callback function. Transactions are not supported. Returns the return
+     * value of the callback.
      * 
      * @param string   $sql
      * @param array    $params
@@ -214,12 +215,14 @@ class PeachySQL {
     }
 
     /**
+     * Selects the specified columns following the given where clause array.
+     * Returns the return value of the callback.
      * @param string[] $columns  An array of columns to select (empty to select
      *                           all columns).
      * @param array    $where    An associative array of columns and values to
      *                           filter selected rows. E.g. ["id" => 3] to only
      *                           return rows where id is equal to 3.
-     * @param callable $callback Same as query() callback
+     * @param callable $callback function (array $error, array $rows, int $affected)
      */
     public function select(array $columns, array $where, callable $callback) {
         $query = self::buildSelectQuery($this->tableName, $columns, $where);
@@ -227,7 +230,8 @@ class PeachySQL {
     }
 
     /**
-     * Insert one or more rows into the table.
+     * Insert one or more rows into the table. Returns the return value of the
+     * callback function.
      * 
      * @param string[] $columns  The columns to be inserted into. E.g.
      *                           ["Username", "Password].
@@ -237,7 +241,7 @@ class PeachySQL {
      * @param string   $idCol    If specified, an array of insert IDs from this
      *                           column will be passed to the callback (has no 
      *                           effect when using mysql).
-     * @param callable $callback function (array $errors, array $insertIDs, int $affected)
+     * @param callable $callback function (array $error, array $insertIDs, int $affected)
      */
     public function insert(array $columns, array $values, $idCol, callable $callback) {
         $query = self::buildInsertQuery($this->tableName, $this->dbType, $columns, $values, $idCol);
@@ -265,10 +269,11 @@ class PeachySQL {
 
     /**
      * Updates the specified columns and values in rows matching the where clause.
+     * Returns the return value of the callback function.
      * 
      * @param array $set   E.g. ["Username" => "newUsername", "Password" => "newPassword"]
      * @param array $where E.g. ["id" => 3] to update the row where id is equal to 3.
-     * @param callable $callback Same as callback for query()
+     * @param callable $callback function (array $error, array $rows, int $affected)
      */
     public function update(array $set, array $where, callable $callback) {
         $query = self::buildUpdateQuery($this->tableName, $set, $where);
@@ -277,9 +282,10 @@ class PeachySQL {
 
     /**
      * Deletes columns from the table where the where clause matches.
+     * Returns the return value of the callback function.
      * 
      * @param array    $where    E.g. ["id" => 3]
-     * @param callable $callback function (array $errors, array $rows, array $affected)
+     * @param callable $callback function (array $error, array $rows, int $affected)
      */
     public function delete(array $where, callable $callback) {
         $query = self::buildDeleteQuery($this->tableName, $where);
