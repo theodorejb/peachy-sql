@@ -392,7 +392,7 @@ class PeachySQL {
 
                 $sql .= " $column $comparison AND";
             }
-            
+
             $sql = substr_replace($sql, "", -4); // remove the trailing AND
         }
 
@@ -426,26 +426,37 @@ class PeachySQL {
 
         $sql .= " VALUES";
 
-        foreach ($values as $valArr) {
-            $sql .= ' (';
-
-            foreach ($valArr as $value) {
-                $sql .= '?,';
-                $params[] = $value;
+        if (is_array($values[0])) {
+            // inserting multiple rows
+            foreach ($values as $valArr) {
+                $sql .= ' ' . self::generateBoundParamsList($valArr) . ',';
+                $params = array_merge($params, $valArr);
             }
 
             $sql = substr_replace($sql, '', -1); // remove trailing comma
-
-            $sql .= '),';
+        } else {
+            // inserting single row
+            $sql .= ' ' . self::generateBoundParamsList($values);
+            $params = $values;
         }
-
-        $sql = substr_replace($sql, '', -1); // remove trailing comma
 
         if ($idCol && $dbType === self::DBTYPE_TSQL) {
             $sql .= ";SELECT * FROM @ids;";
         }
 
         return array("sql" => $sql, "params" => $params);
+    }
+
+    /**
+     * Returns a parenthesized list of placeholders for the values
+     * @param array $values
+     * @return string
+     */
+    public static function generateBoundParamsList(array $values) {
+        $sql = '(';
+        $sql .= str_repeat('?,', count($values));
+        $sql = substr_replace($sql, ')', -1); // replace trailing comma
+        return $sql;
     }
 
     /**

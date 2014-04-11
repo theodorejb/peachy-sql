@@ -54,21 +54,19 @@ class PeachySQLTest extends PHPUnit_Framework_TestCase {
     }
 
     public function testBuildInsertQuery() {
-        $columns = ['col1', 'col2'];
-        $values = [
-            ['val1', 'val2'],
-            ['val3', 'val4']
-        ];
+        $columns = ['col1', 'col2', 'col3'];
+        $values = ['val1', 'val2', 'val3']; // flat array should insert single row
 
         $actual = PeachySQL::buildInsertQuery('TestTable', PeachySQL::DBTYPE_MYSQL, $columns, $values);
-        $expected = "INSERT INTO TestTable (col1, col2) "
-                  . "VALUES (?,?), (?,?)";
+        $expected = "INSERT INTO TestTable (col1, col2, col3) VALUES (?,?,?)";
         $this->assertSame($expected, $actual["sql"]);
-        $this->assertSame(['val1', 'val2', 'val3', 'val4'], $actual["params"]);
+        $this->assertSame(['val1', 'val2', 'val3'], $actual["params"]);
     }
 
     public function testBuildInsertQueryTsqlInsertIDs() {
         $columns = ['col1', 'col2'];
+
+        // a two-dimensional array should insert multiple rows
         $values = [
             ['val1', 'val2'],
             ['val3', 'val4']
@@ -83,6 +81,13 @@ class PeachySQLTest extends PHPUnit_Framework_TestCase {
                   . "SELECT * FROM @ids;";
         $this->assertSame($expected, $actual["sql"]);
         $this->assertSame(['val1', 'val2', 'val3', 'val4'], $actual["params"]);
+    }
+
+    public function testGenerateBoundParamsList() {
+        $values = [1, 2, 3, 4, 5];
+        $expected = "(?,?,?,?,?)";
+        $actual = PeachySQL::generateBoundParamsList($values);
+        $this->assertSame($expected, $actual);
     }
 
     public function testSplitRows() {
