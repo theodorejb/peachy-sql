@@ -44,7 +44,7 @@ class PeachySQLTest extends PHPUnit_Framework_TestCase {
     }
 
     public function testBuildDeleteQuery() {
-        $where = array("id" => 5, "username" => ["tester", "tester2"]);
+        $where = ["id" => 5, "username" => ["tester", "tester2"]];
         $actual = PeachySQL::buildDeleteQuery("TestTable", $where);
         $expected = "DELETE FROM TestTable WHERE id = ? "
                   . "AND username IN(?,?)";
