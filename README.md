@@ -1,5 +1,7 @@
 # PeachySQL
 
+[![Latest Stable Version](https://poser.pugx.org/theodorejb/peachy-sql/v/stable.png)](https://packagist.org/packages/theodorejb/peachy-sql) [![Total Downloads](https://poser.pugx.org/theodorejb/peachy-sql/downloads.png)](https://packagist.org/packages/theodorejb/peachy-sql) [![License](https://poser.pugx.org/theodorejb/peachy-sql/license.png)](https://packagist.org/packages/theodorejb/peachy-sql)
+
 PeachySQL is a small and speedy database abstraction layer with a goal of simplifying the experience of working with common SQL queries in PHP. It currently supports both MySQL (via MySQLi) and T-SQL (via Microsoft's [SQLSRV extension](http://www.php.net/manual/en/book.sqlsrv.php)) and runs on PHP 5.4+.
 
 ## Installation
