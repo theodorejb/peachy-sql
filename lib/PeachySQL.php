@@ -259,8 +259,15 @@ class PeachySQL {
             } else {
                 // $rows contains the insert ID of the first inserted row
                 $firstInsertId = $rows[0];
-                $lastInsertId = $firstInsertId + (count($values) - 1);
-                $ids = range($firstInsertId, $lastInsertId);
+
+                if (is_array($values[0])) {
+                    // bulk insert
+                    $lastInsertId = $firstInsertId + (count($values) - 1);
+                    $ids = range($firstInsertId, $lastInsertId);
+                } else {
+                    // only a single row was inserted
+                    $ids = [$firstInsertId];
+                }
             }
 
             return $callback($err, $ids, $affected);
