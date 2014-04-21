@@ -152,11 +152,9 @@ class PeachySQL {
             if (!empty($params)) {
                 $typesValues = array(self::getMysqlParamTypes($params));
 
-                for ($i = 0; $i < count($params); $i++) {
-                    // use variable variables so that passing by reference will work
-                    $bindName = 'bind' . $i;
-                    $$bindName = $params[$i];
-                    $typesValues[] = &$$bindName;
+                // rather silly hack to make call_user_func_array pass by reference
+                foreach ($params as &$param) {
+                    $typesValues[] = &$param;
                 }
 
                 if (!call_user_func_array(array($stmt, 'bind_param'), $typesValues)) {
