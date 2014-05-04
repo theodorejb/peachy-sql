@@ -280,23 +280,26 @@ class PeachySQL {
         $params = $query["params"];
 
         return $this->query($sql, $params, function ($err, $rows, $affected) use ($values, $callback) {
+            $ids = [];
+
             switch ($this->dbType) {
                 case self::DBTYPE_MYSQL:
-                    // $rows contains the insert ID of the first inserted row
-                    $firstInsertId = $rows[0];
+                    if (isset($rows[0])) {
+                        // $rows contains the ID of the first inserted row
+                        $firstInsertId = $rows[0];
 
-                    if (is_array($values[0])) {
-                        // bulk insert
-                        $lastInsertId = $firstInsertId + (count($values) - 1);
-                        $ids = range($firstInsertId, $lastInsertId);
-                    } else {
-                        // only a single row was inserted
-                        $ids = [$firstInsertId];
+                        if (is_array($values[0])) {
+                            // bulk insert
+                            $lastInsertId = $firstInsertId + (count($values) - 1);
+                            $ids = range($firstInsertId, $lastInsertId);
+                        } else {
+                            // only a single row was inserted
+                            $ids = [$firstInsertId];
+                        }
                     }
                     break;
                 case self::DBTYPE_TSQL:
-                    // $rows contains an array of insert ID rows
-                    $ids = [];
+                    // if non-empty, $rows contains an array of insert ID rows
                     foreach ($rows as $row) {
                         $ids[] = $row["RowID"];
                     }
