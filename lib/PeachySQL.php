@@ -4,7 +4,7 @@
  * Provides simple methods for executing queries with bound parameters and 
  * inserting, selecting, updating, and deleting rows in a table. Supports both
  * MySQL (via mysqli) and T-SQL (via Microsoft's SQLSRV extension) and can be 
- * extended by classes for individual tables.
+ * easily extended to customize behavior.
  *
  * @author Theodore Brown <https://github.com/theodorejb>
  * @version 1.1.1  2014-04-20
@@ -15,7 +15,7 @@ class PeachySQL {
     const DBTYPE_MYSQL = 'mysql';
 
     /**
-     * A mysqli or sqlsrv database connection
+     * A mysqli object or sqlsrv connection resource
      * @var mixed
      */
     private $connection;
@@ -27,71 +27,100 @@ class PeachySQL {
     private $dbType;
 
     /**
-     * The name of the table to query
-     * @var string
+     * Default options
+     * @var array
      */
-    private $tableName;
+    private $options = [
+        "table" => NULL, // required to use shorthand methods
+        "idCol" => NULL  // used to retrieve insert IDs when using tsql
+    ];
 
     /**
-     * @param mixed  $connection A SQLSRV or mysqli database connection
-     * @param string $dbType     The type of database being accessed ('tsql' or
-     *                           'mysql')
-     * @param string $tableName (optional) The name of the table to be queried.
-     * @throws Exception if the database type is invalid.
+     * @param mixed $connection A SQLSRV connection resource or mysqli object
+     * @param array $options (optional) Options used when querying the database
      */
-    public function __construct($connection, $dbType, $tableName = NULL) {
-        $this->connection = $connection;
-        $this->tableName = $tableName;
+    public function __construct($connection, array $options = []) {
+        $this->setConnection($connection);
+        $this->setOptions($options);
+    }
 
-        if ($dbType === self::DBTYPE_MYSQL || $dbType === self::DBTYPE_TSQL) {
-            $this->dbType = $dbType;
+    /**
+     * Sets the connection which will be used to execute queries.
+     * @param mixed $connection (mysqli instance or sqlsrv connection resource)
+     * @throws Exception If the connection type is invalid
+     */
+    public function setConnection($connection) {
+        if ($connection instanceof mysqli) {
+            $this->dbType = self::DBTYPE_MYSQL;
+        } elseif (is_resource($connection) && get_resource_type($connection) === 'SQL Server Connection') {
+            $this->dbType = self::DBTYPE_TSQL;
         } else {
-            throw new Exception("Invalid database type");
+            // show a helpful error message
+            $connType = gettype($connection);
+
+            if ($connType === 'object') {
+                $connType = get_class($connection) . " $connType";
+            } elseif ($connType === 'resource') {
+                $connType = get_resource_type($connection) . " $connType";
+            }
+
+            throw new Exception("Expected a mysqli object or SQL Server"
+            . " Connection resource, but given a(n) $connType");
         }
+
+        $this->connection = $connection;
     }
 
     /**
-     * @return string The name of the specified table
+     * Returns the current PeachySQL options.
+     * @return array
      */
-    public function getTableName() {
-        return $this->tableName;
+    public function getOptions() {
+        return $this->options;
     }
 
     /**
-     * Allows the name of the queried table to be changed.
-     * @param string $name The name of the table to query
+     * Allows PeachySQL options to be changed at any time
+     * @param array $options
+     * @throws Exception if an option is invalid
      */
-    public function setTableName($name) {
-        $this->tableName = $name;
+    public function setOptions(array $options) {
+        $validKeys = array_keys($this->options);
+
+        foreach (array_keys($options) as $key) {
+            if (!in_array($key, $validKeys, TRUE)) {
+                throw new Exception("Invalid option '$key'");
+            }
+        }
+
+        $this->options = array_merge($this->options, $options);
     }
 
     /**
      * Executes a single query and passes any errors, selected rows, and the 
-     * number of affected rows to the callback function. Transactions are not 
-     * supported. Errors are passed rather than thrown to support more flexible 
-     * handling. Returns the return value of the callback function.
+     * number of affected rows to the callback function.
+     * Returns the return value of the callback function.
      * 
-     * T-SQL only: supports multiple queries separated by semicolons.
-     * MySQL only: If an INSERT or UPDATE query is performed on a table with an
-     *             auto-incremented column, the $rows parameter passed to the
-     *             callback will contain the insert ID of the first inserted row.
+     * MySQL only: If an INSERT query is performed on a table with an auto-
+     *             incremented column, the $rows argument passed to the callback
+     *             will contain the ID of the first inserted row.
      * 
      * @param string   $sql
-     * @param array    $params
+     * @param array    $params Values to bind to placeholders in the query
      * @param callable $callback function (array $error, array $rows, int $affected)
      */
     public function query($sql, array $params, callable $callback) {
-        if ($this->dbType === self::DBTYPE_TSQL) {
-            return $this->tsqlQuery($sql, $params, $callback);
-        } else {
-            return $this->mysqlQuery($sql, $params, $callback);
+        switch ($this->dbType) {
+            case self::DBTYPE_MYSQL:
+                return $this->mysqlQuery($sql, $params, $callback);
+            case self::DBTYPE_TSQL:
+                return $this->tsqlQuery($sql, $params, $callback);
         }
     }
 
     /**
-     * Executes multiple queries separated by semicolons, and passes any errors,
-     * selected rows, and the number of affected rows to the callback function. 
-     * Transactions are not supported. Returns the return value of the callback.
+     * Executes a query and passes any errors, selected rows, and the number of 
+     * affected rows to the callback function. Returns the callback's return value.
      * 
      * @param string   $sql
      * @param array    $params
@@ -131,9 +160,8 @@ class PeachySQL {
 
     /**
      * Executes a single query and passes any errors, selected rows (or insert 
-     * id if performing an insert/update), and the number of affected rows to 
-     * the callback function. Transactions are not supported. Returns the return
-     * value of the callback.
+     * id if performing an insert), and the number of affected rows to the 
+     * callback function. Returns the return value of the callback.
      * 
      * @param string   $sql
      * @param array    $params
@@ -170,8 +198,8 @@ class PeachySQL {
                 $affected = $stmt->affected_rows;
 
                 if ($insertId !== 0) {
-                    // An insert or update statement was executed on a table
-                    // with an auto-incremented column. Just return the insert ID.
+                    // An insert statement was executed on a table with an 
+                    // auto-incremented column. Pass the insert ID to the callback.
                     $rows[] = $insertId;
                 } else {
 
@@ -223,7 +251,7 @@ class PeachySQL {
      * @param callable $callback function (array $error, array $rows, int $affected)
      */
     public function select(array $columns, array $where, callable $callback) {
-        $query = self::buildSelectQuery($this->tableName, $columns, $where);
+        $query = self::buildSelectQuery($this->options["table"], $columns, $where);
         return $this->query($query["sql"], $query["params"], $callback);
     }
 
@@ -236,36 +264,35 @@ class PeachySQL {
      * @param array    $values   An array containing one or more subarrays with
      *                           values for each column. E.g.
      *                           [ ["user1", "pass1"], ["user2", "pass2"] ]
-     * @param string   $idCol    If specified, an array of insert IDs from this
-     *                           column will be passed to the callback (has no 
-     *                           effect when using mysql).
      * @param callable $callback function (array $error, array $insertIDs, int $affected)
      */
-    public function insert(array $columns, array $values, $idCol, callable $callback) {
-        $query = self::buildInsertQuery($this->tableName, $this->dbType, $columns, $values, $idCol);
+    public function insert(array $columns, array $values, callable $callback) {
+        $query = self::buildInsertQuery($this->options["table"], $this->dbType, $columns, $values, $this->options["idCol"]);
         $sql = $query["sql"];
         $params = $query["params"];
 
         return $this->query($sql, $params, function ($err, $rows, $affected) use ($values, $callback) {
-            if ($this->dbType === self::DBTYPE_TSQL) {
-                // $rows contains an array of insert ID rows
-                $ids = [];
+            switch ($this->dbType) {
+                case self::DBTYPE_MYSQL:
+                    // $rows contains the insert ID of the first inserted row
+                    $firstInsertId = $rows[0];
 
-                foreach ($rows as $row) {
-                    $ids[] = $row["RowID"];
-                }
-            } else {
-                // $rows contains the insert ID of the first inserted row
-                $firstInsertId = $rows[0];
-
-                if (is_array($values[0])) {
-                    // bulk insert
-                    $lastInsertId = $firstInsertId + (count($values) - 1);
-                    $ids = range($firstInsertId, $lastInsertId);
-                } else {
-                    // only a single row was inserted
-                    $ids = [$firstInsertId];
-                }
+                    if (is_array($values[0])) {
+                        // bulk insert
+                        $lastInsertId = $firstInsertId + (count($values) - 1);
+                        $ids = range($firstInsertId, $lastInsertId);
+                    } else {
+                        // only a single row was inserted
+                        $ids = [$firstInsertId];
+                    }
+                    break;
+                case self::DBTYPE_TSQL:
+                    // $rows contains an array of insert ID rows
+                    $ids = [];
+                    foreach ($rows as $row) {
+                        $ids[] = $row["RowID"];
+                    }
+                    break;
             }
 
             return $callback($err, $ids, $affected);
@@ -281,7 +308,7 @@ class PeachySQL {
      * @param callable $callback function (array $error, array $rows, int $affected)
      */
     public function update(array $set, array $where, callable $callback) {
-        $query = self::buildUpdateQuery($this->tableName, $set, $where);
+        $query = self::buildUpdateQuery($this->options["table"], $set, $where);
         return $this->query($query["sql"], $query["params"], $callback);
     }
 
@@ -293,7 +320,7 @@ class PeachySQL {
      * @param callable $callback function (array $error, array $rows, int $affected)
      */
     public function delete(array $where, callable $callback) {
-        $query = self::buildDeleteQuery($this->tableName, $where);
+        $query = self::buildDeleteQuery($this->options["table"], $where);
         return $this->query($query["sql"], $query["params"], $callback);
     }
 
