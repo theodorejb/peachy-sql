@@ -72,6 +72,14 @@ class PeachySQL {
     }
 
     /**
+     * Returns the current connection type
+     * @return string
+     */
+    public function getConnectionType() {
+        return $this->dbType;
+    }
+
+    /**
      * Returns the current PeachySQL options.
      * @return array
      */
