@@ -264,46 +264,54 @@ class PeachySQL {
     }
 
     /**
-     * Insert one or more rows into the table. Returns the return value of the
-     * callback function.
+     * Inserts one or more rows into the table. If multiple rows are inserted 
+     * (via nested arrays) an array of insert IDs will be passed to the callback. 
+     * If inserting a single row with a flat array of values the insert ID will 
+     * instead be passed as an integer. Returns the return value of the callback.
      * 
-     * @param string[] $columns  The columns to be inserted into. E.g.
-     *                           ["Username", "Password].
-     * @param array    $values   An array containing one or more subarrays with
-     *                           values for each column. E.g.
-     *                           [ ["user1", "pass1"], ["user2", "pass2"] ]
-     * @param callable $callback function (array $error, array $insertIDs, int $affected)
+     * @param string[] $columns  The columns to be inserted into. E.g. ["Username", "Password"].
+     * @param array    $values   A flat array of values (to insert one row), or an array containing 
+     *                           one or more subarrays (to bulk-insert multiple rows).
+     *                           E.g. ["user", "pass"] or [ ["user1", "pass1"], ["user2", "pass2"] ].
+     * @param callable $callback function (array $error, array|int $insertIds, int $affected)
      */
     public function insert(array $columns, array $values, callable $callback) {
+
+        $bulkInsert = isset($values[0]) && is_array($values[0]);
+        if (!$bulkInsert) {
+            $values = [$values];
+        }
+
         $query = self::buildInsertQuery($this->options["table"], $this->dbType, $columns, $values, $this->options["idCol"]);
-        $sql = $query["sql"];
-        $params = $query["params"];
 
-        return $this->query($sql, $params, function ($err, $rows, $affected) use ($values, $callback) {
-            $ids = [];
+        return $this->query($query["sql"], $query["params"], function ($err, $rows, $affected) use ($bulkInsert, $values, $callback) {
+            $ids = $bulkInsert ? [] : 0;
 
-            switch ($this->dbType) {
-                case self::DBTYPE_MYSQL:
-                    if (isset($rows[0])) {
+            if (isset($rows[0])) {
+                switch ($this->dbType) {
+                    case self::DBTYPE_MYSQL:
                         // $rows contains the ID of the first inserted row
                         $firstInsertId = $rows[0];
 
-                        if (is_array($values[0])) {
-                            // bulk insert
+                        if ($bulkInsert) {
                             $lastInsertId = $firstInsertId + (count($values) - 1);
                             $ids = range($firstInsertId, $lastInsertId);
                         } else {
-                            // only a single row was inserted
-                            $ids = [$firstInsertId];
+                            $ids = $firstInsertId;
                         }
-                    }
-                    break;
-                case self::DBTYPE_TSQL:
-                    // if non-empty, $rows contains an array of insert ID rows
-                    foreach ($rows as $row) {
-                        $ids[] = $row["RowID"];
-                    }
-                    break;
+                        break;
+                    case self::DBTYPE_TSQL:
+                        // $rows contains an array of insert ID rows
+
+                        if ($bulkInsert) {
+                            foreach ($rows as $row) {
+                                $ids[] = $row["RowID"];
+                            }
+                        } else {
+                            $ids = $rows[0]["RowID"];
+                        }
+                        break;
+                }
             }
 
             return $callback($err, $ids, $affected);
@@ -340,15 +348,11 @@ class PeachySQL {
     }
 
     /**
-     * If the array is empty, the query should select all rows. If not empty,
-     * filter by the column values
-     * 
-     * @param string   $tableName The name of the table to query
-     * @param string[] $columns   An array of columns to select from. If empty
-     *                            all columns will be selected.
-     * @param array    $where     An array of columns/values to filter the select 
-     *                            query.
-     * @return array  An array containing the SELECT query and bound parameters.
+     * Builds a selct query using the specified table name, columns, and where clause array.
+     * @param  string   $tableName The name of the table to query
+     * @param  string[] $columns   An array of columns to select from (all columns if empty)
+     * @param  array    $where     An array of columns/values to filter the select query
+     * @return array    An array containing the SELECT query and bound parameters
      */
     public static function buildSelectQuery($tableName, array $columns = [], array $where = []) {
         self::validateTableName($tableName, "a select");
@@ -455,8 +459,7 @@ class PeachySQL {
      * @param string $tableName The name of the table to insert into
      * @param string $dbType    The database type ('mysql' or 'tsql')
      * @param array  $columns   An array of columns to insert into.
-     * @param array  $values    A multi-dimensional array of values to insert 
-     *                          into the columns.
+     * @param array  $values    A two-dimensional array of values to insert into the columns.
      * @param string $idCol     The name of the table's primary key column. Must
      *                          be specified when using T-SQL to get insert IDs.
      * @return array An array containing the SQL string and bound parameters.
@@ -465,6 +468,10 @@ class PeachySQL {
         self::validateTableName($tableName, "an insert");
         $sql = '';
         $params = [];
+
+        if (empty($columns) || empty($values) || !is_array($values[0]) || empty($values[0])) {
+            throw new Exception("Columns and values to insert must be specified");
+        }
 
         if ($idCol && $dbType === self::DBTYPE_TSQL) {
             $sql .= "DECLARE @ids TABLE(RowID int);";
@@ -479,19 +486,12 @@ class PeachySQL {
 
         $sql .= " VALUES";
 
-        if (is_array($values[0])) {
-            // inserting multiple rows
-            foreach ($values as $valArr) {
-                $sql .= ' ' . self::generateBoundParamsList($valArr) . ',';
-                $params = array_merge($params, $valArr);
-            }
-
-            $sql = substr_replace($sql, '', -1); // remove trailing comma
-        } else {
-            // inserting single row
-            $sql .= ' ' . self::generateBoundParamsList($values);
-            $params = $values;
+        foreach ($values as $valArr) {
+            $sql .= ' ' . self::generateBoundParamsList($valArr) . ',';
+            $params = array_merge($params, $valArr);
         }
+
+        $sql = substr_replace($sql, '', -1); // remove trailing comma
 
         if ($idCol && $dbType === self::DBTYPE_TSQL) {
             $sql .= ";SELECT * FROM @ids;";

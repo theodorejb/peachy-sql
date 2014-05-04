@@ -55,7 +55,7 @@ class PeachySQLTest extends PHPUnit_Framework_TestCase {
 
     public function testBuildInsertQuery() {
         $columns = ['col1', 'col2', 'col3'];
-        $values = ['val1', 'val2', 'val3']; // flat array should insert single row
+        $values = [['val1', 'val2', 'val3']];
 
         $actual = PeachySQL::buildInsertQuery('TestTable', PeachySQL::DBTYPE_MYSQL, $columns, $values);
         $expected = "INSERT INTO TestTable (col1, col2, col3) VALUES (?,?,?)";
