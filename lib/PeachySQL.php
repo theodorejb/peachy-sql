@@ -351,6 +351,8 @@ class PeachySQL {
      * @return array  An array containing the SELECT query and bound parameters.
      */
     public static function buildSelectQuery($tableName, array $columns = [], array $where = []) {
+        self::validateTableName($tableName, "a select");
+
         if (!empty($columns)) {
             $insertCols = implode(', ', $columns);
         } else {
@@ -370,6 +372,8 @@ class PeachySQL {
      * @return array  An array containing the sql string and bound parameters.
      */
     public static function buildDeleteQuery($tableName, array $where = []) {
+        self::validateTableName($tableName, "a delete");
+
         $sql = "DELETE FROM $tableName";
         $where = self::buildWhereClause($where);
         $sql .= $where["sql"];
@@ -384,6 +388,7 @@ class PeachySQL {
      * @return array  An array containing the sql string and bound parameters.
      */
     public static function buildUpdateQuery($tableName, array $set, array $where = []) {
+        self::validateTableName($tableName, "an update");
         $sql = '';
         $params = [];
 
@@ -457,6 +462,7 @@ class PeachySQL {
      * @return array An array containing the SQL string and bound parameters.
      */
     public static function buildInsertQuery($tableName, $dbType, array $columns, array $values, $idCol = NULL) {
+        self::validateTableName($tableName, "an insert");
         $sql = '';
         $params = [];
 
@@ -519,6 +525,17 @@ class PeachySQL {
         // queries" (see http://stackoverflow.com/a/14370546/1170489).
 
         return str_repeat("s", count($params));
+    }
+
+    /**
+     * Throws an exception if the table name is null or blank
+     * @param string $name
+     * @throws Exception
+     */
+    private static function validateTableName($name, $type = "this") {
+        if ($name === NULL || $name === "") {
+            throw new Exception("A valid table name must be set to generate $type query");
+        }
     }
 
     /**
