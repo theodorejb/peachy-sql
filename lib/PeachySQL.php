@@ -194,7 +194,6 @@ class PeachySQL {
                                 // PHP from just copying the same $data reference (see
                                 // http://www.php.net/manual/en/mysqli-stmt.bind-result.php#92505).
 
-                                $rows[$i] = [];
                                 foreach ($data as $k => $v) {
                                     $rows[$i][$k] = $v;
                                 }
@@ -206,6 +205,7 @@ class PeachySQL {
                 }
             }
 
+            $stmt->free_result();
             $stmt->close();
         }
 
