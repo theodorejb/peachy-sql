@@ -502,12 +502,11 @@ class PeachySQL {
 
     /**
      * Returns a parenthesized list of placeholders for the values
-     * @param array $values
+     * @param  array $values
      * @return string
      */
-    public static function generateBoundParamsList(array $values) {
-        $sql = '(';
-        $sql .= str_repeat('?,', count($values));
+    private static function generateBoundParamsList(array $values) {
+        $sql = '(' . str_repeat('?,', count($values));
         $sql = substr_replace($sql, ')', -1); // replace trailing comma
         return $sql;
     }

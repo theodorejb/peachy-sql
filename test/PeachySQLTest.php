@@ -83,13 +83,6 @@ class PeachySQLTest extends PHPUnit_Framework_TestCase {
         $this->assertSame(['val1', 'val2', 'val3', 'val4'], $actual["params"]);
     }
 
-    public function testGenerateBoundParamsList() {
-        $values = [1, 2, 3, 4, 5];
-        $expected = "(?,?,?,?,?)";
-        $actual = PeachySQL::generateBoundParamsList($values);
-        $this->assertSame($expected, $actual);
-    }
-
     public function testSplitRows() {
         // an array retrived by joining people and pets tables
         $peoplePets = [
