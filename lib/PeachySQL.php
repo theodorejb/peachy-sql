@@ -255,8 +255,8 @@ class PeachySQL {
      *                           all columns).
      * @param array    $where    An associative array of columns and values to
      *                           filter selected rows. E.g. ["id" => 3] to only
-     *                           return rows where id is equal to 3.
-     * @param callable $callback function (array $error, array $rows, int $affected)
+     *                           return rows where the id column is equal to 3.
+     * @param callable $callback function (array $error, array $rows)
      */
     public function select(array $columns, array $where, callable $callback) {
         $query = self::buildSelectQuery($this->options["table"], $columns, $where);
@@ -316,11 +316,13 @@ class PeachySQL {
      * 
      * @param array $set   E.g. ["Username" => "newUsername", "Password" => "newPassword"]
      * @param array $where E.g. ["id" => 3] to update the row where id is equal to 3.
-     * @param callable $callback function (array $error, array $rows, int $affected)
+     * @param callable $callback function (array $error, int $affected)
      */
     public function update(array $set, array $where, callable $callback) {
         $query = self::buildUpdateQuery($this->options["table"], $set, $where);
-        return $this->query($query["sql"], $query["params"], $callback);
+        return $this->query($query["sql"], $query["params"], function ($err, $rows, $affected) use ($callback) {
+            return $callback($err, $affected);
+        });
     }
 
     /**
@@ -328,11 +330,13 @@ class PeachySQL {
      * Returns the return value of the callback function.
      * 
      * @param array    $where    E.g. ["id" => 3]
-     * @param callable $callback function (array $error, array $rows, int $affected)
+     * @param callable $callback function (array $error, int $affected)
      */
     public function delete(array $where, callable $callback) {
         $query = self::buildDeleteQuery($this->options["table"], $where);
-        return $this->query($query["sql"], $query["params"], $callback);
+        return $this->query($query["sql"], $query["params"], function ($err, $rows, $affected) use ($callback) {
+            return $callback($err, $affected);
+        });
     }
 
     /**
