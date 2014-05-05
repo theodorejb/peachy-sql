@@ -319,6 +319,15 @@ class PeachySQL {
     }
 
     /**
+     * Inserts a single row from an associative array of columns/values.
+     * @param array    $colVals  E.g. ["Username => "user1", "Password" => "pass1"]
+     * @param callable $callback function (array $error, int $insertId, int $affected)
+     */
+    public function insertAssoc(array $colVals, callable $callback) {
+        return $this->insert(array_keys($colVals), array_values($colVals), $callback);
+    }
+
+    /**
      * Updates the specified columns and values in rows matching the where clause.
      * Returns the return value of the callback function.
      * 
