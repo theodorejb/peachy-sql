@@ -14,6 +14,10 @@ class PeachySQL {
     const DBTYPE_TSQL = 'tsql';
     const DBTYPE_MYSQL = 'mysql';
 
+    /***** option keys *****/
+    const OPT_TABLE = "table";
+    const OPT_IDCOL = "idCol";
+
     /**
      * A mysqli object or sqlsrv connection resource
      * @var mixed
@@ -31,8 +35,8 @@ class PeachySQL {
      * @var array
      */
     private $options = [
-        "table" => NULL, // required to use shorthand methods
-        "idCol" => NULL  // used to retrieve insert IDs when using tsql
+        self::OPT_TABLE => NULL,           // required to use shorthand methods
+        self::OPT_IDCOL => NULL,           // used to retrieve insert IDs when using T-SQL
     ];
 
     /**
@@ -259,7 +263,7 @@ class PeachySQL {
      * @param callable $callback function (array $error, array $rows)
      */
     public function select(array $columns, array $where, callable $callback) {
-        $query = self::buildSelectQuery($this->options["table"], $columns, $where);
+        $query = self::buildSelectQuery($this->options[self::OPT_TABLE], $columns, $where);
         return $this->query($query["sql"], $query["params"], $callback);
     }
 
@@ -282,7 +286,7 @@ class PeachySQL {
             $values = [$values];
         }
 
-        $query = self::buildInsertQuery($this->options["table"], $this->dbType, $columns, $values, $this->options["idCol"]);
+        $query = self::buildInsertQuery($this->options[self::OPT_TABLE], $this->dbType, $columns, $values, $this->options[self::OPT_IDCOL]);
 
         return $this->query($query["sql"], $query["params"], function ($err, $rows, $affected) use ($bulkInsert, $values, $callback) {
             $ids = $bulkInsert ? [] : 0;
@@ -336,7 +340,7 @@ class PeachySQL {
      * @param callable $callback function (array $error, int $affected)
      */
     public function update(array $set, array $where, callable $callback) {
-        $query = self::buildUpdateQuery($this->options["table"], $set, $where);
+        $query = self::buildUpdateQuery($this->options[self::OPT_TABLE], $set, $where);
         return $this->query($query["sql"], $query["params"], function ($err, $rows, $affected) use ($callback) {
             return $callback($err, $affected);
         });
@@ -350,7 +354,7 @@ class PeachySQL {
      * @param callable $callback function (array $error, int $affected)
      */
     public function delete(array $where, callable $callback) {
-        $query = self::buildDeleteQuery($this->options["table"], $where);
+        $query = self::buildDeleteQuery($this->options[self::OPT_TABLE], $where);
         return $this->query($query["sql"], $query["params"], function ($err, $rows, $affected) use ($callback) {
             return $callback($err, $affected);
         });
