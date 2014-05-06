@@ -17,6 +17,7 @@ class PeachySQL {
     /***** option keys *****/
     const OPT_TABLE = "table";
     const OPT_IDCOL = "idCol";
+    const OPT_MYSQL_INCREMENT_VAL = "mysqlIncrementVal";
 
     /**
      * A mysqli object or sqlsrv connection resource
@@ -37,6 +38,7 @@ class PeachySQL {
     private $options = [
         self::OPT_TABLE => NULL,           // required to use shorthand methods
         self::OPT_IDCOL => NULL,           // used to retrieve insert IDs when using T-SQL
+        self::OPT_MYSQL_INCREMENT_VAL => 1 // interval between successive auto-incremented values (for MySQL bulk inserts)
     ];
 
     /**
@@ -299,7 +301,7 @@ class PeachySQL {
 
                         if ($bulkInsert) {
                             $lastInsertId = $firstInsertId + (count($values) - 1);
-                            $ids = range($firstInsertId, $lastInsertId);
+                            $ids = range($firstInsertId, $lastInsertId, $this->options[self::OPT_MYSQL_INCREMENT_VAL]);
                         } else {
                             $ids = $firstInsertId;
                         }
