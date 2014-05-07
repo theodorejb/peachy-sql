@@ -488,15 +488,11 @@ class PeachySQL {
             throw new Exception("Columns and values to insert must be specified");
         }
 
-        if ($idCol && $dbType === self::DBTYPE_TSQL) {
-            $sql .= "DECLARE @ids TABLE(RowID int);";
-        }
-
         $insertCols = implode(', ', $columns);
         $sql .= "INSERT INTO $tableName ($insertCols)";
 
         if ($idCol && $dbType === self::DBTYPE_TSQL) {
-            $sql .= " OUTPUT inserted.$idCol INTO @ids(RowID)";
+            $sql .= " OUTPUT inserted.$idCol AS RowID";
         }
 
         $sql .= " VALUES";
@@ -507,10 +503,6 @@ class PeachySQL {
         }
 
         $sql = substr_replace($sql, '', -1); // remove trailing comma
-
-        if ($idCol && $dbType === self::DBTYPE_TSQL) {
-            $sql .= ";SELECT * FROM @ids;";
-        }
 
         return array("sql" => $sql, "params" => $params);
     }

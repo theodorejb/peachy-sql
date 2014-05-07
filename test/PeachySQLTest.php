@@ -74,11 +74,9 @@ class PeachySQLTest extends PHPUnit_Framework_TestCase {
 
         $actual = PeachySQL::buildInsertQuery('TestTable', PeachySQL::DBTYPE_TSQL, $columns, $values, "pkColumn");
 
-        $expected = "DECLARE @ids TABLE(RowID int);"
-                  . "INSERT INTO TestTable (col1, col2) "
-                  . "OUTPUT inserted.pkColumn INTO @ids(RowID) "
-                  . "VALUES (?,?), (?,?);"
-                  . "SELECT * FROM @ids;";
+        $expected = "INSERT INTO TestTable (col1, col2) "
+                  . "OUTPUT inserted.pkColumn AS RowID "
+                  . "VALUES (?,?), (?,?)";
         $this->assertSame($expected, $actual["sql"]);
         $this->assertSame(['val1', 'val2', 'val3', 'val4'], $actual["params"]);
     }
