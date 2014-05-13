@@ -1,5 +1,7 @@
 <?php
 
+namespace PeachySQL;
+
 /**
  * Provides simple methods for executing queries with bound parameters and 
  * inserting, selecting, updating, and deleting rows in a table. Supports both
@@ -56,7 +58,7 @@ class PeachySQL {
      * @throws Exception If the connection type is invalid
      */
     public function setConnection($connection) {
-        if ($connection instanceof mysqli) {
+        if ($connection instanceof \mysqli) {
             $this->dbType = self::DBTYPE_MYSQL;
         } elseif (is_resource($connection) && get_resource_type($connection) === 'SQL Server Connection') {
             $this->dbType = self::DBTYPE_TSQL;
