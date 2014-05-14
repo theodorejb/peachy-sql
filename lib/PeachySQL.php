@@ -546,47 +546,4 @@ class PeachySQL {
         }
     }
 
-    /**
-     * Iterates through an array of rows, splitting it into groups when the
-     * value of the specified column changes. Each group of rows is passed to the 
-     * callback function. This can be used to separate complex data sets created
-     * by joining tables in a single query. Note that the rows must be sorted by 
-     * the column used to divide results.
-     * 
-     * @param array    $rows      An array of rows to split into groups
-     * @param string   $divideCol The column used to split results into groups
-     * @param callable $callback  function (array $itemSet)
-     */
-    public static function splitRows(array $rows, $divideCol, callable $callback) {
-        if (!$divideCol) {
-            throw new Exception("A divide column name must be specified");
-        }
-
-        $divideColVal = FALSE; // default
-        $itemSet = [];
-
-        foreach ($rows as $row) {
-
-            if ($divideColVal === FALSE || $divideColVal !== $row[$divideCol]) {
-                // new set of items
-
-                if (!empty($itemSet)) {
-                    // send previous set to callback
-                    $callback($itemSet);
-                }
-
-                $itemSet = array($row); // start over
-                $divideColVal = $row[$divideCol];
-            } else {
-                // same set of items
-                $itemSet[] = $row; // append current row
-            }
-        }
-
-        if (!empty($itemSet)) {
-            // send last set to callback
-            $callback($itemSet);
-        }
-    }
-
 }

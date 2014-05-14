@@ -83,41 +83,4 @@ class PeachySQLTest extends \PHPUnit_Framework_TestCase {
         $this->assertSame(['val1', 'val2', 'val3', 'val4'], $actual["params"]);
     }
 
-    public function testSplitRows() {
-        // an array retrived by joining people and pets tables
-        $peoplePets = [
-            ["name" => "Jack", "petName" => "Scruffy"],
-            ["name" => "Jack", "petName" => "Spot"],
-            ["name" => "Jack", "petName" => "Paws"],
-            ["name" => "Amy", "petName" => "Blackie"],
-            ["name" => "Amy", "petName" => "Whiskers"]
-        ];
-
-        $expected = [
-            "Jack" => [
-                "Scruffy",
-                "Spot",
-                "Paws"
-            ],
-            "Amy" => [
-                "Blackie",
-                "Whiskers"
-            ]
-        ];
-
-        $peoplePetsAssoc = [];
-
-        // the callback should be called once per person
-        PeachySQL::splitRows($peoplePets, "name", function ($personPets) use (&$peoplePetsAssoc) {
-            foreach ($personPets as $personPet) {
-                $petsArray[] = $personPet["petName"];
-            }
-
-            $person = $personPets[0]["name"];
-            $peoplePetsAssoc[$person] = $petsArray;
-        });
-
-        $this->assertSame($expected, $peoplePetsAssoc);
-    }
-
 }
