@@ -8,7 +8,7 @@ namespace PeachySQL;
  * vendor-neutral functionality and can be extended by database-specific classes.
  *
  * @author Theodore Brown <https://github.com/theodorejb>
- * @version 2.0 pre-beta 2014-05-15
+ * @version 2.0.0-beta.1 2014-05-15
  */
 abstract class PeachySQL {
 
