@@ -33,9 +33,11 @@ class TSQLTest extends \PHPUnit_Framework_TestCase {
      */
     public function testBuildInsertQueryWithInsertId($columns, $values) {
         $actual = TSQL::buildInsertQuery('TestTable', $columns, $values, "pkColumn");
-        $expected = 'INSERT INTO TestTable (col1, col2)'
-        . ' OUTPUT inserted.pkColumn AS RowID'
-        . ' VALUES (?,?), (?,?)';
+        $expected = 'DECLARE @ids TABLE(RowID int);'
+        . ' INSERT INTO TestTable (col1, col2)'
+        . ' OUTPUT inserted.pkColumn INTO @ids(RowID)'
+        . ' VALUES (?,?), (?,?);'
+        . ' SELECT * FROM @ids;';
         $this->assertSame($expected, $actual["sql"]);
         $this->assertSame(['foo1', 'foo2', 'bar1', 'bar2'], $actual["params"]);
     }

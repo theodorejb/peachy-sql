@@ -186,12 +186,16 @@ class TSQL extends PeachySQL {
         $comp = self::buildInsertQueryComponents($tableName, $columns, $values);
 
         if ($idCol !== NULL && $idCol !== '') {
-            $outStr = " OUTPUT inserted.$idCol AS RowID";
+            $decStr = "DECLARE @ids TABLE(RowID int); ";
+            $outStr = " OUTPUT inserted.$idCol INTO @ids(RowID)";
+            $selStr = "; SELECT * FROM @ids;";
         } else {
+            $decStr = '';
             $outStr = '';
+            $selStr = '';
         }
 
-        $comp['sql'] = $comp['insertStr'] . $outStr . $comp['valStr'];
+        $comp['sql'] = $decStr . $comp['insertStr'] . $outStr . $comp['valStr'] . $selStr;
         return $comp;
     }
 
