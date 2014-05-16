@@ -59,6 +59,36 @@ class TSQL extends PeachySQL {
     }
 
     /**
+     * Begins a SQLSRV transaction
+     * @throws SQLException if an error occurs
+     */
+    public function begin() {
+        if (!sqlsrv_begin_transaction($this->connection)) {
+            throw new SQLException("Failed to begin transaction", sqlsrv_errors());
+        }
+    }
+
+    /**
+     * Commits a transaction begun with begin()
+     * @throws SQLException if an error occurs
+     */
+    public function commit() {
+        if (!sqlsrv_commit($this->connection)) {
+            throw new SQLException("Failed to commit transaction", sqlsrv_errors());
+        }
+    }
+
+    /**
+     * Rolls back a transaction begun with begin()
+     * @throws SQLException if an error occurs
+     */
+    public function rollback() {
+        if (!sqlsrv_rollback($this->connection)) {
+            throw new SQLException("Failed to roll back transaction", sqlsrv_errors());
+        }
+    }
+
+    /**
      * Executes a query and passes a SQLResult object to the callback.
      * @param string   $sql
      * @param array    $params   Values to bind to placeholders in the query

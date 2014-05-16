@@ -25,8 +25,14 @@ abstract class PeachySQL {
         self::OPT_TABLE => NULL,
     ];
 
+    /** Begins a transaction */
+    public abstract function begin();
 
+    /** Commits a transaction begun with begin() */
+    public abstract function commit();
 
+    /** Rolls back a transaction begun with begin() */
+    public abstract function rollback();
 
     /**
      * Executes a single query and passes a SQLResult object to the callback

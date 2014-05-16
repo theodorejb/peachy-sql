@@ -60,6 +60,36 @@ class MySQL extends PeachySQL {
     }
 
     /**
+     * Begins a mysqli transaction
+     * @throws SQLException if an error occurs
+     */
+    public function begin() {
+        if (!$this->connection->begin_transaction()) {
+            throw new SQLException("Failed to begin transaction", $this->connection->error_list);
+        }
+    }
+
+    /**
+     * Commits a transaction begun with begin()
+     * @throws SQLException if an error occurs
+     */
+    public function commit() {
+        if (!$this->connection->commit()) {
+            throw new SQLException("Failed to commit transaction", $this->connection->error_list);
+        }
+    }
+
+    /**
+     * Rolls back a transaction begun with begin()
+     * @throws SQLException if an error occurs
+     */
+    public function rollback() {
+        if (!$this->connection->rollback()) {
+            throw new SQLException("Failed to roll back transaction", $this->connection->error_list);
+        }
+    }
+
+    /**
      * Executes a single query and passes a MySQLResult object to the callback.
      * @param string   $sql
      * @param array    $params   Values to bind to placeholders in the query
