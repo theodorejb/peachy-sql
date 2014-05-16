@@ -55,32 +55,4 @@ class PeachySQLTest extends \PHPUnit_Framework_TestCase {
         $this->assertSame([5, "tester", "tester2"], $actual["params"]);
     }
 
-    public function testBuildInsertQuery() {
-        $columns = ['col1', 'col2', 'col3'];
-        $values = [['val1', 'val2', 'val3']];
-
-        $actual = PeachySQL::buildInsertQuery('TestTable', PeachySQL::DBTYPE_MYSQL, $columns, $values);
-        $expected = "INSERT INTO TestTable (col1, col2, col3) VALUES (?,?,?)";
-        $this->assertSame($expected, $actual["sql"]);
-        $this->assertSame(['val1', 'val2', 'val3'], $actual["params"]);
-    }
-
-    public function testBuildInsertQueryTsqlInsertIDs() {
-        $columns = ['col1', 'col2'];
-
-        // a two-dimensional array should insert multiple rows
-        $values = [
-            ['val1', 'val2'],
-            ['val3', 'val4']
-        ];
-
-        $actual = PeachySQL::buildInsertQuery('TestTable', PeachySQL::DBTYPE_TSQL, $columns, $values, "pkColumn");
-
-        $expected = "INSERT INTO TestTable (col1, col2) "
-                  . "OUTPUT inserted.pkColumn AS RowID "
-                  . "VALUES (?,?), (?,?)";
-        $this->assertSame($expected, $actual["sql"]);
-        $this->assertSame(['val1', 'val2', 'val3', 'val4'], $actual["params"]);
-    }
-
 }

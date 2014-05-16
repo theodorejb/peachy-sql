@@ -4,88 +4,48 @@ namespace PeachySQL;
 
 /**
  * Provides simple methods for executing queries with bound parameters and 
- * inserting, selecting, updating, and deleting rows in a table. Supports both
- * MySQL (via mysqli) and T-SQL (via Microsoft's SQLSRV extension) and can be 
- * easily extended to customize behavior.
+ * inserting, selecting, updating, and deleting rows in a table. Provides
+ * vendor-neutral functionality and can be extended by database-specific classes.
  *
  * @author Theodore Brown <https://github.com/theodorejb>
- * @version 1.1.1  2014-04-20
+ * @version 2.0 pre-beta 2014-05-15
  */
-class PeachySQL {
+abstract class PeachySQL {
 
-    const DBTYPE_TSQL = 'tsql';
-    const DBTYPE_MYSQL = 'mysql';
-
-    /***** option keys *****/
+    /**
+     * Option key for specifying the table to select, insert, update, and delete from
+     */
     const OPT_TABLE = "table";
-    const OPT_IDCOL = "idCol";
-    const OPT_MYSQL_INCREMENT_VAL = "mysqlIncrementVal";
-
-    /**
-     * A mysqli object or sqlsrv connection resource
-     * @var mixed
-     */
-    private $connection;
-
-    /**
-     * 'mysql' or 'tsql'
-     * @var string
-     */
-    private $dbType;
 
     /**
      * Default options
      * @var array
      */
-    private $options = [
-        self::OPT_TABLE => NULL,           // required to use shorthand methods
-        self::OPT_IDCOL => NULL,           // used to retrieve insert IDs when using T-SQL
-        self::OPT_MYSQL_INCREMENT_VAL => 1 // interval between successive auto-incremented values (for MySQL bulk inserts)
+    protected $options = [
+        self::OPT_TABLE => NULL,
     ];
 
-    /**
-     * @param mixed $connection A SQLSRV connection resource or mysqli object
-     * @param array $options (optional) Options used when querying the database
-     */
-    public function __construct($connection, array $options = []) {
-        $this->setConnection($connection);
-        $this->setOptions($options);
-    }
+
+
 
     /**
-     * Sets the connection which will be used to execute queries.
-     * @param mixed $connection (mysqli instance or sqlsrv connection resource)
-     * @throws Exception If the connection type is invalid
+     * Executes a single query and passes a SQLResult object to the callback
+     * @param string   $sql
+     * @param array    $params
+     * @param callable $callback
+     * @return mixed The return value of the callback
+     * @throws SQLException if an error occurs
      */
-    public function setConnection($connection) {
-        if ($connection instanceof \mysqli) {
-            $this->dbType = self::DBTYPE_MYSQL;
-        } elseif (is_resource($connection) && get_resource_type($connection) === 'SQL Server Connection') {
-            $this->dbType = self::DBTYPE_TSQL;
-        } else {
-            // show a helpful error message
-            $connType = gettype($connection);
-
-            if ($connType === 'object') {
-                $connType = get_class($connection) . " $connType";
-            } elseif ($connType === 'resource') {
-                $connType = get_resource_type($connection) . " $connType";
-            }
-
-            throw new Exception("Expected a mysqli object or SQL Server"
-            . " Connection resource, but given a(n) $connType");
-        }
-
-        $this->connection = $connection;
-    }
+    public abstract function query($sql, array $params = [], callable $callback = NULL);
 
     /**
-     * Returns the current connection type
-     * @return string
+     * Inserts the specified values into the specified columns. Performs a bulk 
+     * insert if $values is two-dimensional.
+     * @param array $columns
+     * @param array $values
+     * @param callable $callback function ($ids, SQLResult $result)
      */
-    public function getConnectionType() {
-        return $this->dbType;
-    }
+    public abstract function insert(array $columns, array $values, callable $callback = NULL);
 
     /**
      * Returns the current PeachySQL options.
@@ -105,155 +65,11 @@ class PeachySQL {
 
         foreach (array_keys($options) as $key) {
             if (!in_array($key, $validKeys, TRUE)) {
-                throw new Exception("Invalid option '$key'");
+                throw new \Exception("Invalid option '$key'");
             }
         }
 
         $this->options = array_merge($this->options, $options);
-    }
-
-    /**
-     * Executes a single query and passes any errors, selected rows, and the 
-     * number of affected rows to the callback function.
-     * Returns the return value of the callback function.
-     * 
-     * MySQL only: If an INSERT query is performed on a table with an auto-
-     *             incremented column, the $rows argument passed to the callback
-     *             will contain the ID of the first inserted row.
-     * 
-     * @param string   $sql
-     * @param array    $params Values to bind to placeholders in the query
-     * @param callable $callback function (array $error, array $rows, int $affected)
-     */
-    public function query($sql, array $params, callable $callback) {
-        switch ($this->dbType) {
-            case self::DBTYPE_MYSQL:
-                return $this->mysqlQuery($sql, $params, $callback);
-            case self::DBTYPE_TSQL:
-                return $this->tsqlQuery($sql, $params, $callback);
-        }
-    }
-
-    /**
-     * Executes a query and passes any errors, selected rows, and the number of 
-     * affected rows to the callback function. Returns the callback's return value.
-     * 
-     * @param string   $sql
-     * @param array    $params
-     * @param callable $callback function (array $error, array $rows, int $affected)
-     */
-    private function tsqlQuery($sql, array $params, callable $callback) {
-        $error = NULL;
-        $rows = [];
-        $affected = 0;
-
-        if (!$stmt = sqlsrv_query($this->connection, $sql, $params)) {
-            $error = sqlsrv_errors();
-        } else {
-
-            do {
-                // get any selected rows
-                while ($row = sqlsrv_fetch_array($stmt, SQLSRV_FETCH_ASSOC)) {
-                    $rows[] = $row;
-                }
-
-                $affectedRows = sqlsrv_rows_affected($stmt);
-
-                if ($affectedRows > 0) {
-                    $affected += $affectedRows;
-                }
-            } while ($nextResult = sqlsrv_next_result($stmt));
-
-            if ($nextResult === FALSE) {
-                $error = sqlsrv_errors();
-            }
-
-            sqlsrv_free_stmt($stmt);
-        }
-
-        return $callback($error, $rows, $affected);
-    }
-
-    /**
-     * Executes a single query and passes any errors, selected rows (or insert 
-     * id if performing an insert), and the number of affected rows to the 
-     * callback function. Returns the return value of the callback.
-     * 
-     * @param string   $sql
-     * @param array    $params
-     * @param callable $callback function (array $error, array $rows, int $affected)
-     */
-    private function mysqlQuery($sql, array $params, callable $callback) {
-        $error = NULL;
-        $rows = [];
-        $affected = 0;
-
-        // prepare the statement
-        if (!$stmt = $this->connection->prepare($sql)) {
-            $error = array("Failed to prepare statement", $this->connection->errno, $this->connection->error);
-        } else {
-
-            if (!empty($params)) {
-                $typesValues = array(self::getMysqlParamTypes($params));
-
-                // rather silly hack to make call_user_func_array pass by reference
-                foreach ($params as &$param) {
-                    $typesValues[] = &$param;
-                }
-
-                if (!call_user_func_array(array($stmt, 'bind_param'), $typesValues)) {
-                    $error = array("Failed to bind parameters", $stmt->errno, $stmt->error);
-                }
-            }
-
-            if ($error === NULL && !$stmt->execute()) {
-                $error = array("Failed to execute prepared statement", $stmt->errno, $stmt->error);
-            } else {
-                $insertId = $stmt->insert_id; // id of first inserted row
-                $stmt->store_result();
-                $affected = $stmt->affected_rows;
-
-                if ($insertId !== 0) {
-                    // An insert statement was executed on a table with an 
-                    // auto-incremented column. Pass the insert ID to the callback.
-                    $rows[] = $insertId;
-                } else {
-
-                    $variables = [];
-                    $data = [];
-                    $meta = $stmt->result_metadata();
-
-                    if ($meta !== FALSE) {
-                        // add a variable for each selected field
-                        while ($field = $meta->fetch_field()) {
-                            $variables[] = &$data[$field->name]; // pass by reference
-                        }
-
-                        if (!call_user_func_array(array($stmt, 'bind_result'), $variables)) {
-                            $error = array("Failed to bind results", $stmt->errno, $stmt->error);
-                        } else {
-                            $i = 0;
-                            while ($stmt->fetch()) {
-                                // loop through all the fields and values to prevent
-                                // PHP from just copying the same $data reference (see
-                                // http://www.php.net/manual/en/mysqli-stmt.bind-result.php#92505).
-
-                                foreach ($data as $k => $v) {
-                                    $rows[$i][$k] = $v;
-                                }
-
-                                $i++;
-                            }
-                        }
-                    }
-                }
-            }
-
-            $stmt->free_result();
-            $stmt->close();
-        }
-
-        return $callback($error, $rows, $affected);
     }
 
     /**
@@ -264,90 +80,52 @@ class PeachySQL {
      * @param array    $where    An associative array of columns and values to
      *                           filter selected rows. E.g. ["id" => 3] to only
      *                           return rows where the id column is equal to 3.
-     * @param callable $callback function (array $error, array $rows)
+     * @param callable $callback function (SQLResult $result)
      */
-    public function select(array $columns, array $where, callable $callback) {
+    public function select(array $columns = [], array $where = [], callable $callback = NULL) {
+        if ($callback === NULL) {
+            $callback = function (SQLResult $result) {
+                return $result->getRows();
+            };
+        }
+
         $query = self::buildSelectQuery($this->options[self::OPT_TABLE], $columns, $where);
         return $this->query($query["sql"], $query["params"], $callback);
     }
 
     /**
-     * Inserts one or more rows into the table. If multiple rows are inserted 
-     * (via nested arrays) an array of insert IDs will be passed to the callback. 
-     * If inserting a single row with a flat array of values the insert ID will 
-     * instead be passed as an integer. Returns the return value of the callback.
-     * 
-     * @param string[] $columns  The columns to be inserted into. E.g. ["Username", "Password"].
-     * @param array    $values   A flat array of values (to insert one row), or an array containing 
-     *                           one or more subarrays (to bulk-insert multiple rows).
-     *                           E.g. ["user", "pass"] or [ ["user1", "pass1"], ["user2", "pass2"] ].
-     * @param callable $callback function (array $error, array|int $insertIds, int $affected)
-     */
-    public function insert(array $columns, array $values, callable $callback) {
-
-        $bulkInsert = isset($values[0]) && is_array($values[0]);
-        if (!$bulkInsert) {
-            $values = [$values];
-        }
-
-        $query = self::buildInsertQuery($this->options[self::OPT_TABLE], $this->dbType, $columns, $values, $this->options[self::OPT_IDCOL]);
-
-        return $this->query($query["sql"], $query["params"], function ($err, $rows, $affected) use ($bulkInsert, $values, $callback) {
-            $ids = $bulkInsert ? [] : 0;
-
-            if (isset($rows[0])) {
-                switch ($this->dbType) {
-                    case self::DBTYPE_MYSQL:
-                        // $rows contains the ID of the first inserted row
-                        $firstInsertId = $rows[0];
-
-                        if ($bulkInsert) {
-                            $lastInsertId = $firstInsertId + (count($values) - 1);
-                            $ids = range($firstInsertId, $lastInsertId, $this->options[self::OPT_MYSQL_INCREMENT_VAL]);
-                        } else {
-                            $ids = $firstInsertId;
-                        }
-                        break;
-                    case self::DBTYPE_TSQL:
-                        // $rows contains an array of insert ID rows
-
-                        if ($bulkInsert) {
-                            foreach ($rows as $row) {
-                                $ids[] = $row["RowID"];
-                            }
-                        } else {
-                            $ids = $rows[0]["RowID"];
-                        }
-                        break;
-                }
-            }
-
-            return $callback($err, $ids, $affected);
-        });
-    }
-
-    /**
      * Inserts a single row from an associative array of columns/values.
      * @param array    $colVals  E.g. ["Username => "user1", "Password" => "pass1"]
-     * @param callable $callback function (array $error, int $insertId, int $affected)
+     * @param callable $callback function (int $insertId, SQLResult $result)
+     * @return mixed The insert ID, or the return value of the callback
      */
-    public function insertAssoc(array $colVals, callable $callback) {
+    public function insertAssoc(array $colVals, callable $callback = NULL) {
+        if ($callback === NULL) {
+            $callback = function ($id) {
+                return $id;
+            };
+        }
+
         return $this->insert(array_keys($colVals), array_values($colVals), $callback);
     }
 
     /**
      * Updates the specified columns and values in rows matching the where clause.
-     * Returns the return value of the callback function.
      * 
-     * @param array $set   E.g. ["Username" => "newUsername", "Password" => "newPassword"]
-     * @param array $where E.g. ["id" => 3] to update the row where id is equal to 3.
-     * @param callable $callback function (array $error, int $affected)
+     * @param array    $set   E.g. ["Username" => "newName", "Password" => "newPass"]
+     * @param array    $where E.g. ["id" => 3] to update the row where id is equal to 3
+     * @param callable $callback function (SQLResult $result)
+     * @return mixed The number of affected rows, or the return value of the callback
      */
-    public function update(array $set, array $where, callable $callback) {
+    public function update(array $set, array $where, callable $callback = NULL) {
+        if ($callback === NULL) {
+            $callback = function (SQLResult $result) {
+                return $result->getAffected();
+            };
+        }
+
         $query = self::buildUpdateQuery($this->options[self::OPT_TABLE], $set, $where);
-        return $this->query($query["sql"], $query["params"], function ($err, $rows, $affected) use ($callback) {
-            return $callback($err, $affected);
-        });
+        return $this->query($query["sql"], $query["params"], $callback);
     }
 
     /**
@@ -355,13 +133,18 @@ class PeachySQL {
      * Returns the return value of the callback function.
      * 
      * @param array    $where    E.g. ["id" => 3]
-     * @param callable $callback function (array $error, int $affected)
+     * @param callable $callback function (SQLResult $result)
+     * @return mixed The number of affected rows, or the return value of the callback
      */
-    public function delete(array $where, callable $callback) {
+    public function delete(array $where, callable $callback = NULL) {
+        if ($callback === NULL) {
+            $callback = function (SQLResult $result) {
+                return $result->getAffected();
+            };
+        }
+
         $query = self::buildDeleteQuery($this->options[self::OPT_TABLE], $where);
-        return $this->query($query["sql"], $query["params"], function ($err, $rows, $affected) use ($callback) {
-            return $callback($err, $affected);
-        });
+        return $this->query($query["sql"], $query["params"], $callback);
     }
 
     /**
@@ -373,6 +156,7 @@ class PeachySQL {
      */
     public static function buildSelectQuery($tableName, array $columns = [], array $where = []) {
         self::validateTableName($tableName, "a select");
+        $where = self::buildWhereClause($where);
 
         if (!empty($columns)) {
             $insertCols = implode(', ', $columns);
@@ -380,11 +164,8 @@ class PeachySQL {
             $insertCols = '*';
         }
 
-        $sql = "SELECT $insertCols FROM $tableName";
-        $where = self::buildWhereClause($where);
-        $sql .= $where["sql"];
-
-        return array("sql" => $sql, "params" => $where["params"]);
+        $sql = "SELECT $insertCols FROM $tableName" . $where["sql"];
+        return ["sql" => $sql, "params" => $where["params"]];
     }
 
     /**
@@ -394,12 +175,9 @@ class PeachySQL {
      */
     public static function buildDeleteQuery($tableName, array $where = []) {
         self::validateTableName($tableName, "a delete");
-
-        $sql = "DELETE FROM $tableName";
         $where = self::buildWhereClause($where);
-        $sql .= $where["sql"];
-
-        return array("sql" => $sql, "params" => $where["params"]);
+        $sql = "DELETE FROM $tableName" . $where["sql"];
+        return ["sql" => $sql, "params" => $where["params"]];
     }
 
     /**
@@ -473,66 +251,47 @@ class PeachySQL {
     }
 
     /**
-     * @param string $tableName The name of the table to insert into
-     * @param string $dbType    The database type ('mysql' or 'tsql')
-     * @param array  $columns   An array of columns to insert into.
-     * @param array  $values    A two-dimensional array of values to insert into the columns.
-     * @param string $idCol     The name of the table's primary key column. Must
-     *                          be specified when using T-SQL to get insert IDs.
-     * @return array An array containing the SQL string and bound parameters.
+     * Returns an associative array containing bound params and separate INSERT
+     * and VALUES strings. Allows reusability across database implementations.
+     * 
+     * @param string   $tableName The name of the table to insert into
+     * @param string[] $columns   An array of columns to insert into.
+     * @param array    $values    A two-dimensional array of values to insert into the columns.
+     * @return array
      */
-    public static function buildInsertQuery($tableName, $dbType, array $columns, array $values, $idCol = NULL) {
+    protected static function buildInsertQueryComponents($tableName, array $columns, array $values) {
         self::validateTableName($tableName, "an insert");
-        $sql = '';
-        $params = [];
 
-        if (empty($columns) || empty($values) || !is_array($values[0]) || empty($values[0])) {
+        $bulkInsert = isset($values[0]) && is_array($values[0]);
+        if (!$bulkInsert) {
+            $values = [$values]; // make sure values is two-dimensional
+        }
+
+        // make sure columns and values are specified
+        if (empty($columns) || empty($values[0])) {
             throw new Exception("Columns and values to insert must be specified");
         }
 
         $insertCols = implode(', ', $columns);
-        $sql .= "INSERT INTO $tableName ($insertCols)";
+        $insert = "INSERT INTO $tableName ($insertCols)";
 
-        if ($idCol && $dbType === self::DBTYPE_TSQL) {
-            $sql .= " OUTPUT inserted.$idCol AS RowID";
-        }
-
-        $sql .= " VALUES";
+        $params = [];
+        $valStr = ' VALUES';
 
         foreach ($values as $valArr) {
-            $sql .= ' ' . self::generateBoundParamsList($valArr) . ',';
+            $valStr .= ' (' . str_repeat('?,', count($valArr));
+            $valStr = substr_replace($valStr, '),', -1); // replace trailing comma
             $params = array_merge($params, $valArr);
         }
 
-        $sql = substr_replace($sql, '', -1); // remove trailing comma
+        $valStr = substr_replace($valStr, '', -1); // remove trailing comma
 
-        return array("sql" => $sql, "params" => $params);
-    }
-
-    /**
-     * Returns a parenthesized list of placeholders for the values
-     * @param  array $values
-     * @return string
-     */
-    private static function generateBoundParamsList(array $values) {
-        $sql = '(' . str_repeat('?,', count($values));
-        $sql = substr_replace($sql, ')', -1); // replace trailing comma
-        return $sql;
-    }
-
-    /**
-     * To bind parameters in mysqli, the type of each parameter must be specified.
-     * See http://php.net/manual/en/mysqli-stmt.bind-param.php.
-     * 
-     * @param  array  $params
-     * @return string A string containing the type character for each parameter
-     */
-    private static function getMysqlParamTypes(array $params) {
-        // just treat all the parameters as strings since mysql "automatically 
-        // converts strings to the column's actual datatype when processing 
-        // queries" (see http://stackoverflow.com/a/14370546/1170489).
-
-        return str_repeat("s", count($params));
+        return [
+            'insertStr' => $insert,
+            'valStr'    => $valStr,
+            'params'    => $params,
+            'isBulk'    => $bulkInsert
+        ];
     }
 
     /**
