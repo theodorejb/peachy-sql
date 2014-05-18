@@ -12,7 +12,7 @@ class SQLException extends \Exception {
      * An error array returned by sqlsrv_errors() or mysqli::$error_list)
      * @var array
      */
-    private $errorList;
+    private $errors;
 
     /**
      * The failed query
@@ -26,10 +26,10 @@ class SQLException extends \Exception {
      */
     private $params;
 
-    public function __construct($message, array $errorList, $query = NULL, array $params = NULL, \Exception $previous = NULL, $code = 0) {
+    public function __construct($message, array $errors, $query = NULL, array $params = NULL, \Exception $previous = NULL, $code = 0) {
         parent::__construct($message, $code, $previous);
 
-        $this->errorList = $errorList;
+        $this->errors = $errors;
         $this->query = $query;
         $this->params = $params;
     }
@@ -38,8 +38,8 @@ class SQLException extends \Exception {
      * Returns the list of errors from sqlsrv_errors() or mysqli::$error_list
      * @return array
      */
-    public function getErrorList() {
-        return $this->errorList;
+    public function getErrors() {
+        return $this->errors;
     }
 
     /**
