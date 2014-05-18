@@ -185,6 +185,8 @@ class TSQL extends PeachySQL {
     public static function buildInsertQuery($tableName, array $columns, array $values, $idCol = NULL) {
         $comp = self::buildInsertQueryComponents($tableName, $columns, $values);
 
+        // Insert IDs must be output into a table variable so that the query will work on tables
+        // with insert triggers (see http://technet.microsoft.com/en-us/library/ms177564.aspx).
         if ($idCol !== NULL && $idCol !== '') {
             $decStr = "DECLARE @ids TABLE(RowID int); ";
             $outStr = " OUTPUT inserted.$idCol INTO @ids(RowID)";
