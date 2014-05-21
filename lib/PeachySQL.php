@@ -273,7 +273,7 @@ abstract class PeachySQL {
 
         // make sure columns and values are specified
         if (empty($columns) || empty($values[0])) {
-            throw new Exception("Columns and values to insert must be specified");
+            throw new \Exception("Columns and values to insert must be specified");
         }
 
         $insertCols = implode(', ', $columns);
@@ -305,7 +305,7 @@ abstract class PeachySQL {
      */
     private static function validateTableName($name, $type = "this") {
         if ($name === NULL || $name === "") {
-            throw new Exception("A valid table name must be set to generate $type query");
+            throw new \Exception("A valid table name must be set to generate $type query");
         }
     }
 
