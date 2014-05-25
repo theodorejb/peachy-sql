@@ -126,12 +126,45 @@ class MySQL extends PeachySQL {
             throw new SQLException("Failed to execute prepared statement", $stmt->error_list, $sql, $params);
         }
 
-        $insertId = $stmt->insert_id; // id of first inserted row
+        $insertId = $stmt->insert_id; // id of first inserted row, otherwise 0
         $affected = $stmt->affected_rows;
-        $result = $stmt->get_result();
-        $rows = $result ? $result->fetch_all(MYSQL_ASSOC) : [];
-        $stmt->close();
+        $rows = [];
 
+        // Selected rows must be retrieved as an array without depending on the
+        // mysqlnd-only get_result() method. Hence the following "hackish" code.
+        $meta = $stmt->result_metadata();
+
+        if ($meta) {
+            // results, yay!
+            $fields = [];
+            $rowData = [];
+
+            // bind_result() must be passed an argument by reference for each field
+            while ($field = $meta->fetch_field()) {
+                $fields[] = &$rowData[$field->name];
+            }
+
+            if (!call_user_func_array(array($stmt, 'bind_result'), $fields)) {
+                throw new SQLException("Failed to bind results", $stmt->error_list, $sql, $params);
+            }
+
+            $i = 0;
+            while ($stmt->fetch()) {
+                // loop through all the fields and values to prevent
+                // PHP from just copying the same $rowData reference (see
+                // http://www.php.net/manual/en/mysqli-stmt.bind-result.php#92505).
+
+                foreach ($rowData as $k => $v) {
+                    $rows[$i][$k] = $v;
+                }
+
+                $i++;
+            }
+
+            $meta->free();
+        }
+
+        $stmt->close();
         return $callback(new MySQLResult($rows, $affected, $sql, $insertId));
     }
 
