@@ -93,7 +93,7 @@ class TSQL extends PeachySQL {
      * @param string   $sql
      * @param array    $params   Values to bind to placeholders in the query
      * @param callable $callback
-     * @return mixed A SQLResult object, or the return value of the specified callback
+     * @return SQLResult|mixed A SQLResult object, or the return value of the specified callback
      * @throws SQLException if an error occurs
      */
     public function query($sql, array $params = [], callable $callback = NULL) {
