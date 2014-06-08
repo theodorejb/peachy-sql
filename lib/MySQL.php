@@ -102,8 +102,8 @@ class MySQL extends PeachySQL {
      * @return MySQLResult|mixed A MySQLResult object, or the return value of the specified callback
      * @throws SQLException if an error occurs
      */
-    public function query($sql, array $params = [], callable $callback = NULL) {
-        if ($callback === NULL) {
+    public function query($sql, array $params = [], callable $callback = null) {
+        if ($callback === null) {
             $callback = function (MySQLResult $result) {
                 return $result;
             };
@@ -185,8 +185,8 @@ class MySQL extends PeachySQL {
      *                           E.g. ["user", "pass"] or [ ["user1", "pass1"], ["user2", "pass2"] ].
      * @param callable $callback function (array|int $insertIds, MySQLResult $result)
      */
-    public function insert(array $columns, array $values, callable $callback = NULL) {
-        if ($callback === NULL) {
+    public function insert(array $columns, array $values, callable $callback = null) {
+        if ($callback === null) {
             $callback = function ($ids) {
                 return $ids;
             };

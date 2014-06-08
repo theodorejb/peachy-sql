@@ -20,7 +20,7 @@ class PeachySQLTest extends \PHPUnit_Framework_TestCase {
         $where = [
             "username" => "TestUser",
             "password" => "TestPassword",
-            "othercol" => NULL
+            "othercol" => null
         ];
 
         $actual = PeachySQL::buildSelectQuery("TestTable", $cols, $where);
@@ -33,7 +33,7 @@ class PeachySQLTest extends \PHPUnit_Framework_TestCase {
     public function testBuildUpdateQuery() {
         $set = [
             "username" => "TestUser",
-            "othercol" => NULL
+            "othercol" => null
         ];
 
         $where = ["id" => 21];
@@ -42,7 +42,7 @@ class PeachySQLTest extends \PHPUnit_Framework_TestCase {
         $expected = "UPDATE TestTable SET username = ?, othercol = ? "
                   . "WHERE id = ?";
         $this->assertSame($expected, $actual["sql"]);
-        $this->assertSame(['TestUser', NULL, 21], $actual["params"]);
+        $this->assertSame(['TestUser', null, 21], $actual["params"]);
     }
 
     public function testBuildDeleteQuery() {

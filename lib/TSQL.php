@@ -25,7 +25,7 @@ class TSQL extends PeachySQL {
      * @var array
      */
     private $tsqlOptions = [
-        self::OPT_IDCOL => NULL,
+        self::OPT_IDCOL => null,
     ];
 
     /**
@@ -96,8 +96,8 @@ class TSQL extends PeachySQL {
      * @return SQLResult|mixed A SQLResult object, or the return value of the specified callback
      * @throws SQLException if an error occurs
      */
-    public function query($sql, array $params = [], callable $callback = NULL) {
-        if ($callback === NULL) {
+    public function query($sql, array $params = [], callable $callback = null) {
+        if ($callback === null) {
             $callback = function (SQLResult $result) {
                 return $result;
             };
@@ -123,7 +123,7 @@ class TSQL extends PeachySQL {
             }
         } while ($nextResult = sqlsrv_next_result($stmt));
 
-        if ($nextResult === FALSE) {
+        if ($nextResult === false) {
             throw new SQLException("Failed to get next result", sqlsrv_errors(), $sql, $params);
         }
 
@@ -144,8 +144,8 @@ class TSQL extends PeachySQL {
      *                           E.g. ["user", "pass"] or [ ["user1", "pass1"], ["user2", "pass2"] ].
      * @param callable $callback function (array|int $insertIds, SQLResult $result)
      */
-    public function insert(array $columns, array $values, callable $callback = NULL) {
-        if ($callback === NULL) {
+    public function insert(array $columns, array $values, callable $callback = null) {
+        if ($callback === null) {
             $callback = function ($ids) {
                 return $ids;
             };
@@ -182,12 +182,12 @@ class TSQL extends PeachySQL {
      * @param string $idCol
      * @return array
      */
-    public static function buildInsertQuery($tableName, array $columns, array $values, $idCol = NULL) {
+    public static function buildInsertQuery($tableName, array $columns, array $values, $idCol = null) {
         $comp = self::buildInsertQueryComponents($tableName, $columns, $values);
 
         // Insert IDs must be output into a table variable so that the query will work on tables
         // with insert triggers (see http://technet.microsoft.com/en-us/library/ms177564.aspx).
-        if ($idCol !== NULL && $idCol !== '') {
+        if ($idCol !== null && $idCol !== '') {
             $decStr = "DECLARE @ids TABLE(RowID int); ";
             $outStr = " OUTPUT inserted.$idCol INTO @ids(RowID)";
             $selStr = "; SELECT * FROM @ids;";

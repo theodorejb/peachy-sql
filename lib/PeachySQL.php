@@ -20,7 +20,7 @@ abstract class PeachySQL {
      * @var array
      */
     protected $options = [
-        self::OPT_TABLE => NULL,
+        self::OPT_TABLE => null,
     ];
 
     /** Begins a transaction */
@@ -40,7 +40,7 @@ abstract class PeachySQL {
      * @return SQLResult|mixed The return value of the callback
      * @throws SQLException if an error occurs
      */
-    public abstract function query($sql, array $params = [], callable $callback = NULL);
+    public abstract function query($sql, array $params = [], callable $callback = null);
 
     /**
      * Inserts the specified values into the specified columns. Performs a bulk 
@@ -49,7 +49,7 @@ abstract class PeachySQL {
      * @param array $values
      * @param callable $callback function ($ids, SQLResult $result)
      */
-    public abstract function insert(array $columns, array $values, callable $callback = NULL);
+    public abstract function insert(array $columns, array $values, callable $callback = null);
 
     /**
      * Returns the current PeachySQL options.
@@ -68,7 +68,7 @@ abstract class PeachySQL {
         $validKeys = array_keys($this->options);
 
         foreach (array_keys($options) as $key) {
-            if (!in_array($key, $validKeys, TRUE)) {
+            if (!in_array($key, $validKeys, true)) {
                 throw new \Exception("Invalid option '$key'");
             }
         }
@@ -86,8 +86,8 @@ abstract class PeachySQL {
      *                           return rows where the id column is equal to 3.
      * @param callable $callback function (SQLResult $result)
      */
-    public function select(array $columns = [], array $where = [], callable $callback = NULL) {
-        if ($callback === NULL) {
+    public function select(array $columns = [], array $where = [], callable $callback = null) {
+        if ($callback === null) {
             $callback = function (SQLResult $result) {
                 return $result->getRows();
             };
@@ -103,8 +103,8 @@ abstract class PeachySQL {
      * @param callable $callback function (int $insertId, SQLResult $result)
      * @return mixed The insert ID, or the return value of the callback
      */
-    public function insertAssoc(array $colVals, callable $callback = NULL) {
-        if ($callback === NULL) {
+    public function insertAssoc(array $colVals, callable $callback = null) {
+        if ($callback === null) {
             $callback = function ($id) {
                 return $id;
             };
@@ -121,8 +121,8 @@ abstract class PeachySQL {
      * @param callable $callback function (SQLResult $result)
      * @return mixed The number of affected rows, or the return value of the callback
      */
-    public function update(array $set, array $where, callable $callback = NULL) {
-        if ($callback === NULL) {
+    public function update(array $set, array $where, callable $callback = null) {
+        if ($callback === null) {
             $callback = function (SQLResult $result) {
                 return $result->getAffected();
             };
@@ -140,8 +140,8 @@ abstract class PeachySQL {
      * @param callable $callback function (SQLResult $result)
      * @return mixed The number of affected rows, or the return value of the callback
      */
-    public function delete(array $where, callable $callback = NULL) {
-        if ($callback === NULL) {
+    public function delete(array $where, callable $callback = null) {
+        if ($callback === null) {
             $callback = function (SQLResult $result) {
                 return $result->getAffected();
             };
@@ -228,7 +228,7 @@ abstract class PeachySQL {
             $sql .= " WHERE";
 
             foreach ($columnVals as $column => $value) {
-                if ($value === NULL) {
+                if ($value === null) {
                     $comparison = "IS NULL";
                 } elseif (is_array($value) && !empty($value)) {
                     // use IN(...) syntax
@@ -304,7 +304,7 @@ abstract class PeachySQL {
      * @throws Exception
      */
     private static function validateTableName($name, $type = "this") {
-        if ($name === NULL || $name === "") {
+        if ($name === null || $name === "") {
             throw new \Exception("A valid table name must be set to generate $type query");
         }
     }

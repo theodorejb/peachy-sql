@@ -26,7 +26,7 @@ class SQLException extends \Exception {
      */
     private $params;
 
-    public function __construct($message, array $errors, $query = NULL, array $params = NULL, \Exception $previous = NULL, $code = 0) {
+    public function __construct($message, array $errors, $query = null, array $params = null, \Exception $previous = null, $code = 0) {
         parent::__construct($message, $code, $previous);
 
         $this->errors = $errors;
