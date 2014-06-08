@@ -24,13 +24,13 @@ abstract class PeachySQL {
     ];
 
     /** Begins a transaction */
-    public abstract function begin();
+    abstract public function begin();
 
     /** Commits a transaction begun with begin() */
-    public abstract function commit();
+    abstract public function commit();
 
     /** Rolls back a transaction begun with begin() */
-    public abstract function rollback();
+    abstract public function rollback();
 
     /**
      * Executes a single query and passes a SQLResult object to the callback
@@ -40,7 +40,7 @@ abstract class PeachySQL {
      * @return SQLResult|mixed The return value of the callback
      * @throws SQLException if an error occurs
      */
-    public abstract function query($sql, array $params = [], callable $callback = null);
+    abstract public function query($sql, array $params = [], callable $callback = null);
 
     /**
      * Inserts the specified values into the specified columns. Performs a bulk 
@@ -49,7 +49,7 @@ abstract class PeachySQL {
      * @param array $values
      * @param callable $callback function ($ids, SQLResult $result)
      */
-    public abstract function insert(array $columns, array $values, callable $callback = null);
+    abstract public function insert(array $columns, array $values, callable $callback = null);
 
     /**
      * Returns the current PeachySQL options.
