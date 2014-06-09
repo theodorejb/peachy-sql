@@ -5,8 +5,8 @@ namespace PeachySQL;
 /**
  * Same as SQLResult, but with an insert ID parameter and getter method
  */
-class MySQLResult extends SQLResult {
-
+class MySQLResult extends SQLResult
+{
     private $insertId;
 
     /**
@@ -15,7 +15,8 @@ class MySQLResult extends SQLResult {
      * @param string $query
      * @param int    $firstInsertId
      */
-    public function __construct(array $rows, $affected, $query, $firstInsertId) {
+    public function __construct(array $rows, $affected, $query, $firstInsertId)
+    {
         parent::__construct($rows, $affected, $query);
         $this->insertId = $firstInsertId;
     }
@@ -24,8 +25,8 @@ class MySQLResult extends SQLResult {
      * Returns the first insert ID for the query, from mysqli_stmt::$insert_id
      * @return int
      */
-    public function getFirstInsertId() {
+    public function getFirstInsertId()
+    {
         return $this->insertId;
     }
-
 }

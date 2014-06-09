@@ -7,8 +7,8 @@ namespace PeachySQL;
  * 
  * @author Theodore Brown <https://github.com/theodorejb>
  */
-class MySQL extends PeachySQL {
-
+class MySQL extends PeachySQL
+{
     /**
      * Options key for specifying the interval between successive auto-incremented 
      * values in the table (used to retrieve array of insert IDs for bulk inserts)
@@ -33,7 +33,8 @@ class MySQL extends PeachySQL {
      * @param \mysqli $connection A mysqli connection instance
      * @param array $options Options used when querying the database
      */
-    public function __construct(\mysqli $connection, array $options = []) {
+    public function __construct(\mysqli $connection, array $options = [])
+    {
         $this->setConnection($connection);
         $this->setOptions($options);
     }
@@ -42,7 +43,8 @@ class MySQL extends PeachySQL {
      * Easily switch to a different mysqli database connection
      * @param \mysqli $connection
      */
-    public function setConnection(\mysqli $connection) {
+    public function setConnection(\mysqli $connection)
+    {
         if (!$connection instanceof \mysqli) {
             throw new \InvalidArgumentException('Connection must be a mysqli instance');
         }
@@ -54,7 +56,8 @@ class MySQL extends PeachySQL {
      * Set options used to select, insert, update, and delete from the database
      * @param array $options
      */
-    public function setOptions(array $options) {
+    public function setOptions(array $options)
+    {
         $this->options = array_merge($this->mysqlOptions, $this->options);
         parent::setOptions($options);
     }
@@ -63,7 +66,8 @@ class MySQL extends PeachySQL {
      * Begins a mysqli transaction
      * @throws SQLException if an error occurs
      */
-    public function begin() {
+    public function begin()
+    {
         // begin_transaction is new in PHP 5.5
         if (method_exists($this->connection, 'begin_transaction')) {
             if (!$this->connection->begin_transaction()) {
@@ -78,7 +82,8 @@ class MySQL extends PeachySQL {
      * Commits a transaction begun with begin()
      * @throws SQLException if an error occurs
      */
-    public function commit() {
+    public function commit()
+    {
         if (!$this->connection->commit()) {
             throw new SQLException("Failed to commit transaction", $this->connection->error_list);
         }
@@ -88,7 +93,8 @@ class MySQL extends PeachySQL {
      * Rolls back a transaction begun with begin()
      * @throws SQLException if an error occurs
      */
-    public function rollback() {
+    public function rollback()
+    {
         if (!$this->connection->rollback()) {
             throw new SQLException("Failed to roll back transaction", $this->connection->error_list);
         }
@@ -102,7 +108,8 @@ class MySQL extends PeachySQL {
      * @return MySQLResult|mixed A MySQLResult object, or the return value of the specified callback
      * @throws SQLException if an error occurs
      */
-    public function query($sql, array $params = [], callable $callback = null) {
+    public function query($sql, array $params = [], callable $callback = null)
+    {
         if ($callback === null) {
             $callback = function (MySQLResult $result) {
                 return $result;
@@ -185,7 +192,8 @@ class MySQL extends PeachySQL {
      *                           E.g. ["user", "pass"] or [ ["user1", "pass1"], ["user2", "pass2"] ].
      * @param callable $callback function (array|int $insertIds, MySQLResult $result)
      */
-    public function insert(array $columns, array $values, callable $callback = null) {
+    public function insert(array $columns, array $values, callable $callback = null)
+    {
         if ($callback === null) {
             $callback = function ($ids) {
                 return $ids;
@@ -219,7 +227,8 @@ class MySQL extends PeachySQL {
      * @param array  $values
      * @return array
      */
-    public static function buildInsertQuery($tableName, array $columns, array $values) {
+    public static function buildInsertQuery($tableName, array $columns, array $values)
+    {
         $comp = self::buildInsertQueryComponents($tableName, $columns, $values);
         $comp['sql'] = $comp['insertStr'] . $comp['valStr'];
         return $comp;
@@ -232,12 +241,12 @@ class MySQL extends PeachySQL {
      * @param  array  $params
      * @return string A string containing the type character for each parameter
      */
-    private static function getMysqlParamTypes(array $params) {
+    private static function getMysqlParamTypes(array $params)
+    {
         // just treat all the parameters as strings since mysql "automatically 
         // converts strings to the column's actual datatype when processing 
         // queries" (see http://stackoverflow.com/a/14370546/1170489).
 
         return str_repeat("s", count($params));
     }
-
 }

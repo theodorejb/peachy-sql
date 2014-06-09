@@ -5,8 +5,8 @@ namespace PeachySQL;
 /**
  * Contains rows, affected count, and the query string for a completed SQL query
  */
-class SQLResult {
-
+class SQLResult
+{
     /**
      * An array of rows selected in the query
      * @var array
@@ -30,7 +30,8 @@ class SQLResult {
      * @param int    $affected
      * @param string $query
      */
-    public function __construct(array $rows, $affected, $query) {
+    public function __construct(array $rows, $affected, $query)
+    {
         $this->rows = $rows;
         $this->affected = $affected;
         $this->query = $query;
@@ -40,7 +41,8 @@ class SQLResult {
      * Returns an array of rows selected by the query
      * @return array
      */
-    public function getRows() {
+    public function getRows()
+    {
         return $this->rows;
     }
 
@@ -48,7 +50,8 @@ class SQLResult {
      * Returns the number of rows affected by the query
      * @return int
      */
-    public function getAffected() {
+    public function getAffected()
+    {
         return $this->affected;
     }
 
@@ -56,8 +59,8 @@ class SQLResult {
      * Returns the SQL query
      * @return string
      */
-    public function getQuery() {
+    public function getQuery()
+    {
         return $this->query;
     }
-
 }

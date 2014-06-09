@@ -6,9 +6,11 @@ namespace PeachySQL;
  * Tests for the MySQL PeachySQL implementation
  * @author Theodore Brown <https://github.com/theodorejb>
  */
-class MySQLTest extends \PHPUnit_Framework_TestCase {
+class MySQLTest extends \PHPUnit_Framework_TestCase
+{
 
-    public function testBuildInsertQuery() {
+    public function testBuildInsertQuery()
+    {
         $columns = ['col1', 'col2', 'col3'];
         $values = [['val1', 'val2', 'val3']];
 
@@ -17,5 +19,4 @@ class MySQLTest extends \PHPUnit_Framework_TestCase {
         $this->assertSame($expected, $actual['sql']);
         $this->assertSame(['val1', 'val2', 'val3'], $actual['params']);
     }
-
 }

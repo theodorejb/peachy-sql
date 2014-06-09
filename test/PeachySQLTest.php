@@ -6,15 +6,18 @@ namespace PeachySQL;
  * Tests for the PeachySQL library.
  * @author Theodore Brown <https://github.com/theodorejb>
  */
-class PeachySQLTest extends \PHPUnit_Framework_TestCase {
+class PeachySQLTest extends \PHPUnit_Framework_TestCase
+{
 
-    public function testBuildSelectQueryAllRows() {
+    public function testBuildSelectQueryAllRows()
+    {
         $actual = PeachySQL::buildSelectQuery("TestTable");
         $expected = "SELECT * FROM TestTable";
         $this->assertSame($expected, $actual["sql"]);
     }
 
-    public function testBuildSelectQueryWhere() {
+    public function testBuildSelectQueryWhere()
+    {
         $cols = ["username", "password"];
 
         $where = [
@@ -30,29 +33,28 @@ class PeachySQLTest extends \PHPUnit_Framework_TestCase {
         $this->assertSame(['TestUser', 'TestPassword'], $actual["params"]);
     }
 
-    public function testBuildUpdateQuery() {
+    public function testBuildUpdateQuery()
+    {
         $set = [
             "username" => "TestUser",
             "othercol" => null
         ];
 
         $where = ["id" => 21];
-
         $actual = PeachySQL::buildUpdateQuery("TestTable", $set, $where);
-        $expected = "UPDATE TestTable SET username = ?, othercol = ? "
-                  . "WHERE id = ?";
+        $expected = "UPDATE TestTable SET username = ?, othercol = ? WHERE id = ?";
+
         $this->assertSame($expected, $actual["sql"]);
         $this->assertSame(['TestUser', null, 21], $actual["params"]);
     }
 
-    public function testBuildDeleteQuery() {
+    public function testBuildDeleteQuery()
+    {
         $where = ["id" => 5, "username" => ["tester", "tester2"]];
         $actual = PeachySQL::buildDeleteQuery("TestTable", $where);
-        $expected = "DELETE FROM TestTable WHERE id = ? "
-                  . "AND username IN(?,?)";
+        $expected = "DELETE FROM TestTable WHERE id = ? AND username IN(?,?)";
 
         $this->assertSame($expected, $actual["sql"]);
         $this->assertSame([5, "tester", "tester2"], $actual["params"]);
     }
-
 }

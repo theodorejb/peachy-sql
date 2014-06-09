@@ -6,8 +6,8 @@ namespace PeachySQL;
  * Has methods to retrieve the SQL query, bound parameters, and error array
  * (returned by sqlsrv_errors() or mysqli::$error_list).
  */
-class SQLException extends \Exception {
-
+class SQLException extends \Exception
+{
     /**
      * An error array returned by sqlsrv_errors() or mysqli::$error_list)
      * @var array
@@ -26,7 +26,8 @@ class SQLException extends \Exception {
      */
     private $params;
 
-    public function __construct($message, array $errors, $query = null, array $params = null, \Exception $previous = null, $code = 0) {
+    public function __construct($message, array $errors, $query = null, array $params = null, \Exception $previous = null, $code = 0)
+    {
         parent::__construct($message, $code, $previous);
 
         $this->errors = $errors;
@@ -38,7 +39,8 @@ class SQLException extends \Exception {
      * Returns the list of errors from sqlsrv_errors() or mysqli::$error_list
      * @return array
      */
-    public function getErrors() {
+    public function getErrors()
+    {
         return $this->errors;
     }
 
@@ -46,7 +48,8 @@ class SQLException extends \Exception {
      * Returns the failed SQL query
      * @return string
      */
-    public function getQuery() {
+    public function getQuery()
+    {
         return $this->query;
     }
 
@@ -54,8 +57,8 @@ class SQLException extends \Exception {
      * Returns the array of bound parameters
      * @return array
      */
-    public function getParams() {
+    public function getParams()
+    {
         return $this->params;
     }
-
 }

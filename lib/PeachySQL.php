@@ -8,8 +8,8 @@ namespace PeachySQL;
  * @author Theodore Brown <https://github.com/theodorejb>
  * @version 2.0.0-beta.5 2014-05-25
  */
-abstract class PeachySQL {
-
+abstract class PeachySQL
+{
     /**
      * Option key for specifying the table to select, insert, update, and delete from
      */
@@ -55,7 +55,8 @@ abstract class PeachySQL {
      * Returns the current PeachySQL options.
      * @return array
      */
-    public function getOptions() {
+    public function getOptions()
+    {
         return $this->options;
     }
 
@@ -64,7 +65,8 @@ abstract class PeachySQL {
      * @param array $options
      * @throws Exception if an option is invalid
      */
-    public function setOptions(array $options) {
+    public function setOptions(array $options)
+    {
         $validKeys = array_keys($this->options);
 
         foreach (array_keys($options) as $key) {
@@ -86,7 +88,8 @@ abstract class PeachySQL {
      *                           return rows where the id column is equal to 3.
      * @param callable $callback function (SQLResult $result)
      */
-    public function select(array $columns = [], array $where = [], callable $callback = null) {
+    public function select(array $columns = [], array $where = [], callable $callback = null)
+    {
         if ($callback === null) {
             $callback = function (SQLResult $result) {
                 return $result->getRows();
@@ -103,7 +106,8 @@ abstract class PeachySQL {
      * @param callable $callback function (int $insertId, SQLResult $result)
      * @return mixed The insert ID, or the return value of the callback
      */
-    public function insertAssoc(array $colVals, callable $callback = null) {
+    public function insertAssoc(array $colVals, callable $callback = null)
+    {
         if ($callback === null) {
             $callback = function ($id) {
                 return $id;
@@ -121,7 +125,8 @@ abstract class PeachySQL {
      * @param callable $callback function (SQLResult $result)
      * @return mixed The number of affected rows, or the return value of the callback
      */
-    public function update(array $set, array $where, callable $callback = null) {
+    public function update(array $set, array $where, callable $callback = null)
+    {
         if ($callback === null) {
             $callback = function (SQLResult $result) {
                 return $result->getAffected();
@@ -140,7 +145,8 @@ abstract class PeachySQL {
      * @param callable $callback function (SQLResult $result)
      * @return mixed The number of affected rows, or the return value of the callback
      */
-    public function delete(array $where, callable $callback = null) {
+    public function delete(array $where, callable $callback = null)
+    {
         if ($callback === null) {
             $callback = function (SQLResult $result) {
                 return $result->getAffected();
@@ -158,7 +164,8 @@ abstract class PeachySQL {
      * @param  array    $where     An array of columns/values to filter the select query
      * @return array    An array containing the SELECT query and bound parameters
      */
-    public static function buildSelectQuery($tableName, array $columns = [], array $where = []) {
+    public static function buildSelectQuery($tableName, array $columns = [], array $where = [])
+    {
         self::validateTableName($tableName, "a select");
         $where = self::buildWhereClause($where);
 
@@ -177,7 +184,8 @@ abstract class PeachySQL {
      * @param  array  $where An array of columns/values to restrict the delete to.
      * @return array  An array containing the sql string and bound parameters.
      */
-    public static function buildDeleteQuery($tableName, array $where = []) {
+    public static function buildDeleteQuery($tableName, array $where = [])
+    {
         self::validateTableName($tableName, "a delete");
         $where = self::buildWhereClause($where);
         $sql = "DELETE FROM $tableName" . $where["sql"];
@@ -190,7 +198,8 @@ abstract class PeachySQL {
      * @param  array  $where     An array of columns/values to restrict the update to.
      * @return array  An array containing the sql string and bound parameters.
      */
-    public static function buildUpdateQuery($tableName, array $set, array $where = []) {
+    public static function buildUpdateQuery($tableName, array $set, array $where = [])
+    {
         self::validateTableName($tableName, "an update");
         $sql = '';
         $params = [];
@@ -220,7 +229,8 @@ abstract class PeachySQL {
      *                           is an array, an IN(...) clause will be used.
      * @return array An array containing the SQL WHERE clause and bound parameters.
      */
-    private static function buildWhereClause(array $columnVals) {
+    private static function buildWhereClause(array $columnVals)
+    {
         $sql = "";
         $params = [];
 
@@ -263,7 +273,8 @@ abstract class PeachySQL {
      * @param array    $values    A two-dimensional array of values to insert into the columns.
      * @return array
      */
-    protected static function buildInsertQueryComponents($tableName, array $columns, array $values) {
+    protected static function buildInsertQueryComponents($tableName, array $columns, array $values)
+    {
         self::validateTableName($tableName, "an insert");
 
         $bulkInsert = isset($values[0]) && is_array($values[0]);
@@ -303,10 +314,10 @@ abstract class PeachySQL {
      * @param string $name
      * @throws Exception
      */
-    private static function validateTableName($name, $type = "this") {
+    private static function validateTableName($name, $type = "this")
+    {
         if ($name === null || $name === "") {
             throw new \Exception("A valid table name must be set to generate $type query");
         }
     }
-
 }

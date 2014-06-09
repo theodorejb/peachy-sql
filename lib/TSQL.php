@@ -7,8 +7,8 @@ namespace PeachySQL;
  * 
  * @author Theodore Brown <https://github.com/theodorejb>
  */
-class TSQL extends PeachySQL {
-
+class TSQL extends PeachySQL
+{
     /**
      * Option key for specifying the table's ID column (used to retrieve insert IDs)
      */
@@ -32,7 +32,8 @@ class TSQL extends PeachySQL {
      * @param resource $connection A SQLSRV connection resource
      * @param array $options Options used when querying the database
      */
-    public function __construct($connection, array $options = []) {
+    public function __construct($connection, array $options = [])
+    {
         $this->setConnection($connection);
         $this->setOptions($options);
     }
@@ -41,7 +42,8 @@ class TSQL extends PeachySQL {
      * Easily switch to a different SQL Server database connection
      * @param resource $connection
      */
-    public function setConnection($connection) {
+    public function setConnection($connection)
+    {
         if (!is_resource($connection) || get_resource_type($connection) !== 'SQL Server Connection') {
             throw new \InvalidArgumentException('Connection must be a SQL Server Connection resource');
         }
@@ -53,7 +55,8 @@ class TSQL extends PeachySQL {
      * Set options used to select, insert, update, and delete from the database
      * @param array $options
      */
-    public function setOptions(array $options) {
+    public function setOptions(array $options)
+    {
         $this->options = array_merge($this->tsqlOptions, $this->options);
         parent::setOptions($options);
     }
@@ -62,7 +65,8 @@ class TSQL extends PeachySQL {
      * Begins a SQLSRV transaction
      * @throws SQLException if an error occurs
      */
-    public function begin() {
+    public function begin()
+    {
         if (!sqlsrv_begin_transaction($this->connection)) {
             throw new SQLException("Failed to begin transaction", sqlsrv_errors());
         }
@@ -72,7 +76,8 @@ class TSQL extends PeachySQL {
      * Commits a transaction begun with begin()
      * @throws SQLException if an error occurs
      */
-    public function commit() {
+    public function commit()
+    {
         if (!sqlsrv_commit($this->connection)) {
             throw new SQLException("Failed to commit transaction", sqlsrv_errors());
         }
@@ -82,7 +87,8 @@ class TSQL extends PeachySQL {
      * Rolls back a transaction begun with begin()
      * @throws SQLException if an error occurs
      */
-    public function rollback() {
+    public function rollback()
+    {
         if (!sqlsrv_rollback($this->connection)) {
             throw new SQLException("Failed to roll back transaction", sqlsrv_errors());
         }
@@ -96,7 +102,8 @@ class TSQL extends PeachySQL {
      * @return SQLResult|mixed A SQLResult object, or the return value of the specified callback
      * @throws SQLException if an error occurs
      */
-    public function query($sql, array $params = [], callable $callback = null) {
+    public function query($sql, array $params = [], callable $callback = null)
+    {
         if ($callback === null) {
             $callback = function (SQLResult $result) {
                 return $result;
@@ -144,7 +151,8 @@ class TSQL extends PeachySQL {
      *                           E.g. ["user", "pass"] or [ ["user1", "pass1"], ["user2", "pass2"] ].
      * @param callable $callback function (array|int $insertIds, SQLResult $result)
      */
-    public function insert(array $columns, array $values, callable $callback = null) {
+    public function insert(array $columns, array $values, callable $callback = null)
+    {
         if ($callback === null) {
             $callback = function ($ids) {
                 return $ids;
@@ -182,7 +190,8 @@ class TSQL extends PeachySQL {
      * @param string $idCol
      * @return array
      */
-    public static function buildInsertQuery($tableName, array $columns, array $values, $idCol = null) {
+    public static function buildInsertQuery($tableName, array $columns, array $values, $idCol = null)
+    {
         $comp = self::buildInsertQueryComponents($tableName, $columns, $values);
 
         // Insert IDs must be output into a table variable so that the query will work on tables
@@ -200,5 +209,4 @@ class TSQL extends PeachySQL {
         $comp['sql'] = $decStr . $comp['insertStr'] . $outStr . $comp['valStr'] . $selStr;
         return $comp;
     }
-
 }
