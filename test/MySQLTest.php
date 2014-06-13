@@ -8,7 +8,6 @@ namespace PeachySQL;
  */
 class MySQLTest extends \PHPUnit_Framework_TestCase
 {
-
     public function testBuildInsertQuery()
     {
         $columns = ['col1', 'col2', 'col3'];

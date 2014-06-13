@@ -8,7 +8,6 @@ namespace PeachySQL;
  */
 class TSQLTest extends \PHPUnit_Framework_TestCase
 {
-
     public function columnValsProvider()
     {
         return [

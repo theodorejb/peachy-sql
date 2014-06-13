@@ -8,7 +8,6 @@ namespace PeachySQL;
  */
 class PeachySQLTest extends \PHPUnit_Framework_TestCase
 {
-
     public function testBuildSelectQueryAllRows()
     {
         $actual = PeachySQL::buildSelectQuery("TestTable");
