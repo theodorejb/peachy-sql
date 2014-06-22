@@ -2,8 +2,6 @@
 
 namespace PeachySQL;
 
-require_once 'TestDbConnector.php';
-
 /**
  * Database tests for the PeachySQL library.
  * @author Theodore Brown <https://github.com/theodorejb>
