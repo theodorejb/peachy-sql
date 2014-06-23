@@ -159,7 +159,7 @@ class TSQL extends PeachySQL
             };
         }
 
-        $query = self::buildInsertQuery($this->options[self::OPT_TABLE], $columns, $values, $this->options[self::OPT_IDCOL]);
+        $query = self::buildInsertQuery($this->options[self::OPT_TABLE], $columns, $this->options[self::OPT_COLUMNS], $values, $this->options[self::OPT_IDCOL]);
         $bulkInsert = $query['isBulk'];
 
         return $this->query($query["sql"], $query["params"], function (SQLResult $result) use ($bulkInsert, $callback) {
@@ -190,9 +190,9 @@ class TSQL extends PeachySQL
      * @param string $idCol
      * @return array
      */
-    public static function buildInsertQuery($tableName, array $columns, array $values, $idCol = null)
+    public static function buildInsertQuery($tableName, array $columns, $validColumns, array $values, $idCol = null)
     {
-        $comp = self::buildInsertQueryComponents($tableName, $columns, $values);
+        $comp = self::buildInsertQueryComponents($tableName, $columns, $validColumns, $values);
 
         // Insert IDs must be output into a table variable so that the query will work on tables
         // with insert triggers (see http://technet.microsoft.com/en-us/library/ms177564.aspx).

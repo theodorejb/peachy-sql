@@ -200,7 +200,7 @@ class MySQL extends PeachySQL
             };
         }
 
-        $query = self::buildInsertQuery($this->options[self::OPT_TABLE], $columns, $values);
+        $query = self::buildInsertQuery($this->options[self::OPT_TABLE], $columns, $this->options[self::OPT_COLUMNS], $values);
         $bulkInsert = $query['isBulk'];
 
         return $this->query($query["sql"], $query["params"], function (MySQLResult $result) use ($bulkInsert, $values, $callback) {
@@ -227,9 +227,9 @@ class MySQL extends PeachySQL
      * @param array  $values
      * @return array
      */
-    public static function buildInsertQuery($tableName, array $columns, array $values)
+    public static function buildInsertQuery($tableName, array $columns, array $validColumns, array $values)
     {
-        $comp = self::buildInsertQueryComponents($tableName, $columns, $values);
+        $comp = self::buildInsertQueryComponents($tableName, $columns, $validColumns, $values);
         $comp['sql'] = $comp['insertStr'] . $comp['valStr'];
         return $comp;
     }

@@ -24,8 +24,10 @@ class PeachySQLTest extends \PHPUnit_Framework_TestCase
             "password" => "TestPassword",
             "othercol" => null
         ];
+        
+        $validCols = array_keys($where);
 
-        $actual = PeachySQL::buildSelectQuery("TestTable", $cols, $where);
+        $actual = PeachySQL::buildSelectQuery("TestTable", $cols, $validCols, $where);
         $expected = "SELECT username, password FROM TestTable WHERE "
                   . "username = ? AND password = ? AND othercol IS NULL";
         $this->assertSame($expected, $actual["sql"]);
@@ -40,7 +42,7 @@ class PeachySQLTest extends \PHPUnit_Framework_TestCase
         ];
 
         $where = ["id" => 21];
-        $actual = PeachySQL::buildUpdateQuery("TestTable", $set, $where);
+        $actual = PeachySQL::buildUpdateQuery("TestTable", $set, $where, ["id", "username", "othercol"]);
         $expected = "UPDATE TestTable SET username = ?, othercol = ? WHERE id = ?";
 
         $this->assertSame($expected, $actual["sql"]);
@@ -50,7 +52,7 @@ class PeachySQLTest extends \PHPUnit_Framework_TestCase
     public function testBuildDeleteQuery()
     {
         $where = ["id" => 5, "username" => ["tester", "tester2"]];
-        $actual = PeachySQL::buildDeleteQuery("TestTable", $where);
+        $actual = PeachySQL::buildDeleteQuery("TestTable", $where, ["id", "username"]);
         $expected = "DELETE FROM TestTable WHERE id = ? AND username IN(?,?)";
 
         $this->assertSame($expected, $actual["sql"]);

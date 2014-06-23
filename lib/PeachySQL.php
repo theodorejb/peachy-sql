@@ -16,11 +16,18 @@ abstract class PeachySQL
     const OPT_TABLE = "table";
 
     /**
+     * Option key for specifying valid columns in the table. To prevent SQL injection,
+     * this option must be set to generate queries which reference one or more columns.
+     */
+    const OPT_COLUMNS = "columns";
+
+    /**
      * Default options
      * @var array
      */
     protected $options = [
         self::OPT_TABLE => null,
+        self::OPT_COLUMNS => [],
     ];
 
     /** Begins a transaction */
@@ -96,7 +103,7 @@ abstract class PeachySQL
             };
         }
 
-        $query = self::buildSelectQuery($this->options[self::OPT_TABLE], $columns, $where);
+        $query = self::buildSelectQuery($this->options[self::OPT_TABLE], $columns, $this->options[self::OPT_COLUMNS], $where);
         return $this->query($query["sql"], $query["params"], $callback);
     }
 
@@ -133,7 +140,7 @@ abstract class PeachySQL
             };
         }
 
-        $query = self::buildUpdateQuery($this->options[self::OPT_TABLE], $set, $where);
+        $query = self::buildUpdateQuery($this->options[self::OPT_TABLE], $set, $where, $this->options[self::OPT_COLUMNS]);
         return $this->query($query["sql"], $query["params"], $callback);
     }
 
@@ -153,7 +160,7 @@ abstract class PeachySQL
             };
         }
 
-        $query = self::buildDeleteQuery($this->options[self::OPT_TABLE], $where);
+        $query = self::buildDeleteQuery($this->options[self::OPT_TABLE], $where, $this->options[self::OPT_COLUMNS]);
         return $this->query($query["sql"], $query["params"], $callback);
     }
 
@@ -161,15 +168,17 @@ abstract class PeachySQL
      * Builds a selct query using the specified table name, columns, and where clause array.
      * @param  string   $tableName The name of the table to query
      * @param  string[] $columns   An array of columns to select from (all columns if empty)
+     * @param  string[] $validCols An array of valid columns (to prevent SQL injection)
      * @param  array    $where     An array of columns/values to filter the select query
      * @return array    An array containing the SELECT query and bound parameters
      */
-    public static function buildSelectQuery($tableName, array $columns = [], array $where = [])
+    public static function buildSelectQuery($tableName, array $columns = [], array $validCols = [], array $where = [])
     {
         self::validateTableName($tableName, "a select");
-        $where = self::buildWhereClause($where);
+        $where = self::buildWhereClause($where, $validCols);
 
         if (!empty($columns)) {
+            self::validateColumns($columns, $validCols);
             $insertCols = implode(', ', $columns);
         } else {
             $insertCols = '*';
@@ -184,40 +193,42 @@ abstract class PeachySQL
      * @param  array  $where An array of columns/values to restrict the delete to.
      * @return array  An array containing the sql string and bound parameters.
      */
-    public static function buildDeleteQuery($tableName, array $where = [])
+    public static function buildDeleteQuery($tableName, array $where, array $validCols)
     {
         self::validateTableName($tableName, "a delete");
-        $where = self::buildWhereClause($where);
+        $where = self::buildWhereClause($where, $validCols);
         $sql = "DELETE FROM $tableName" . $where["sql"];
         return ["sql" => $sql, "params" => $where["params"]];
     }
 
     /**
-     * @param  string $tableName The name of the table to update.
-     * @param  array  $set       An array of columns/values to update
-     * @param  array  $where     An array of columns/values to restrict the update to.
-     * @return array  An array containing the sql string and bound parameters.
+     * @param  string   $tableName The name of the table to update.
+     * @param  array    $set       An array of columns/values to update
+     * @param  array    $where     An array of columns/values to restrict the update to.
+     * @param  string[] $validCols An array of valid columns
+     * @return array An array containing the sql string and bound parameters.
      */
-    public static function buildUpdateQuery($tableName, array $set, array $where = [])
+    public static function buildUpdateQuery($tableName, array $set, array $where, array $validCols)
     {
-        self::validateTableName($tableName, "an update");
-        $sql = '';
-        $params = [];
-
-        if (!empty($set) && !empty($where)) {
-            $sql = "UPDATE $tableName SET ";
-
-            foreach ($set as $column => $value) {
-                $sql .= "$column = ?, ";
-                $params[] = $value;
-            }
-
-            $sql = substr_replace($sql, "", -2); // remove trailing comma
-
-            $where = self::buildWhereClause($where);
-            $sql .= $where["sql"];
-            $params = array_merge($params, $where["params"]);
+        if (empty($set) || empty($where)) {
+            throw new \Exception("Set and where arrays cannot be empty");
         }
+
+        self::validateTableName($tableName, "an update");
+        self::validateColumns(array_keys($set), $validCols);
+
+        $params = [];
+        $sql = "UPDATE $tableName SET ";
+
+        foreach ($set as $column => $value) {
+            $sql .= "$column = ?, ";
+            $params[] = $value;
+        }
+
+        $sql = substr_replace($sql, "", -2); // remove trailing comma
+        $where = self::buildWhereClause($where, $validCols);
+        $sql .= $where["sql"];
+        $params = array_merge($params, $where["params"]);
 
         return array("sql" => $sql, "params" => $params);
     }
@@ -227,14 +238,16 @@ abstract class PeachySQL
      *                           filter selected rows. E.g. ["id" => 3] to only
      *                           return rows where id is equal to 3. If the value
      *                           is an array, an IN(...) clause will be used.
+     * @param string[] $validCols An array of valid columns for the table
      * @return array An array containing the SQL WHERE clause and bound parameters.
      */
-    private static function buildWhereClause(array $columnVals)
+    private static function buildWhereClause(array $columnVals, array $validCols)
     {
         $sql = "";
         $params = [];
 
         if (!empty($columnVals)) {
+            self::validateColumns(array_keys($columnVals), $validCols);
             $sql .= " WHERE";
 
             foreach ($columnVals as $column => $value) {
@@ -270,25 +283,27 @@ abstract class PeachySQL
      * 
      * @param string   $tableName The name of the table to insert into
      * @param string[] $columns   An array of columns to insert into.
+     * @param string[] $validCols An array of valid columns
      * @param array    $values    A two-dimensional array of values to insert into the columns.
      * @return array
      */
-    protected static function buildInsertQueryComponents($tableName, array $columns, array $values)
+    protected static function buildInsertQueryComponents($tableName, array $columns, array $validCols, array $values)
     {
-        self::validateTableName($tableName, "an insert");
-
-        $bulkInsert = isset($values[0]) && is_array($values[0]);
-        if (!$bulkInsert) {
-            $values = [$values]; // make sure values is two-dimensional
-        }
-
         // make sure columns and values are specified
         if (empty($columns) || empty($values[0])) {
             throw new \Exception("Columns and values to insert must be specified");
         }
 
+        self::validateTableName($tableName, "an insert");
+        self::validateColumns($columns, $validCols);
+
         $insertCols = implode(', ', $columns);
         $insert = "INSERT INTO $tableName ($insertCols)";
+
+        $bulkInsert = isset($values[0]) && is_array($values[0]);
+        if (!$bulkInsert) {
+            $values = [$values]; // make sure values is two-dimensional
+        }
 
         $params = [];
         $valStr = ' VALUES';
@@ -303,16 +318,16 @@ abstract class PeachySQL
 
         return [
             'insertStr' => $insert,
-            'valStr'    => $valStr,
-            'params'    => $params,
-            'isBulk'    => $bulkInsert
+            'valStr' => $valStr,
+            'params' => $params,
+            'isBulk' => $bulkInsert
         ];
     }
 
     /**
      * Throws an exception if the table name is null or blank
      * @param string $name
-     * @throws Exception
+     * @throws \Exception
      */
     private static function validateTableName($name, $type = "this")
     {
@@ -320,4 +335,20 @@ abstract class PeachySQL
             throw new \Exception("A valid table name must be set to generate $type query");
         }
     }
+
+    /**
+     * Thrown an exception if a column does not exist in the array of valid columns
+     * @param string[] $columns
+     * @param string[] $validColumns
+     * @throws \UnexpectedValueException
+     */
+    private static function validateColumns(array $columns, array $validColumns)
+    {
+        foreach ($columns as $col) {
+            if (!in_array($col, $validColumns, true)) {
+                throw new \UnexpectedValueException("Invalid column '$col'");
+            }
+        }
+    }
+
 }
