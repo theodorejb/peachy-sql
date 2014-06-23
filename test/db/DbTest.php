@@ -18,7 +18,10 @@ class DbTest extends \PHPUnit_Framework_TestCase
      */
     public function dbTypeProvider()
     {
-        $options = [PeachySQL::OPT_TABLE => 'Users'];
+        $options = [
+            PeachySQL::OPT_TABLE => 'Users',
+            PeachySQL::OPT_COLUMNS => ['user_id', 'fname', 'lname', 'dob'],
+        ];
         $tsqlOptions = array_merge($options, [TSQL::OPT_IDCOL => 'user_id']);
 
         $implementations = [
