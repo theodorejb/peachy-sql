@@ -205,7 +205,7 @@ class MySQL extends PeachySQL
 
         return $this->query($query["sql"], $query["params"], function (MySQLResult $result) use ($bulkInsert, $values, $callback) {
             $ids = $bulkInsert ? [] : 0;
-            $firstId = $result->getFirstInsertId(); // id of first inserted row
+            $firstId = $result->getInsertId(); // id of first inserted row
 
             if ($firstId) {
                 if ($bulkInsert) {

@@ -13,19 +13,19 @@ class MySQLResult extends SQLResult
      * @param array  $rows
      * @param int    $affected
      * @param string $query
-     * @param int    $firstInsertId
+     * @param int    $insertId
      */
-    public function __construct(array $rows, $affected, $query, $firstInsertId)
+    public function __construct(array $rows, $affected, $query, $insertId)
     {
         parent::__construct($rows, $affected, $query);
-        $this->insertId = $firstInsertId;
+        $this->insertId = $insertId;
     }
 
     /**
      * Returns the first insert ID for the query, from mysqli_stmt::$insert_id
      * @return int
      */
-    public function getFirstInsertId()
+    public function getInsertId()
     {
         return $this->insertId;
     }

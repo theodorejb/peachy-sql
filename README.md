@@ -2,7 +2,7 @@
 
 [![Packagist Version](https://img.shields.io/packagist/v/theodorejb/peachy-sql.svg)](https://packagist.org/packages/theodorejb/peachy-sql) [![Total Downloads](https://img.shields.io/packagist/dt/theodorejb/peachy-sql.svg)](https://packagist.org/packages/theodorejb/peachy-sql) [![License](https://img.shields.io/packagist/l/theodorejb/peachy-sql.svg)](https://packagist.org/packages/theodorejb/peachy-sql) [![Build Status](https://travis-ci.org/theodorejb/peachy-sql.svg?branch=master)](https://travis-ci.org/theodorejb/peachy-sql)
 
-PeachySQL is a speedy database abstraction layer with a goal of simplifying the experience of performing common SQL queries in PHP. It currently supports both MySQL (via MySQLi) and T-SQL (via Microsoft's [SQLSRV extension](http://www.php.net/manual/en/book.sqlsrv.php)) and runs on PHP 5.4+.
+PeachySQL is a speedy database abstraction layer with a goal of simplifying the experience of performing common SQL queries and building JSON APIs in PHP. It currently supports both MySQL (via MySQLi) and T-SQL (via Microsoft's [SQLSRV extension](http://www.php.net/manual/en/book.sqlsrv.php)) and runs on PHP 5.4+.
 
 ## Installation
 
@@ -16,7 +16,7 @@ To install via [Composer](https://getcomposer.org/), add the following to the co
 }
 ```
 
-Then run `composer install` and require `vendor/autoload.php` in your application's index.php file.
+Then run `composer install` and require `vendor/autoload.php` in your application's bootstrap file.
 
 ## Usage
 
@@ -38,16 +38,19 @@ $result = $peachySql->query($sql, ['theo%', 'b%']);
 echo json_encode($result->getRows());
 ```
 
-The `query()` method returns a `SQLResult` object, and in addition to `getRows()`, this object has `getAffected()` and `getQuery()` methods (to return the number of affected rows and the executed query string, respectively). If using the `MySQL` class, `query()` will return a `MySQLResult` subclass, which adds a `getFirstInsertId()` method to those mentioned above. 
+Because PeachySQL always returns selected rows as an associative array, it is easy to make changes to the data structure and output it as JSON.
+
+In addition to `getRows()`, the `SQLResult` object returned by `query()` has `getAffected()` and `getQuery()` methods (to return the number of affected rows and the executed query string, respectively). If using MySQL, `query()` will return an extended `MySQLResult` object which adds a `getInsertId()` method.
 
 ### Shorthand methods
 
-When creating an instance of PeachySQL, an "options" argument can be passed specifying a table name and (for `TSQL` instances) its identity column:
+When creating an instance of PeachySQL, an "options" argument can be passed specifying a table name, list of valid columns, and (for `TSQL` instances) the table's identity column:
 
 ```php
 $options = [
-    'table' => 'Users',
-    'idCol' => 'user_id' // used to retrive insert IDs when using T-SQL
+    'table'   => 'Users',
+	'columns' => ['user_id', 'fname', 'lname'],
+    'idCol'   => 'user_id' // used to retrive insert IDs when using T-SQL
 ];
 
 $userTable = new \PeachySQL\TSQL($conn, $options);
