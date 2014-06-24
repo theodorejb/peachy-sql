@@ -20,7 +20,7 @@ Then run `composer install` and require `vendor/autoload.php` in your applicatio
 
 ## Usage
 
-Start by instantiating the MySQL or TSQL class with a database connection, which should be an existing [mysqli object](http://www.php.net/manual/en/mysqli.construct.php) or [SQLSRV connection resource](http://www.php.net/manual/en/function.sqlsrv-connect.php):
+Start by instantiating the `MySQL` or `TSQL` class with a database connection, which should be an existing [mysqli object](http://www.php.net/manual/en/mysqli.construct.php) or [SQLSRV connection resource](http://www.php.net/manual/en/function.sqlsrv-connect.php):
 
 ```php
 $peachySql = new \PeachySQL\MySQL($mysqlConn);
@@ -44,23 +44,25 @@ In addition to `getRows()`, the `SQLResult` object returned by `query()` has `ge
 
 ### Shorthand methods
 
-When creating an instance of PeachySQL, an "options" argument can be passed specifying a table name, list of valid columns, and (for `TSQL` instances) the table's identity column:
+When creating a new instance of PeachySQL, an array of options can be passed to the constructor specifying a table name and list of valid columns:
 
 ```php
 $options = [
     'table'   => 'Users',
-	'columns' => ['user_id', 'fname', 'lname'],
-    'idCol'   => 'user_id' // used to retrive insert IDs when using T-SQL
+	'columns' => ['user_id', 'fname', 'lname']
 ];
 
-$userTable = new \PeachySQL\TSQL($conn, $options);
-```
-or for MySQL:
-```php
-$userTable = new \PeachySQL\MySQL($conn, ['table' => 'Users']);
+$userTable = new \PeachySQL\MySQL($mysqlConn, $options);
 ```
 
-You can then make use of PeachySQL's five shorthand methods: `select()`, `insert()`,  `insertAssoc()`, `update()`, and `delete()`. For example:
+If using T-SQL, an additional option can be passed to specify the table's identity column. This is necessary so that PeachySQL can generate an output clause to retrieve insert IDs.
+
+```php
+$tsqlOptions = array_merge($options, ['idCol' => 'user_id']);
+$userTable = new \PeachySQL\TSQL($tsqlConn, $tsqlOptions);
+```
+
+You can then make use of PeachySQL's five shorthand methods: `select()`, `insert()`, `insertAssoc()`, `update()`, and `delete()`. To prevent SQL injection, the queries PeachySQL generates for these methods always use bound parameters for values, and column names are checked against the list of valid columns in the options array.
 
 ```php
 // select first and last name columns where user_id is equal to 5
@@ -89,19 +91,17 @@ $userTable->update($newData, ['user_id' => 4]);
 $userTable->delete(['user_id' => [1, 2, 3]]);
 ```
 
-Each of the shorthand methods accepts an optional callback argument as their last parameter which is passed a SQLResult object.
-
-**Note:** To prevent SQL injection, the shorthand methods always generate prepared statements with bound parameters for inserted/queried values. However, since table and column names cannot be bound they should never be set dynamically from user input without careful validation/sanitization.
+Each of the shorthand methods accepts an optional callback argument as their last parameter which is passed a `SQLResult`/`MySQLResult` object.
 
 ### Transactions
 
 Call the `begin()` method to start a transaction. You can then call `query()` and any of the shorthand methods as needed, before committing or rolling back the transaction with `commit()` or `rollback()`.
 
-### Other methods
+### Other methods and options
 
 The database connection can be swapped out at any time with `setConnection()`, and `setOptions()` and `getOptions()` methods allow PeachySQL options to be changed and retrieved at will. 
 
-In addition to the "table" and T-SQL-specific "idCol" options mentioned above, there is a MySQL-specific "autoIncrementIncrement" option which can be used to set the interval between successive auto-incremented values in the table (defaults to 1). This option is used to determine the array of insert IDs for bulk-inserts, since MySQL only provides the first insert ID.
+In addition to the "table", "columns", and T-SQL-specific "idCol" options mentioned above, there is a MySQL-specific "autoIncrementIncrement" option which can be used to set the interval between successive auto-incremented values in the table (defaults to 1). This option is used to determine the array of insert IDs for bulk-inserts, since MySQL only provides the first insert ID.
 
 ## Contributing
 
