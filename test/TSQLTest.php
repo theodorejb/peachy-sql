@@ -44,4 +44,12 @@ class TSQLTest extends \PHPUnit_Framework_TestCase
         $this->assertSame($expected, $actual["sql"]);
         $this->assertSame(['foo1', 'foo2', 'bar1', 'bar2'], $actual["params"]);
     }
+
+    /**
+     * @expectedException \UnexpectedValueException
+     */
+    public function testBuildInsertQueryInvalidColumns()
+    {
+        TSQL::buildInsertQuery("TestTable", ["foo", "fizzbuzz"], ["foo", "bar"], ["val1", "val2"]);
+    }
 }

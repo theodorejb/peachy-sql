@@ -24,7 +24,7 @@ class PeachySQLTest extends \PHPUnit_Framework_TestCase
             "password" => "TestPassword",
             "othercol" => null
         ];
-        
+
         $validCols = array_keys($where);
 
         $actual = PeachySQL::buildSelectQuery("TestTable", $cols, $validCols, $where);
@@ -32,6 +32,22 @@ class PeachySQLTest extends \PHPUnit_Framework_TestCase
                   . "username = ? AND password = ? AND othercol IS NULL";
         $this->assertSame($expected, $actual["sql"]);
         $this->assertSame(['TestUser', 'TestPassword'], $actual["params"]);
+    }
+
+    /**
+     * @expectedException \UnexpectedValueException
+     */
+    public function testBuildSelectQueryInvalidColumns()
+    {
+        PeachySQL::buildSelectQuery("TestTable", ["fizzbuzz"], ["foo", "bar"]);
+    }
+
+    /**
+     * @expectedException \UnexpectedValueException
+     */
+    public function testBuildSelectQueryInvalidColumnsInWhere()
+    {
+        PeachySQL::buildSelectQuery("TestTable", ["foo"], ["foo", "bar"], ["fizzbuzz" => null]);
     }
 
     public function testBuildUpdateQuery()
@@ -49,6 +65,22 @@ class PeachySQLTest extends \PHPUnit_Framework_TestCase
         $this->assertSame(['TestUser', null, 21], $actual["params"]);
     }
 
+    /**
+     * @expectedException \UnexpectedValueException
+     */
+    public function testBuildUpdateQueryInvalidColumns()
+    {
+        PeachySQL::buildUpdateQuery("TestTable", ["fizzbuzz" => null], ["bar" => 1], ["foo", "bar"]);
+    }
+
+    /**
+     * @expectedException \UnexpectedValueException
+     */
+    public function testBuildUpdateQueryInvalidColumnsInWhere()
+    {
+        PeachySQL::buildUpdateQuery("TestTable", ["foo" => null], ["fizzbuzz" => 1], ["foo", "bar"]);
+    }
+
     public function testBuildDeleteQuery()
     {
         $where = ["id" => 5, "username" => ["tester", "tester2"]];
@@ -57,5 +89,13 @@ class PeachySQLTest extends \PHPUnit_Framework_TestCase
 
         $this->assertSame($expected, $actual["sql"]);
         $this->assertSame([5, "tester", "tester2"], $actual["params"]);
+    }
+
+    /**
+     * @expectedException \UnexpectedValueException
+     */
+    public function testBuildDeleteQueryInvalidColumnsInWhere()
+    {
+        PeachySQL::buildDeleteQuery("TestTable", ["fizzbuzz" => null], ["foo", "bar"]);
     }
 }

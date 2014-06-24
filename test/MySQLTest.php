@@ -18,4 +18,12 @@ class MySQLTest extends \PHPUnit_Framework_TestCase
         $this->assertSame($expected, $actual['sql']);
         $this->assertSame(['val1', 'val2', 'val3'], $actual['params']);
     }
+
+    /**
+     * @expectedException \UnexpectedValueException
+     */
+    public function testBuildInsertQueryInvalidColumns()
+    {
+        MySQL::buildInsertQuery("TestTable", ["fizzbuzz", "foo"], ["foo", "bar"], ["val1", "val2"]);
+    }
 }
