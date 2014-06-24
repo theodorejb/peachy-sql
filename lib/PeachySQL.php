@@ -6,7 +6,7 @@ namespace PeachySQL;
  * Provides reusable functionality and can be extended by database-specific classes
  *
  * @author Theodore Brown <https://github.com/theodorejb>
- * @version 2.0.0-beta.5 2014-05-25
+ * @version 2.0.0-beta.6 2014-06-23
  */
 abstract class PeachySQL
 {
