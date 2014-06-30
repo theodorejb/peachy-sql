@@ -18,18 +18,20 @@ class DbTest extends \PHPUnit_Framework_TestCase
      */
     public function dbTypeProvider()
     {
+        $config = TestDbConnector::getConfig();
+        $implementations = [];
+
         $options = [
             PeachySQL::OPT_TABLE => 'Users',
             PeachySQL::OPT_COLUMNS => ['user_id', 'fname', 'lname', 'dob'],
         ];
-        $tsqlOptions = array_merge($options, [TSQL::OPT_IDCOL => 'user_id']);
 
-        $implementations = [
-            [new MySQL(TestDbConnector::getMysqlConn(), $options)]
-        ];
+        if ($config["testWith"]["mysql"]) {
+            $implementations[] = [new MySQL(TestDbConnector::getMysqlConn(), $options)];
+        }
 
-        if (!isset($_SERVER['TRAVIS'])) {
-            // not running on Travis CI, so T-SQL should be tested
+        if ($config["testWith"]["sqlsrv"]) {
+            $tsqlOptions = array_merge($options, [TSQL::OPT_IDCOL => 'user_id']);
             $implementations[] = [new TSQL(TestDbConnector::getSqlsrvConn(), $tsqlOptions)];
         }
 

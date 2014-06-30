@@ -14,10 +14,28 @@ class TestDbConnector
      */
     private static $sqlsrvConn;
 
+    /**
+     * DB config settings
+     * @var array
+     */
+    private static $config;
+
+    public static function setConfig(array $config)
+    {
+        self::$config = $config;
+    }
+
+    public static function getConfig()
+    {
+        return self::$config;
+    }
+
     public static function getMysqlConn()
     {
         if (!self::$mysqlConn) {
-            self::$mysqlConn = new \mysqli('127.0.0.1', 'root', '', 'PeachySQL');
+            $mysql = self::$config["db"]["mysql"];
+            self::$mysqlConn = new \mysqli($mysql["host"], $mysql["username"], $mysql["password"], $mysql["database"]);
+
             if (self::$mysqlConn->connect_errno) {
                 throw new \Exception("Failed to connect to MySQL: (" . self::$mysqlConn->connect_errno . ") " . self::$mysqlConn->connect_error);
             }
@@ -31,8 +49,8 @@ class TestDbConnector
     public static function getSqlsrvConn()
     {
         if (!self::$sqlsrvConn) {
-            $connInfo = ["Database" => 'PeachySQL', "ReturnDatesAsStrings" => true];
-            self::$sqlsrvConn = sqlsrv_connect('Computer-Name\SQLEXPRESS', $connInfo);
+            $connInfo = self::$config["db"]["sqlsrv"]["connectionInfo"];
+            self::$sqlsrvConn = sqlsrv_connect(self::$config["db"]["sqlsrv"]["serverName"], $connInfo);
             if (!self::$sqlsrvConn) {
                 throw new \Exception("Failed to connect to SQL server: " . print_r(sqlsrv_errors(), true));
             }
