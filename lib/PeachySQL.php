@@ -274,7 +274,7 @@ abstract class PeachySQL
             $sql = substr_replace($sql, "", -4); // remove the trailing AND
         }
 
-        return array("sql" => $sql, "params" => $params);
+        return ["sql" => $sql, "params" => $params];
     }
 
     /**
@@ -318,9 +318,9 @@ abstract class PeachySQL
 
         return [
             'insertStr' => $insert,
-            'valStr' => $valStr,
-            'params' => $params,
-            'isBulk' => $bulkInsert
+            'valStr'    => $valStr,
+            'params'    => $params,
+            'isBulk'    => $bulkInsert,
         ];
     }
 
@@ -350,5 +350,4 @@ abstract class PeachySQL
             }
         }
     }
-
 }
