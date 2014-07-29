@@ -175,7 +175,7 @@ abstract class PeachySQL
     public static function buildSelectQuery($tableName, array $columns = [], array $validCols = [], array $where = [])
     {
         self::validateTableName($tableName, "a select");
-        $where = self::buildWhereClause($where, $validCols);
+        $whereClause = self::buildWhereClause($where, $validCols);
 
         if (!empty($columns)) {
             self::validateColumns($columns, $validCols);
@@ -184,8 +184,8 @@ abstract class PeachySQL
             $insertCols = '*';
         }
 
-        $sql = "SELECT $insertCols FROM $tableName" . $where["sql"];
-        return ["sql" => $sql, "params" => $where["params"]];
+        $sql = "SELECT $insertCols FROM $tableName" . $whereClause["sql"];
+        return ["sql" => $sql, "params" => $whereClause["params"]];
     }
 
     /**
@@ -196,9 +196,9 @@ abstract class PeachySQL
     public static function buildDeleteQuery($tableName, array $where, array $validCols)
     {
         self::validateTableName($tableName, "a delete");
-        $where = self::buildWhereClause($where, $validCols);
-        $sql = "DELETE FROM $tableName" . $where["sql"];
-        return ["sql" => $sql, "params" => $where["params"]];
+        $whereClause = self::buildWhereClause($where, $validCols);
+        $sql = "DELETE FROM $tableName" . $whereClause["sql"];
+        return ["sql" => $sql, "params" => $whereClause["params"]];
     }
 
     /**
@@ -226,11 +226,11 @@ abstract class PeachySQL
         }
 
         $sql = substr_replace($sql, "", -2); // remove trailing comma
-        $where = self::buildWhereClause($where, $validCols);
-        $sql .= $where["sql"];
-        $params = array_merge($params, $where["params"]);
+        $whereClause = self::buildWhereClause($where, $validCols);
+        $sql .= $whereClause["sql"];
+        $allParams = array_merge($params, $whereClause["params"]);
 
-        return array("sql" => $sql, "params" => $params);
+        return ["sql" => $sql, "params" => $allParams];
     }
 
     /**
