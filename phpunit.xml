@@ -1,11 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<phpunit bootstrap="vendor/autoload.php"
-         color="true">
-
+<phpunit bootstrap="test/bootstrap.php" color="true">
     <testsuites>
-        <testsuite name="PeachySQL">
+		<testsuite name="default">
+			<directory>./test</directory>
+		</testsuite>
+		<testsuite name="no-db">
             <directory>./test</directory>
+			<exclude>./test/db</exclude>
         </testsuite>
     </testsuites>
 </phpunit>
