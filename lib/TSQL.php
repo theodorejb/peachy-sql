@@ -160,26 +160,16 @@ class TSQL extends PeachySQL
         }
 
         $query = self::buildInsertQuery($this->options[self::OPT_TABLE], $columns, $this->options[self::OPT_COLUMNS], $values, $this->options[self::OPT_IDCOL]);
-        $bulkInsert = $query['isBulk'];
+        $result = $this->query($query["sql"], $query["params"]);
+        $rows = $result->getRows(); // contains any insert IDs
 
-        return $this->query($query["sql"], $query["params"], function (SQLResult $result) use ($bulkInsert, $callback) {
-            $ids = $bulkInsert ? [] : 0;
-            $rows = $result->getRows(); // contains any insert IDs
+        if ($query['isBulk']) {
+            $ids = array_map(function ($row) { return $row["RowID"]; }, $rows);
+        } else {
+            $ids = empty($rows) ? 0 : $rows[0]["RowID"]; // if no insert ID, return zero for consistency with mysqli
+        }
 
-            if (isset($rows[0])) {
-                // $rows contains an array of insert ID rows
-
-                if ($bulkInsert) {
-                    foreach ($rows as $row) {
-                        $ids[] = $row["RowID"];
-                    }
-                } else {
-                    $ids = $rows[0]["RowID"];
-                }
-            }
-
-            return $callback($ids, $result);
-        });
+        return $callback($ids, $result);
     }
 
     /**

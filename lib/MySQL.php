@@ -201,23 +201,22 @@ class MySQL extends PeachySQL
         }
 
         $query = self::buildInsertQuery($this->options[self::OPT_TABLE], $columns, $this->options[self::OPT_COLUMNS], $values);
-        $bulkInsert = $query['isBulk'];
+        $result = $this->query($query["sql"], $query["params"]);
+        $firstId = $result->getInsertId(); // id of first inserted row, or zero if no insert ID
 
-        return $this->query($query["sql"], $query["params"], function (MySQLResult $result) use ($bulkInsert, $values, $callback) {
-            $ids = $bulkInsert ? [] : 0;
-            $firstId = $result->getInsertId(); // id of first inserted row
-
+        if ($query['isBulk']) {
+            // return array of IDs
             if ($firstId) {
-                if ($bulkInsert) {
-                    $lastId = $firstId + (count($values) - 1);
-                    $ids = range($firstId, $lastId, $this->options[self::OPT_AUTO_INCREMENT_INCREMENT]);
-                } else {
-                    $ids = $firstId;
-                }
+                $lastId = $firstId + (count($values) - 1);
+                $ids = range($firstId, $lastId, $this->options[self::OPT_AUTO_INCREMENT_INCREMENT]);
+            } else {
+                $ids = [];
             }
+        } else {
+            $ids = $firstId;
+        }
 
-            return $callback($ids, $result);
-        });
+        return $callback($ids, $result);
     }
 
     /**
