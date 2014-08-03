@@ -99,7 +99,7 @@ abstract class PeachySQL
     {
         if ($callback === null) {
             $callback = function (SQLResult $result) {
-                return $result->getRows();
+                return $result->getAll();
             };
         }
 

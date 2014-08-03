@@ -38,12 +38,29 @@ class SQLResult
     }
 
     /**
-     * Returns an array of rows selected by the query
+     * Returns all rows selected by the query
      * @return array
+     */
+    public function getAll()
+    {
+        return $this->rows;
+    }
+
+    /**
+     * Deprecated alias of getAll()
      */
     public function getRows()
     {
-        return $this->rows;
+        return $this->getAll();
+    }
+
+    /**
+     * Returns the first selected row, or null if zero rows were returned
+     * @return array
+     */
+    public function getFirst()
+    {
+        return empty($this->rows) ? null : $this->rows[0];
     }
 
     /**

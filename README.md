@@ -35,12 +35,12 @@ After instantiation, arbitrary queries can be executed by passing a SQL string a
 ```php
 $sql = 'SELECT * FROM Users WHERE fname LIKE ? AND lname LIKE ?';
 $result = $peachySql->query($sql, ['theo%', 'b%']);
-echo json_encode($result->getRows());
+echo json_encode($result->getAll());
 ```
 
 Because PeachySQL always returns selected rows as an associative array, it is easy to make changes to the data structure and output it as JSON.
 
-In addition to `getRows()`, the `SQLResult` object returned by `query()` has `getAffected()` and `getQuery()` methods (to return the number of affected rows and the executed query string, respectively). If using MySQL, `query()` will return an extended `MySQLResult` object which adds a `getInsertId()` method.
+In addition to `getAll()`, the `SQLResult` object returned by `query()` has `getFirst()`, `getAffected()`, and `getQuery()` methods (to return the first selected row, the number of affected rows, and the executed query string, respectively). If using MySQL, `query()` will return an extended `MySQLResult` object which adds a `getInsertId()` method.
 
 ### Shorthand methods
 

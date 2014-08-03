@@ -161,7 +161,7 @@ class TSQL extends PeachySQL
 
         $query = self::buildInsertQuery($this->options[self::OPT_TABLE], $columns, $this->options[self::OPT_COLUMNS], $values, $this->options[self::OPT_IDCOL]);
         $result = $this->query($query["sql"], $query["params"]);
-        $rows = $result->getRows(); // contains any insert IDs
+        $rows = $result->getAll(); // contains any insert IDs
 
         if ($query['isBulk']) {
             $ids = array_map(function ($row) { return $row["RowID"]; }, $rows);
