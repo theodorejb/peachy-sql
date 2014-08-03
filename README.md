@@ -2,7 +2,7 @@
 
 [![Packagist Version](https://img.shields.io/packagist/v/theodorejb/peachy-sql.svg)](https://packagist.org/packages/theodorejb/peachy-sql) [![Total Downloads](https://img.shields.io/packagist/dt/theodorejb/peachy-sql.svg)](https://packagist.org/packages/theodorejb/peachy-sql) [![License](https://img.shields.io/packagist/l/theodorejb/peachy-sql.svg)](https://packagist.org/packages/theodorejb/peachy-sql) [![Build Status](https://travis-ci.org/theodorejb/peachy-sql.svg?branch=master)](https://travis-ci.org/theodorejb/peachy-sql)
 
-PeachySQL is a speedy database abstraction layer with a goal of simplifying the experience of performing common SQL queries and building JSON APIs in PHP. It currently supports both MySQL (via MySQLi) and T-SQL (via Microsoft's [SQLSRV extension](http://www.php.net/manual/en/book.sqlsrv.php)) and runs on PHP 5.4+.
+PeachySQL is a speedy database abstraction layer with a goal of simplifying the experience of performing common SQL queries and building JSON APIs in PHP. It supports both MySQL (via MySQLi) and T-SQL (via Microsoft's [SQLSRV extension](http://www.php.net/manual/en/book.sqlsrv.php)) and runs on PHP 5.4+.
 
 ## Installation
 
@@ -102,10 +102,6 @@ Call the `begin()` method to start a transaction. You can then call `query()` an
 The database connection can be swapped out at any time with `setConnection()`, and `setOptions()` and `getOptions()` methods allow PeachySQL options to be changed and retrieved at will. 
 
 In addition to the "table", "columns", and T-SQL-specific "idCol" options mentioned above, there is a MySQL-specific "autoIncrementIncrement" option which can be used to set the interval between successive auto-incremented values in the table (defaults to 1). This option is used to determine the array of insert IDs for bulk-inserts, since MySQL only provides the first insert ID.
-
-## Contributing
-
-Bug reports and pull requests are welcome! After editing files, open a command prompt in the working directory and run `phpunit` to ensure that all the tests pass.
 
 ## Author
 
