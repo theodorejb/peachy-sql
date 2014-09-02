@@ -7,14 +7,14 @@ php:
   - hhvm
   - hhvm-nightly
 
+install:
+  - composer install
+
 before_script:
-  - travis_retry composer self-update
-  - travis_retry composer install
   - mysql -e 'create database PeachySQL;'
 
 script: phpunit
 
 matrix:
   allow_failures:
-    - php: hhvm
     - php: hhvm-nightly
