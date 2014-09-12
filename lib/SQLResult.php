@@ -48,6 +48,7 @@ class SQLResult
 
     /**
      * Deprecated alias of getAll()
+     * @deprecated since version 2.1.0
      */
     public function getRows()
     {
