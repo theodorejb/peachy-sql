@@ -106,8 +106,7 @@ In addition to the "table", "columns", and T-SQL-specific "idCol" options mentio
 ## Author
 
 Theodore Brown  
-[@theodorejb](https://twitter.com/theodorejb)  
-<http://designedbytheo.com>
+<http://theodorejb.me>
 
 ## License
 
