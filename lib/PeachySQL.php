@@ -41,11 +41,11 @@ abstract class PeachySQL
     abstract public function rollback();
 
     /**
-     * Executes a single query and passes a SQLResult object to the callback
+     * Executes a single query and passes a SqlResult object to the callback
      * @param string   $sql
      * @param array    $params
      * @param callable $callback
-     * @return SQLResult|mixed The return value of the callback
+     * @return SqlResult|mixed The return value of the callback
      * @throws SQLException if an error occurs
      */
     abstract public function query($sql, array $params = [], callable $callback = null);
@@ -55,7 +55,7 @@ abstract class PeachySQL
      * insert if $values is two-dimensional.
      * @param array $columns
      * @param array $values
-     * @param callable $callback function ($ids, SQLResult $result)
+     * @param callable $callback function ($ids, SqlResult $result)
      */
     abstract public function insert(array $columns, array $values, callable $callback = null);
 
@@ -94,13 +94,13 @@ abstract class PeachySQL
      * @param array    $where    An associative array of columns and values to
      *                           filter selected rows. E.g. ["id" => 3] to only
      *                           return rows where the id column is equal to 3.
-     * @param callable $callback function (SQLResult $result)
+     * @param callable $callback function (SqlResult $result)
      * @return array
      */
     public function select(array $columns = [], array $where = [], callable $callback = null)
     {
         if ($callback === null) {
-            $callback = function (SQLResult $result) {
+            $callback = function (SqlResult $result) {
                 return $result->getAll();
             };
         }
@@ -112,7 +112,7 @@ abstract class PeachySQL
     /**
      * Inserts a single row from an associative array of columns/values.
      * @param array    $colVals  E.g. ["Username => "user1", "Password" => "pass1"]
-     * @param callable $callback function (int $insertId, SQLResult $result)
+     * @param callable $callback function (int $insertId, SqlResult $result)
      * @return mixed The insert ID, or the return value of the callback
      */
     public function insertAssoc(array $colVals, callable $callback = null)
@@ -131,13 +131,13 @@ abstract class PeachySQL
      * 
      * @param array    $set   E.g. ["Username" => "newName", "Password" => "newPass"]
      * @param array    $where E.g. ["id" => 3] to update the row where id is equal to 3
-     * @param callable $callback function (SQLResult $result)
+     * @param callable $callback function (SqlResult $result)
      * @return mixed The number of affected rows, or the return value of the callback
      */
     public function update(array $set, array $where, callable $callback = null)
     {
         if ($callback === null) {
-            $callback = function (SQLResult $result) {
+            $callback = function (SqlResult $result) {
                 return $result->getAffected();
             };
         }
@@ -151,13 +151,13 @@ abstract class PeachySQL
      * Returns the return value of the callback function.
      * 
      * @param array    $where    E.g. ["id" => 3]
-     * @param callable $callback function (SQLResult $result)
+     * @param callable $callback function (SqlResult $result)
      * @return mixed The number of affected rows, or the return value of the callback
      */
     public function delete(array $where, callable $callback = null)
     {
         if ($callback === null) {
-            $callback = function (SQLResult $result) {
+            $callback = function (SqlResult $result) {
                 return $result->getAffected();
             };
         }

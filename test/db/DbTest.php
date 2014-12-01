@@ -78,10 +78,10 @@ class DbTest extends \PHPUnit_Framework_TestCase
             'dob' => date('Y-m-d', strtotime('tomorrow'))
         ];
 
-        $peachySql->insertAssoc($colVals, function ($id, SQLResult $result) use ($peachySql) {
+        $peachySql->insertAssoc($colVals, function ($id, SqlResult $result) use ($peachySql) {
             $this->assertInternalType("int", $id);
 
-            $peachySql->delete(["user_id" => $id], function (SQLResult $result) {
+            $peachySql->delete(["user_id" => $id], function (SqlResult $result) {
                 $this->assertSame(1, $result->getAffected());
             });
         });
@@ -125,7 +125,7 @@ class DbTest extends \PHPUnit_Framework_TestCase
             ];
         }
 
-        $peachySql->insert($cols, $vals, function ($ids, SQLResult $result) use ($peachySql, $rowCount, $expected, $cols) {
+        $peachySql->insert($cols, $vals, function ($ids, SqlResult $result) use ($peachySql, $rowCount, $expected, $cols) {
             $this->assertGreaterThan(0, $result->getAffected());
             $this->assertSame($rowCount, count($ids));
 

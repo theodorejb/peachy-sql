@@ -3,10 +3,10 @@
 namespace PeachySQL;
 
 /**
- * Tests for the SQLResult object
+ * Tests for the SqlResult object
  * @author Theodore Brown <https://github.com/theodorejb>
  */
-class SQLResultTest extends \PHPUnit_Framework_TestCase
+class SqlResultTest extends \PHPUnit_Framework_TestCase
 {
     public function testGetRows()
     {
@@ -15,12 +15,12 @@ class SQLResultTest extends \PHPUnit_Framework_TestCase
             ["id" => 2, "name" => "bar"],
         ];
 
-        $result = new SQLResult($exampleRows, 0, "");
+        $result = new SqlResult($exampleRows, 0, "");
         $this->assertSame($exampleRows, $result->getAll());
         $this->assertSame($exampleRows[0], $result->getFirst());
         $this->assertSame($result->getAll(), $result->getRows()); // alias
 
-        $noRowsResult = new SQLResult([], 0, "");
+        $noRowsResult = new SqlResult([], 0, "");
         $this->assertSame([], $noRowsResult->getAll());
         $this->assertSame(null, $noRowsResult->getFirst());
     }

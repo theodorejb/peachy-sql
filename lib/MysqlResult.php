@@ -3,9 +3,9 @@
 namespace PeachySQL;
 
 /**
- * Same as SQLResult, but with an insert ID parameter and getter method
+ * Same as SqlResult, but with an insert ID parameter and getter method
  */
-class MysqlResult extends SQLResult
+class MysqlResult extends SqlResult
 {
     private $insertId;
 

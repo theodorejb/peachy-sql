@@ -95,17 +95,17 @@ class TSQL extends PeachySQL
     }
 
     /**
-     * Executes a query and passes a SQLResult object to the callback.
+     * Executes a query and passes a SqlResult object to the callback.
      * @param string   $sql
      * @param array    $params   Values to bind to placeholders in the query
      * @param callable $callback
-     * @return SQLResult|mixed A SQLResult object, or the return value of the specified callback
+     * @return SqlResult|mixed A SqlResult object, or the return value of the specified callback
      * @throws SQLException if an error occurs
      */
     public function query($sql, array $params = [], callable $callback = null)
     {
         if ($callback === null) {
-            $callback = function (SQLResult $result) {
+            $callback = function (SqlResult $result) {
                 return $result;
             };
         }
@@ -136,7 +136,7 @@ class TSQL extends PeachySQL
 
         sqlsrv_free_stmt($stmt);
 
-        return $callback(new SQLResult($rows, $affected, $sql));
+        return $callback(new SqlResult($rows, $affected, $sql));
     }
 
     /**
@@ -149,7 +149,7 @@ class TSQL extends PeachySQL
      * @param array    $values   A flat array of values (to insert one row), or an array containing 
      *                           one or more subarrays (to bulk-insert multiple rows).
      *                           E.g. ["user", "pass"] or [ ["user1", "pass1"], ["user2", "pass2"] ].
-     * @param callable $callback function (array|int $insertIds, SQLResult $result)
+     * @param callable $callback function (array|int $insertIds, SqlResult $result)
      */
     public function insert(array $columns, array $values, callable $callback = null)
     {

@@ -5,7 +5,7 @@ namespace PeachySQL;
 /**
  * Contains rows, affected count, and the query string for a completed SQL query
  */
-class SQLResult
+class SqlResult
 {
     /**
      * An array of rows selected in the query
