@@ -22,8 +22,8 @@ class DbTest extends \PHPUnit_Framework_TestCase
         $implementations = [];
 
         $options = [
-            PeachySQL::OPT_TABLE => 'Users',
-            PeachySQL::OPT_COLUMNS => ['user_id', 'fname', 'lname', 'dob'],
+            PeachySql::OPT_TABLE => 'Users',
+            PeachySql::OPT_COLUMNS => ['user_id', 'fname', 'lname', 'dob'],
         ];
 
         if ($config["testWith"]["mysql"]) {
@@ -41,7 +41,7 @@ class DbTest extends \PHPUnit_Framework_TestCase
     /**
      * @dataProvider dbTypeProvider
      */
-    public function testTransactions(PeachySQL $peachySql)
+    public function testTransactions(PeachySql $peachySql)
     {
         $peachySql->begin(); // start transaction
 
@@ -70,7 +70,7 @@ class DbTest extends \PHPUnit_Framework_TestCase
     /**
      * @dataProvider dbTypeProvider
      */
-    public function testInsertAssoc(PeachySQL $peachySql)
+    public function testInsertAssoc(PeachySql $peachySql)
     {
         $colVals = [
             'fname' => 'Theodore',
@@ -90,7 +90,7 @@ class DbTest extends \PHPUnit_Framework_TestCase
     /**
      * @dataProvider dbTypeProvider
      */
-    public function testException(PeachySQL $peachySql)
+    public function testException(PeachySql $peachySql)
     {
         $badQuery = 'SELECT * FROM nonExistentTable WHERE';
 
@@ -104,7 +104,7 @@ class DbTest extends \PHPUnit_Framework_TestCase
     /**
      * @dataProvider dbTypeProvider
      */
-    public function testBasic(PeachySQL $peachySql)
+    public function testBasic(PeachySql $peachySql)
     {
         $cols = ['fname', 'lname', 'dob'];
 

@@ -7,7 +7,7 @@ namespace PeachySQL;
  * 
  * @author Theodore Brown <https://github.com/theodorejb>
  */
-class TSQL extends PeachySQL
+class TSQL extends PeachySql
 {
     /**
      * Option key for specifying the table's ID column (used to retrieve insert IDs)

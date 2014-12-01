@@ -6,11 +6,11 @@ namespace PeachySQL;
  * Tests for the PeachySQL library.
  * @author Theodore Brown <https://github.com/theodorejb>
  */
-class PeachySQLTest extends \PHPUnit_Framework_TestCase
+class PeachySqlTest extends \PHPUnit_Framework_TestCase
 {
     public function testBuildSelectQueryAllRows()
     {
-        $actual = PeachySQL::buildSelectQuery("TestTable");
+        $actual = PeachySql::buildSelectQuery("TestTable");
         $expected = "SELECT * FROM TestTable";
         $this->assertSame($expected, $actual["sql"]);
     }
@@ -27,7 +27,7 @@ class PeachySQLTest extends \PHPUnit_Framework_TestCase
 
         $validCols = array_keys($where);
 
-        $actual = PeachySQL::buildSelectQuery("TestTable", $cols, $validCols, $where);
+        $actual = PeachySql::buildSelectQuery("TestTable", $cols, $validCols, $where);
         $expected = "SELECT username, password FROM TestTable WHERE "
                   . "username = ? AND password = ? AND othercol IS NULL";
         $this->assertSame($expected, $actual["sql"]);
@@ -39,7 +39,7 @@ class PeachySQLTest extends \PHPUnit_Framework_TestCase
      */
     public function testBuildSelectQueryInvalidColumns()
     {
-        PeachySQL::buildSelectQuery("TestTable", ["fizzbuzz"], ["foo", "bar"]);
+        PeachySql::buildSelectQuery("TestTable", ["fizzbuzz"], ["foo", "bar"]);
     }
 
     /**
@@ -47,7 +47,7 @@ class PeachySQLTest extends \PHPUnit_Framework_TestCase
      */
     public function testBuildSelectQueryInvalidColumnsInWhere()
     {
-        PeachySQL::buildSelectQuery("TestTable", ["foo"], ["foo", "bar"], ["fizzbuzz" => null]);
+        PeachySql::buildSelectQuery("TestTable", ["foo"], ["foo", "bar"], ["fizzbuzz" => null]);
     }
 
     public function testBuildUpdateQuery()
@@ -58,7 +58,7 @@ class PeachySQLTest extends \PHPUnit_Framework_TestCase
         ];
 
         $where = ["id" => 21];
-        $actual = PeachySQL::buildUpdateQuery("TestTable", $set, $where, ["id", "username", "othercol"]);
+        $actual = PeachySql::buildUpdateQuery("TestTable", $set, $where, ["id", "username", "othercol"]);
         $expected = "UPDATE TestTable SET username = ?, othercol = ? WHERE id = ?";
 
         $this->assertSame($expected, $actual["sql"]);
@@ -70,7 +70,7 @@ class PeachySQLTest extends \PHPUnit_Framework_TestCase
      */
     public function testBuildUpdateQueryInvalidColumns()
     {
-        PeachySQL::buildUpdateQuery("TestTable", ["fizzbuzz" => null], ["bar" => 1], ["foo", "bar"]);
+        PeachySql::buildUpdateQuery("TestTable", ["fizzbuzz" => null], ["bar" => 1], ["foo", "bar"]);
     }
 
     /**
@@ -78,13 +78,13 @@ class PeachySQLTest extends \PHPUnit_Framework_TestCase
      */
     public function testBuildUpdateQueryInvalidColumnsInWhere()
     {
-        PeachySQL::buildUpdateQuery("TestTable", ["foo" => null], ["fizzbuzz" => 1], ["foo", "bar"]);
+        PeachySql::buildUpdateQuery("TestTable", ["foo" => null], ["fizzbuzz" => 1], ["foo", "bar"]);
     }
 
     public function testBuildDeleteQuery()
     {
         $where = ["id" => 5, "username" => ["tester", "tester2"]];
-        $actual = PeachySQL::buildDeleteQuery("TestTable", $where, ["id", "username"]);
+        $actual = PeachySql::buildDeleteQuery("TestTable", $where, ["id", "username"]);
         $expected = "DELETE FROM TestTable WHERE id = ? AND username IN(?,?)";
 
         $this->assertSame($expected, $actual["sql"]);
@@ -96,6 +96,6 @@ class PeachySQLTest extends \PHPUnit_Framework_TestCase
      */
     public function testBuildDeleteQueryInvalidColumnsInWhere()
     {
-        PeachySQL::buildDeleteQuery("TestTable", ["fizzbuzz" => null], ["foo", "bar"]);
+        PeachySql::buildDeleteQuery("TestTable", ["fizzbuzz" => null], ["foo", "bar"]);
     }
 }

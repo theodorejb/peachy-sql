@@ -9,7 +9,7 @@ use PeachySQL\QueryBuilder\Query;
  *
  * @author Theodore Brown <https://github.com/theodorejb>
  */
-abstract class PeachySQL
+abstract class PeachySql
 {
     /**
      * Option key for specifying the table to select, insert, update, and delete from

@@ -7,7 +7,7 @@ namespace PeachySQL;
  * 
  * @author Theodore Brown <https://github.com/theodorejb>
  */
-class Mysql extends PeachySQL
+class Mysql extends PeachySql
 {
     /**
      * Options key for specifying the interval between successive auto-incremented 
