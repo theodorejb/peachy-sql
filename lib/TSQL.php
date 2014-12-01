@@ -63,34 +63,34 @@ class TSQL extends PeachySQL
 
     /**
      * Begins a SQLSRV transaction
-     * @throws SQLException if an error occurs
+     * @throws SqlException if an error occurs
      */
     public function begin()
     {
         if (!sqlsrv_begin_transaction($this->connection)) {
-            throw new SQLException("Failed to begin transaction", sqlsrv_errors());
+            throw new SqlException("Failed to begin transaction", sqlsrv_errors());
         }
     }
 
     /**
      * Commits a transaction begun with begin()
-     * @throws SQLException if an error occurs
+     * @throws SqlException if an error occurs
      */
     public function commit()
     {
         if (!sqlsrv_commit($this->connection)) {
-            throw new SQLException("Failed to commit transaction", sqlsrv_errors());
+            throw new SqlException("Failed to commit transaction", sqlsrv_errors());
         }
     }
 
     /**
      * Rolls back a transaction begun with begin()
-     * @throws SQLException if an error occurs
+     * @throws SqlException if an error occurs
      */
     public function rollback()
     {
         if (!sqlsrv_rollback($this->connection)) {
-            throw new SQLException("Failed to roll back transaction", sqlsrv_errors());
+            throw new SqlException("Failed to roll back transaction", sqlsrv_errors());
         }
     }
 
@@ -100,7 +100,7 @@ class TSQL extends PeachySQL
      * @param array    $params   Values to bind to placeholders in the query
      * @param callable $callback
      * @return SqlResult|mixed A SqlResult object, or the return value of the specified callback
-     * @throws SQLException if an error occurs
+     * @throws SqlException if an error occurs
      */
     public function query($sql, array $params = [], callable $callback = null)
     {
@@ -111,7 +111,7 @@ class TSQL extends PeachySQL
         }
 
         if (!$stmt = sqlsrv_query($this->connection, $sql, $params)) {
-            throw new SQLException("Query failed", sqlsrv_errors(), $sql, $params);
+            throw new SqlException("Query failed", sqlsrv_errors(), $sql, $params);
         }
 
         $rows = [];
@@ -131,7 +131,7 @@ class TSQL extends PeachySQL
         } while ($nextResult = sqlsrv_next_result($stmt));
 
         if ($nextResult === false) {
-            throw new SQLException("Failed to get next result", sqlsrv_errors(), $sql, $params);
+            throw new SqlException("Failed to get next result", sqlsrv_errors(), $sql, $params);
         }
 
         sqlsrv_free_stmt($stmt);

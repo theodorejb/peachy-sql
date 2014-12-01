@@ -46,7 +46,7 @@ abstract class PeachySQL
      * @param array    $params
      * @param callable $callback
      * @return SqlResult|mixed The return value of the callback
-     * @throws SQLException if an error occurs
+     * @throws SqlException if an error occurs
      */
     abstract public function query($sql, array $params = [], callable $callback = null);
 

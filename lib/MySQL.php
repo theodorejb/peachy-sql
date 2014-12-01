@@ -64,39 +64,39 @@ class MySQL extends PeachySQL
 
     /**
      * Begins a mysqli transaction
-     * @throws SQLException if an error occurs
+     * @throws SqlException if an error occurs
      */
     public function begin()
     {
         // begin_transaction is new in PHP 5.5
         if (method_exists($this->connection, 'begin_transaction')) {
             if (!$this->connection->begin_transaction()) {
-                throw new SQLException("Failed to begin transaction", $this->connection->error_list);
+                throw new SqlException("Failed to begin transaction", $this->connection->error_list);
             }
         } elseif (!$this->connection->query('BEGIN;')) {
-            throw new SQLException("Failed to begin transaction", $this->connection->error_list);
+            throw new SqlException("Failed to begin transaction", $this->connection->error_list);
         }
     }
 
     /**
      * Commits a transaction begun with begin()
-     * @throws SQLException if an error occurs
+     * @throws SqlException if an error occurs
      */
     public function commit()
     {
         if (!$this->connection->commit()) {
-            throw new SQLException("Failed to commit transaction", $this->connection->error_list);
+            throw new SqlException("Failed to commit transaction", $this->connection->error_list);
         }
     }
 
     /**
      * Rolls back a transaction begun with begin()
-     * @throws SQLException if an error occurs
+     * @throws SqlException if an error occurs
      */
     public function rollback()
     {
         if (!$this->connection->rollback()) {
-            throw new SQLException("Failed to roll back transaction", $this->connection->error_list);
+            throw new SqlException("Failed to roll back transaction", $this->connection->error_list);
         }
     }
 
@@ -106,7 +106,7 @@ class MySQL extends PeachySQL
      * @param array    $params   Values to bind to placeholders in the query
      * @param callable $callback
      * @return MysqlResult|mixed A MysqlResult object, or the return value of the specified callback
-     * @throws SQLException if an error occurs
+     * @throws SqlException if an error occurs
      */
     public function query($sql, array $params = [], callable $callback = null)
     {
@@ -118,7 +118,7 @@ class MySQL extends PeachySQL
 
         // prepare the statement
         if (!$stmt = $this->connection->prepare($sql)) {
-            throw new SQLException("Failed to prepare statement", $this->connection->error_list, $sql, $params);
+            throw new SqlException("Failed to prepare statement", $this->connection->error_list, $sql, $params);
         }
 
         if (!empty($params)) {
@@ -130,12 +130,12 @@ class MySQL extends PeachySQL
             }
 
             if (!call_user_func_array(array($stmt, 'bind_param'), $typesValues)) {
-                throw new SQLException("Failed to bind params", $stmt->error_list, $sql, $params);
+                throw new SqlException("Failed to bind params", $stmt->error_list, $sql, $params);
             }
         }
 
         if (!$stmt->execute()) {
-            throw new SQLException("Failed to execute prepared statement", $stmt->error_list, $sql, $params);
+            throw new SqlException("Failed to execute prepared statement", $stmt->error_list, $sql, $params);
         }
 
         $insertId = $stmt->insert_id; // id of first inserted row, otherwise 0
@@ -157,7 +157,7 @@ class MySQL extends PeachySQL
             }
 
             if (!call_user_func_array(array($stmt, 'bind_result'), $fields)) {
-                throw new SQLException("Failed to bind results", $stmt->error_list, $sql, $params);
+                throw new SqlException("Failed to bind results", $stmt->error_list, $sql, $params);
             }
 
             $i = 0;

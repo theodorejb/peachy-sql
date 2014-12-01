@@ -96,7 +96,7 @@ class DbTest extends \PHPUnit_Framework_TestCase
 
         try {
             $peachySql->query($badQuery); // should throw exception
-        } catch (SQLException $e) {
+        } catch (SqlException $e) {
             $this->assertSame($badQuery, $e->getQuery());
         }
     }
