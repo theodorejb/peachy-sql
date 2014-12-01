@@ -2,6 +2,8 @@
 
 namespace PeachySQL;
 
+use PeachySQL\QueryBuilder\Insert;
+
 /**
  * Implements the standard PeachySQL features for MySQL (using mysqli)
  * 
@@ -200,7 +202,7 @@ class Mysql extends PeachySql
             };
         }
 
-        $query = self::buildInsertQuery($this->options[self::OPT_TABLE], $columns, $this->options[self::OPT_COLUMNS], $values);
+        $query = Insert::buildQuery($this->options[self::OPT_TABLE], $columns, $this->options[self::OPT_COLUMNS], $values);
         $result = $this->query($query["sql"], $query["params"]);
         $firstId = $result->getInsertId(); // id of first inserted row, or zero if no insert ID
 
@@ -217,20 +219,6 @@ class Mysql extends PeachySql
         }
 
         return $callback($ids, $result);
-    }
-
-    /**
-     * Generates an INSERT query with placeholders for values
-     * @param string $tableName
-     * @param array  $columns
-     * @param array  $values
-     * @return array
-     */
-    public static function buildInsertQuery($tableName, array $columns, array $validColumns, array $values)
-    {
-        $comp = self::buildInsertQueryComponents($tableName, $columns, $validColumns, $values);
-        $comp['sql'] = $comp['insertStr'] . $comp['valStr'];
-        return $comp;
     }
 
     /**

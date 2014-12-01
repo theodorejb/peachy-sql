@@ -2,6 +2,8 @@
 
 namespace PeachySQL;
 
+use PeachySQL\QueryBuilder\Insert;
+
 /**
  * Implements the standard PeachySQL features for SQL Server (using SQLSRV extension)
  * 
@@ -159,7 +161,7 @@ class SqlServer extends PeachySql
             };
         }
 
-        $query = self::buildInsertQuery($this->options[self::OPT_TABLE], $columns, $this->options[self::OPT_COLUMNS], $values, $this->options[self::OPT_IDCOL]);
+        $query = Insert::buildQuery($this->options[self::OPT_TABLE], $columns, $this->options[self::OPT_COLUMNS], $values, $this->options[self::OPT_IDCOL]);
         $result = $this->query($query["sql"], $query["params"]);
         $rows = $result->getAll(); // contains any insert IDs
 
@@ -170,33 +172,5 @@ class SqlServer extends PeachySql
         }
 
         return $callback($ids, $result);
-    }
-
-    /**
-     * Generates an INSERT query with placeholders for values and optional OUTPUT clause
-     * @param string $tableName
-     * @param array  $columns
-     * @param array  $values
-     * @param string $idCol
-     * @return array
-     */
-    public static function buildInsertQuery($tableName, array $columns, $validColumns, array $values, $idCol = null)
-    {
-        $comp = self::buildInsertQueryComponents($tableName, $columns, $validColumns, $values);
-
-        // Insert IDs must be output into a table variable so that the query will work on tables
-        // with insert triggers (see http://technet.microsoft.com/en-us/library/ms177564.aspx).
-        if ($idCol !== null && $idCol !== '') {
-            $decStr = "DECLARE @ids TABLE(RowID int); ";
-            $outStr = " OUTPUT inserted.$idCol INTO @ids(RowID)";
-            $selStr = "; SELECT * FROM @ids;";
-        } else {
-            $decStr = '';
-            $outStr = '';
-            $selStr = '';
-        }
-
-        $comp['sql'] = $decStr . $comp['insertStr'] . $outStr . $comp['valStr'] . $selStr;
-        return $comp;
     }
 }

@@ -2,7 +2,9 @@
 
 namespace PeachySQL;
 
-use PeachySQL\QueryBuilder\Query;
+use PeachySQL\QueryBuilder\Delete;
+use PeachySQL\QueryBuilder\Select;
+use PeachySQL\QueryBuilder\Update;
 
 /**
  * Provides reusable functionality and can be extended by database-specific classes
@@ -105,8 +107,8 @@ abstract class PeachySql
             };
         }
 
-        $query = self::buildSelectQuery($this->options[self::OPT_TABLE], $columns, $this->options[self::OPT_COLUMNS], $where);
-        return $this->query($query["sql"], $query["params"], $callback);
+        $query = Select::buildQuery($this->options[self::OPT_TABLE], $columns, $this->options[self::OPT_COLUMNS], $where);
+        return $this->query($query['sql'], $query['params'], $callback);
     }
 
     /**
@@ -142,8 +144,8 @@ abstract class PeachySql
             };
         }
 
-        $query = self::buildUpdateQuery($this->options[self::OPT_TABLE], $set, $where, $this->options[self::OPT_COLUMNS]);
-        return $this->query($query["sql"], $query["params"], $callback);
+        $query = Update::buildQuery($this->options[self::OPT_TABLE], $set, $where, $this->options[self::OPT_COLUMNS]);
+        return $this->query($query['sql'], $query['params'], $callback);
     }
 
     /**
@@ -162,167 +164,7 @@ abstract class PeachySql
             };
         }
 
-        $query = self::buildDeleteQuery($this->options[self::OPT_TABLE], $where, $this->options[self::OPT_COLUMNS]);
+        $query = Delete::buildQuery($this->options[self::OPT_TABLE], $where, $this->options[self::OPT_COLUMNS]);
         return $this->query($query["sql"], $query["params"], $callback);
-    }
-
-    /**
-     * Builds a selct query using the specified table name, columns, and where clause array.
-     * @param  string   $tableName The name of the table to query
-     * @param  string[] $columns   An array of columns to select from (all columns if empty)
-     * @param  string[] $validCols An array of valid columns (to prevent SQL injection)
-     * @param  array    $where     An array of columns/values to filter the select query
-     * @return array    An array containing the SELECT query and bound parameters
-     */
-    public static function buildSelectQuery($tableName, array $columns = [], array $validCols = [], array $where = [])
-    {
-        Query::validateTableName($tableName);
-        $whereClause = self::buildWhereClause($where, $validCols);
-
-        if (!empty($columns)) {
-            Query::validateColumns($columns, $validCols);
-            $insertCols = implode(', ', $columns);
-        } else {
-            $insertCols = '*';
-        }
-
-        $sql = "SELECT $insertCols FROM $tableName" . $whereClause["sql"];
-        return ["sql" => $sql, "params" => $whereClause["params"]];
-    }
-
-    /**
-     * @param  string $tableName
-     * @param  array  $where An array of columns/values to restrict the delete to.
-     * @return array  An array containing the sql string and bound parameters.
-     */
-    public static function buildDeleteQuery($tableName, array $where, array $validCols)
-    {
-        Query::validateTableName($tableName);
-        $whereClause = self::buildWhereClause($where, $validCols);
-        $sql = "DELETE FROM $tableName" . $whereClause["sql"];
-        return ["sql" => $sql, "params" => $whereClause["params"]];
-    }
-
-    /**
-     * @param  string   $tableName The name of the table to update.
-     * @param  array    $set       An array of columns/values to update
-     * @param  array    $where     An array of columns/values to restrict the update to.
-     * @param  string[] $validCols An array of valid columns
-     * @return array An array containing the sql string and bound parameters.
-     */
-    public static function buildUpdateQuery($tableName, array $set, array $where, array $validCols)
-    {
-        if (empty($set) || empty($where)) {
-            throw new \Exception("Set and where arrays cannot be empty");
-        }
-
-        Query::validateTableName($tableName);
-        Query::validateColumns(array_keys($set), $validCols);
-
-        $params = [];
-        $sql = "UPDATE $tableName SET ";
-
-        foreach ($set as $column => $value) {
-            $sql .= "$column = ?, ";
-            $params[] = $value;
-        }
-
-        $sql = substr_replace($sql, "", -2); // remove trailing comma
-        $whereClause = self::buildWhereClause($where, $validCols);
-        $sql .= $whereClause["sql"];
-        $allParams = array_merge($params, $whereClause["params"]);
-
-        return ["sql" => $sql, "params" => $allParams];
-    }
-
-    /**
-     * @param array  $columnVals An associative array of columns and values to
-     *                           filter selected rows. E.g. ["id" => 3] to only
-     *                           return rows where id is equal to 3. If the value
-     *                           is an array, an IN(...) clause will be used.
-     * @param string[] $validCols An array of valid columns for the table
-     * @return array An array containing the SQL WHERE clause and bound parameters.
-     */
-    private static function buildWhereClause(array $columnVals, array $validCols)
-    {
-        $sql = "";
-        $params = [];
-
-        if (!empty($columnVals)) {
-            Query::validateColumns(array_keys($columnVals), $validCols);
-            $sql .= " WHERE";
-
-            foreach ($columnVals as $column => $value) {
-                if ($value === null) {
-                    $comparison = "IS NULL";
-                } elseif (is_array($value) && !empty($value)) {
-                    // use IN(...) syntax
-                    $comparison = "IN(";
-
-                    foreach ($value as $val) {
-                        $comparison .= '?,';
-                        $params[] = $val;
-                    }
-
-                    $comparison = substr_replace($comparison, ")", -1); // replace trailing comma
-                } else {
-                    $comparison = "= ?";
-                    $params[] = $value;
-                }
-
-                $sql .= " $column $comparison AND";
-            }
-
-            $sql = substr_replace($sql, "", -4); // remove the trailing AND
-        }
-
-        return ["sql" => $sql, "params" => $params];
-    }
-
-    /**
-     * Returns an associative array containing bound params and separate INSERT
-     * and VALUES strings. Allows reusability across database implementations.
-     * 
-     * @param string   $tableName The name of the table to insert into
-     * @param string[] $columns   An array of columns to insert into.
-     * @param string[] $validCols An array of valid columns
-     * @param array    $values    A two-dimensional array of values to insert into the columns.
-     * @return array
-     */
-    protected static function buildInsertQueryComponents($tableName, array $columns, array $validCols, array $values)
-    {
-        // make sure columns and values are specified
-        if (empty($columns) || empty($values[0])) {
-            throw new \Exception("Columns and values to insert must be specified");
-        }
-
-        Query::validateTableName($tableName);
-        Query::validateColumns($columns, $validCols);
-
-        $insertCols = implode(', ', $columns);
-        $insert = "INSERT INTO $tableName ($insertCols)";
-
-        $bulkInsert = isset($values[0]) && is_array($values[0]);
-        if (!$bulkInsert) {
-            $values = [$values]; // make sure values is two-dimensional
-        }
-
-        $params = [];
-        $valStr = ' VALUES';
-
-        foreach ($values as $valArr) {
-            $valStr .= ' (' . str_repeat('?,', count($valArr));
-            $valStr = substr_replace($valStr, '),', -1); // replace trailing comma
-            $params = array_merge($params, $valArr);
-        }
-
-        $valStr = substr_replace($valStr, '', -1); // remove trailing comma
-
-        return [
-            'insertStr' => $insert,
-            'valStr'    => $valStr,
-            'params'    => $params,
-            'isBulk'    => $bulkInsert,
-        ];
     }
 }
