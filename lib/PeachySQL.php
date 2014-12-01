@@ -69,7 +69,7 @@ abstract class PeachySQL
     /**
      * Allows PeachySQL options to be changed at any time
      * @param array $options
-     * @throws Exception if an option is invalid
+     * @throws \Exception if an option is invalid
      */
     public function setOptions(array $options)
     {
@@ -93,6 +93,7 @@ abstract class PeachySQL
      *                           filter selected rows. E.g. ["id" => 3] to only
      *                           return rows where the id column is equal to 3.
      * @param callable $callback function (SQLResult $result)
+     * @return array
      */
     public function select(array $columns = [], array $where = [], callable $callback = null)
     {
