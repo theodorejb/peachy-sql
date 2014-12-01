@@ -27,7 +27,7 @@ class DbTest extends \PHPUnit_Framework_TestCase
         ];
 
         if ($config["testWith"]["mysql"]) {
-            $implementations[] = [new MySQL(TestDbConnector::getMysqlConn(), $options)];
+            $implementations[] = [new Mysql(TestDbConnector::getMysqlConn(), $options)];
         }
 
         if ($config["testWith"]["sqlsrv"]) {
