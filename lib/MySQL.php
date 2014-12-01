@@ -101,17 +101,17 @@ class MySQL extends PeachySQL
     }
 
     /**
-     * Executes a single query and passes a MySQLResult object to the callback.
+     * Executes a single query and passes a MysqlResult object to the callback.
      * @param string   $sql
      * @param array    $params   Values to bind to placeholders in the query
      * @param callable $callback
-     * @return MySQLResult|mixed A MySQLResult object, or the return value of the specified callback
+     * @return MysqlResult|mixed A MysqlResult object, or the return value of the specified callback
      * @throws SQLException if an error occurs
      */
     public function query($sql, array $params = [], callable $callback = null)
     {
         if ($callback === null) {
-            $callback = function (MySQLResult $result) {
+            $callback = function (MysqlResult $result) {
                 return $result;
             };
         }
@@ -177,7 +177,7 @@ class MySQL extends PeachySQL
         }
 
         $stmt->close();
-        return $callback(new MySQLResult($rows, $affected, $sql, $insertId));
+        return $callback(new MysqlResult($rows, $affected, $sql, $insertId));
     }
 
     /**
@@ -190,7 +190,7 @@ class MySQL extends PeachySQL
      * @param array    $values   A flat array of values (to insert one row), or an array containing 
      *                           one or more subarrays (to bulk-insert multiple rows).
      *                           E.g. ["user", "pass"] or [ ["user1", "pass1"], ["user2", "pass2"] ].
-     * @param callable $callback function (array|int $insertIds, MySQLResult $result)
+     * @param callable $callback function (array|int $insertIds, MysqlResult $result)
      */
     public function insert(array $columns, array $values, callable $callback = null)
     {
