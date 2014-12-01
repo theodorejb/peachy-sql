@@ -3,10 +3,10 @@
 namespace PeachySQL;
 
 /**
- * Tests for the T-SQL PeachySQL implementation
+ * Tests for the SQL Server PeachySQL implementation
  * @author Theodore Brown <https://github.com/theodorejb>
  */
-class TSQLTest extends \PHPUnit_Framework_TestCase
+class SqlServerTest extends \PHPUnit_Framework_TestCase
 {
     public function columnValsProvider()
     {
@@ -24,7 +24,7 @@ class TSQLTest extends \PHPUnit_Framework_TestCase
     public function testBuildInsertQueryWithoutInsertId($columns, $values)
     {
         // a two-dimensional array should insert multiple rows
-        $actual = TSQL::buildInsertQuery('TestTable', $columns, $columns, $values);
+        $actual = SqlServer::buildInsertQuery('TestTable', $columns, $columns, $values);
         $expected = 'INSERT INTO TestTable (col1, col2) VALUES (?,?), (?,?)';
         $this->assertSame($expected, $actual['sql']);
         $this->assertSame(['foo1', 'foo2', 'bar1', 'bar2'], $actual['params']);
@@ -35,7 +35,7 @@ class TSQLTest extends \PHPUnit_Framework_TestCase
      */
     public function testBuildInsertQueryWithInsertId($columns, $values)
     {
-        $actual = TSQL::buildInsertQuery('TestTable', $columns, $columns, $values, "pkColumn");
+        $actual = SqlServer::buildInsertQuery('TestTable', $columns, $columns, $values, "pkColumn");
         $expected = 'DECLARE @ids TABLE(RowID int);'
         . ' INSERT INTO TestTable (col1, col2)'
         . ' OUTPUT inserted.pkColumn INTO @ids(RowID)'
@@ -50,6 +50,6 @@ class TSQLTest extends \PHPUnit_Framework_TestCase
      */
     public function testBuildInsertQueryInvalidColumns()
     {
-        TSQL::buildInsertQuery("TestTable", ["foo", "fizzbuzz"], ["foo", "bar"], ["val1", "val2"]);
+        SqlServer::buildInsertQuery("TestTable", ["foo", "fizzbuzz"], ["foo", "bar"], ["val1", "val2"]);
     }
 }

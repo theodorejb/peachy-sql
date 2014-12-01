@@ -31,8 +31,8 @@ class DbTest extends \PHPUnit_Framework_TestCase
         }
 
         if ($config["testWith"]["sqlsrv"]) {
-            $tsqlOptions = array_merge($options, [TSQL::OPT_IDCOL => 'user_id']);
-            $implementations[] = [new TSQL(TestDbConnector::getSqlsrvConn(), $tsqlOptions)];
+            $sqlServerOptions = array_merge($options, [SqlServer::OPT_IDCOL => 'user_id']);
+            $implementations[] = [new SqlServer(TestDbConnector::getSqlsrvConn(), $sqlServerOptions)];
         }
 
         return $implementations;

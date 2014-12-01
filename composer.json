@@ -6,7 +6,7 @@
         "database",
         "abstraction",
         "mysql",
-        "tsql",
+        "SQL Server",
         "sqlsrv"
     ],
     "authors": [

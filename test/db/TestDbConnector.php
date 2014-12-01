@@ -55,13 +55,13 @@ class TestDbConnector
                 throw new \Exception("Failed to connect to SQL server: " . print_r(sqlsrv_errors(), true));
             }
 
-            self::createTsqlTestTable(self::$sqlsrvConn);
+            self::createSqlServerTestTable(self::$sqlsrvConn);
         }
 
         return self::$sqlsrvConn;
     }
 
-    private static function createTsqlTestTable($conn)
+    private static function createSqlServerTestTable($conn)
     {
         $sql = "CREATE TABLE Users (
                     user_id INT PRIMARY KEY IDENTITY(1,1) NOT NULL,
@@ -71,7 +71,7 @@ class TestDbConnector
                 );";
 
         if (!sqlsrv_query($conn, $sql)) {
-            throw new \Exception("Failed to create T-SQL test table: " . print_r(sqlsrv_errors(), true));
+            throw new \Exception("Failed to create SQL Server test table: " . print_r(sqlsrv_errors(), true));
         }
     }
 
@@ -101,7 +101,7 @@ class TestDbConnector
 
         if (self::$sqlsrvConn) {
             if (!sqlsrv_query(self::$sqlsrvConn, $sql)) {
-                throw new \Exception("Failed to drop T-SQL test table: " . print_r(sqlsrv_errors(), true));
+                throw new \Exception("Failed to drop SQL Server test table: " . print_r(sqlsrv_errors(), true));
             }
         }
     }

@@ -3,11 +3,11 @@
 namespace PeachySQL;
 
 /**
- * Implements the standard PeachySQL features for T-SQL (using SQLSRV extension)
+ * Implements the standard PeachySQL features for SQL Server (using SQLSRV extension)
  * 
  * @author Theodore Brown <https://github.com/theodorejb>
  */
-class TSQL extends PeachySql
+class SqlServer extends PeachySql
 {
     /**
      * Option key for specifying the table's ID column (used to retrieve insert IDs)
@@ -21,10 +21,10 @@ class TSQL extends PeachySql
     private $connection;
 
     /**
-     * Default T-SQL-specific options
+     * Default SQL Server-specific options
      * @var array
      */
-    private $tsqlOptions = [
+    private $sqlServerOptions = [
         self::OPT_IDCOL => null,
     ];
 
@@ -57,7 +57,7 @@ class TSQL extends PeachySql
      */
     public function setOptions(array $options)
     {
-        $this->options = array_merge($this->tsqlOptions, $this->options);
+        $this->options = array_merge($this->sqlServerOptions, $this->options);
         parent::setOptions($options);
     }
 
