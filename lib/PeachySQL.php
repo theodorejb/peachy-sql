@@ -2,6 +2,8 @@
 
 namespace PeachySQL;
 
+use PeachySQL\QueryBuilder\Query;
+
 /**
  * Provides reusable functionality and can be extended by database-specific classes
  *
@@ -174,11 +176,11 @@ abstract class PeachySQL
      */
     public static function buildSelectQuery($tableName, array $columns = [], array $validCols = [], array $where = [])
     {
-        self::validateTableName($tableName, "a select");
+        Query::validateTableName($tableName);
         $whereClause = self::buildWhereClause($where, $validCols);
 
         if (!empty($columns)) {
-            self::validateColumns($columns, $validCols);
+            Query::validateColumns($columns, $validCols);
             $insertCols = implode(', ', $columns);
         } else {
             $insertCols = '*';
@@ -195,7 +197,7 @@ abstract class PeachySQL
      */
     public static function buildDeleteQuery($tableName, array $where, array $validCols)
     {
-        self::validateTableName($tableName, "a delete");
+        Query::validateTableName($tableName);
         $whereClause = self::buildWhereClause($where, $validCols);
         $sql = "DELETE FROM $tableName" . $whereClause["sql"];
         return ["sql" => $sql, "params" => $whereClause["params"]];
@@ -214,8 +216,8 @@ abstract class PeachySQL
             throw new \Exception("Set and where arrays cannot be empty");
         }
 
-        self::validateTableName($tableName, "an update");
-        self::validateColumns(array_keys($set), $validCols);
+        Query::validateTableName($tableName);
+        Query::validateColumns(array_keys($set), $validCols);
 
         $params = [];
         $sql = "UPDATE $tableName SET ";
@@ -247,7 +249,7 @@ abstract class PeachySQL
         $params = [];
 
         if (!empty($columnVals)) {
-            self::validateColumns(array_keys($columnVals), $validCols);
+            Query::validateColumns(array_keys($columnVals), $validCols);
             $sql .= " WHERE";
 
             foreach ($columnVals as $column => $value) {
@@ -294,8 +296,8 @@ abstract class PeachySQL
             throw new \Exception("Columns and values to insert must be specified");
         }
 
-        self::validateTableName($tableName, "an insert");
-        self::validateColumns($columns, $validCols);
+        Query::validateTableName($tableName);
+        Query::validateColumns($columns, $validCols);
 
         $insertCols = implode(', ', $columns);
         $insert = "INSERT INTO $tableName ($insertCols)";
@@ -322,32 +324,5 @@ abstract class PeachySQL
             'params'    => $params,
             'isBulk'    => $bulkInsert,
         ];
-    }
-
-    /**
-     * Throws an exception if the table name is null or blank
-     * @param string $name
-     * @throws \Exception
-     */
-    private static function validateTableName($name, $type = "this")
-    {
-        if ($name === null || $name === "") {
-            throw new \Exception("A valid table name must be set to generate $type query");
-        }
-    }
-
-    /**
-     * Thrown an exception if a column does not exist in the array of valid columns
-     * @param string[] $columns
-     * @param string[] $validColumns
-     * @throws \UnexpectedValueException
-     */
-    private static function validateColumns(array $columns, array $validColumns)
-    {
-        foreach ($columns as $col) {
-            if (!in_array($col, $validColumns, true)) {
-                throw new \UnexpectedValueException("Invalid column '$col'");
-            }
-        }
     }
 }
