@@ -18,7 +18,6 @@ class SqlResultTest extends \PHPUnit_Framework_TestCase
         $result = new SqlResult($exampleRows, 0, "");
         $this->assertSame($exampleRows, $result->getAll());
         $this->assertSame($exampleRows[0], $result->getFirst());
-        $this->assertSame($result->getAll(), $result->getRows()); // alias
 
         $noRowsResult = new SqlResult([], 0, "");
         $this->assertSame([], $noRowsResult->getAll());

@@ -47,15 +47,6 @@ class SqlResult
     }
 
     /**
-     * Deprecated alias of getAll()
-     * @deprecated since version 2.1.0
-     */
-    public function getRows()
-    {
-        return $this->getAll();
-    }
-
-    /**
      * Returns the first selected row, or null if zero rows were returned
      * @return array
      */
