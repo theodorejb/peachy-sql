@@ -43,23 +43,21 @@ abstract class PeachySql
     abstract public function rollback();
 
     /**
-     * Executes a single query and passes a SqlResult object to the callback
-     * @param string   $sql
-     * @param array    $params
-     * @param callable $callback
-     * @return SqlResult|mixed The return value of the callback
-     * @throws SqlException if an error occurs
+     * Executes a single SQL query
+     *
+     * @param string $sql
+     * @param array  $params
+     * @return SqlResult
      */
-    abstract public function query($sql, array $params = [], callable $callback = null);
+    abstract public function query($sql, array $params = []);
 
     /**
      * Inserts the specified values into the specified columns. Performs a bulk 
      * insert if $values is two-dimensional.
      * @param array $columns
      * @param array $values
-     * @param callable $callback function ($ids, SqlResult $result)
      */
-    abstract public function insert(array $columns, array $values, callable $callback = null);
+    abstract public function insert(array $columns, array $values);
 
     /**
      * Returns the current PeachySQL options.
@@ -89,82 +87,52 @@ abstract class PeachySql
     }
 
     /**
-     * Selects the specified columns following the given where clause array.
-     * Returns the return value of the callback.
-     * @param string[] $columns  An array of columns to select (empty to select
-     *                           all columns).
-     * @param array    $where    An associative array of columns and values to
-     *                           filter selected rows. E.g. ["id" => 3] to only
-     *                           return rows where the id column is equal to 3.
-     * @param callable $callback function (SqlResult $result)
+     * Selects the specified columns following the given where clause array
+     *
+     * @param string[] $columns An array of columns to select (empty to select all columns)
+     * @param array    $where   An associative array of columns and values to filter selected rows.
+     *                          E.g. ["id" => 3] to only return rows where the id column is equal to 3.
      * @return array
      */
-    public function select(array $columns = [], array $where = [], callable $callback = null)
+    public function select(array $columns = [], array $where = [])
     {
-        if ($callback === null) {
-            $callback = function (SqlResult $result) {
-                return $result->getAll();
-            };
-        }
-
         $query = Select::buildQuery($this->options[self::OPT_TABLE], $columns, $this->options[self::OPT_COLUMNS], $where);
-        return $this->query($query['sql'], $query['params'], $callback);
+        return $this->query($query['sql'], $query['params'])->getAll();
     }
 
     /**
-     * Inserts a single row from an associative array of columns/values.
-     * @param array    $colVals  E.g. ["Username => "user1", "Password" => "pass1"]
-     * @param callable $callback function (int $insertId, SqlResult $result)
-     * @return mixed The insert ID, or the return value of the callback
+     * Inserts a single row from an associative array of columns/values
+     *
+     * @param array $colVals E.g. ["Username => "user1", "Password" => "pass1"]
+     * @return int The ID of the inserted row
      */
-    public function insertAssoc(array $colVals, callable $callback = null)
+    public function insertAssoc(array $colVals)
     {
-        if ($callback === null) {
-            $callback = function ($id) {
-                return $id;
-            };
-        }
-
-        return $this->insert(array_keys($colVals), array_values($colVals), $callback);
+        return $this->insert(array_keys($colVals), array_values($colVals));
     }
 
     /**
-     * Updates the specified columns and values in rows matching the where clause.
+     * Updates the specified columns and values in rows matching the where clause
      * 
-     * @param array    $set   E.g. ["Username" => "newName", "Password" => "newPass"]
-     * @param array    $where E.g. ["id" => 3] to update the row where id is equal to 3
-     * @param callable $callback function (SqlResult $result)
-     * @return mixed The number of affected rows, or the return value of the callback
+     * @param array $set   E.g. ["Username" => "newName", "Password" => "newPass"]
+     * @param array $where E.g. ["id" => 3] to update the row where id is equal to 3
+     * @return int The number of affected rows
      */
-    public function update(array $set, array $where, callable $callback = null)
+    public function update(array $set, array $where)
     {
-        if ($callback === null) {
-            $callback = function (SqlResult $result) {
-                return $result->getAffected();
-            };
-        }
-
         $query = Update::buildQuery($this->options[self::OPT_TABLE], $set, $where, $this->options[self::OPT_COLUMNS]);
-        return $this->query($query['sql'], $query['params'], $callback);
+        return $this->query($query['sql'], $query['params'])->getAffected();
     }
 
     /**
-     * Deletes columns from the table where the where clause matches.
-     * Returns the return value of the callback function.
-     * 
-     * @param array    $where    E.g. ["id" => 3]
-     * @param callable $callback function (SqlResult $result)
-     * @return mixed The number of affected rows, or the return value of the callback
+     * Deletes columns from the table where the where clause matches
+     *
+     * @param array $where E.g. ["id" => 3]
+     * @return int The number of affected rows
      */
-    public function delete(array $where, callable $callback = null)
+    public function delete(array $where)
     {
-        if ($callback === null) {
-            $callback = function (SqlResult $result) {
-                return $result->getAffected();
-            };
-        }
-
         $query = Delete::buildQuery($this->options[self::OPT_TABLE], $where, $this->options[self::OPT_COLUMNS]);
-        return $this->query($query["sql"], $query["params"], $callback);
+        return $this->query($query["sql"], $query["params"])->getAffected();
     }
 }

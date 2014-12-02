@@ -103,21 +103,15 @@ class Mysql extends PeachySql
     }
 
     /**
-     * Executes a single query and passes a MysqlResult object to the callback.
-     * @param string   $sql
-     * @param array    $params   Values to bind to placeholders in the query
-     * @param callable $callback
-     * @return MysqlResult|mixed A MysqlResult object, or the return value of the specified callback
+     * Executes a single MySQL query
+     *
+     * @param string $sql
+     * @param array  $params Values to bind to placeholders in the query string
+     * @return MysqlResult
      * @throws SqlException if an error occurs
      */
-    public function query($sql, array $params = [], callable $callback = null)
+    public function query($sql, array $params = [])
     {
-        if ($callback === null) {
-            $callback = function (MysqlResult $result) {
-                return $result;
-            };
-        }
-
         // prepare the statement
         if (!$stmt = $this->connection->prepare($sql)) {
             throw new SqlException("Failed to prepare statement", $this->connection->error_list, $sql, $params);
@@ -179,29 +173,23 @@ class Mysql extends PeachySql
         }
 
         $stmt->close();
-        return $callback(new MysqlResult($rows, $affected, $sql, $insertId));
+        return new MysqlResult($rows, $affected, $sql, $insertId);
     }
 
     /**
      * Inserts one or more rows into the table. If multiple rows are inserted 
      * (via nested arrays) an array of insert IDs will be passed to the callback. 
      * If inserting a single row with a flat array of values the insert ID will 
-     * instead be passed as an integer. Returns the return value of the callback.
+     * instead be passed as an integer.
      * 
      * @param string[] $columns  The columns to be inserted into. E.g. ["Username", "Password"].
      * @param array    $values   A flat array of values (to insert one row), or an array containing 
      *                           one or more subarrays (to bulk-insert multiple rows).
      *                           E.g. ["user", "pass"] or [ ["user1", "pass1"], ["user2", "pass2"] ].
-     * @param callable $callback function (array|int $insertIds, MysqlResult $result)
+     * @return int|int[]
      */
-    public function insert(array $columns, array $values, callable $callback = null)
+    public function insert(array $columns, array $values)
     {
-        if ($callback === null) {
-            $callback = function ($ids) {
-                return $ids;
-            };
-        }
-
         $query = Insert::buildQuery($this->options[self::OPT_TABLE], $columns, $this->options[self::OPT_COLUMNS], $values);
         $result = $this->query($query["sql"], $query["params"]);
         $firstId = $result->getInsertId(); // id of first inserted row, or zero if no insert ID
@@ -210,15 +198,13 @@ class Mysql extends PeachySql
             // return array of IDs
             if ($firstId) {
                 $lastId = $firstId + (count($values) - 1);
-                $ids = range($firstId, $lastId, $this->options[self::OPT_AUTO_INCREMENT_INCREMENT]);
+                return range($firstId, $lastId, $this->options[self::OPT_AUTO_INCREMENT_INCREMENT]);
             } else {
-                $ids = [];
+                return [];
             }
         } else {
-            $ids = $firstId;
+            return $firstId;
         }
-
-        return $callback($ids, $result);
     }
 
     /**

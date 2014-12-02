@@ -51,20 +51,19 @@ class DbTest extends \PHPUnit_Framework_TestCase
             'dob' => date('Y-m-d', strtotime('tomorrow'))
         ];
 
-        $peachySql->insertAssoc($colVals, function ($id) use ($peachySql, $colVals) {
-            $rows = $peachySql->select(['user_id'], ['user_id' => $id]);
-            $this->assertSame([['user_id' => $id]], $rows); // the row should be selectable
-            $peachySql->rollback(); // cancel the transaction
+        $id = $peachySql->insertAssoc($colVals);
+        $rows = $peachySql->select(['user_id'], ['user_id' => $id]);
+        $this->assertSame([['user_id' => $id]], $rows); // the row should be selectable
+        $peachySql->rollback(); // cancel the transaction
 
-            $sameRows = $peachySql->select([], ['user_id' => $id]);
-            $this->assertSame([], $sameRows); // the row should no longer exist
+        $sameRows = $peachySql->select([], ['user_id' => $id]);
+        $this->assertSame([], $sameRows); // the row should no longer exist
 
-            $peachySql->begin(); // start another transaction
-            $newId = $peachySql->insertAssoc($colVals);
-            $peachySql->commit(); // complete the transaction
-            $newRows = $peachySql->select(['user_id'], ['user_id' => $newId]);
-            $this->assertSame([['user_id' => $newId]], $newRows); // the row should exist
-        });
+        $peachySql->begin(); // start another transaction
+        $newId = $peachySql->insertAssoc($colVals);
+        $peachySql->commit(); // complete the transaction
+        $newRows = $peachySql->select(['user_id'], ['user_id' => $newId]);
+        $this->assertSame([['user_id' => $newId]], $newRows); // the row should exist
     }
 
     /**
@@ -78,13 +77,10 @@ class DbTest extends \PHPUnit_Framework_TestCase
             'dob' => date('Y-m-d', strtotime('tomorrow'))
         ];
 
-        $peachySql->insertAssoc($colVals, function ($id, SqlResult $result) use ($peachySql) {
-            $this->assertInternalType("int", $id);
-
-            $peachySql->delete(["user_id" => $id], function (SqlResult $result) {
-                $this->assertSame(1, $result->getAffected());
-            });
-        });
+        $id = $peachySql->insertAssoc($colVals);
+        $this->assertInternalType("int", $id);
+        $affected = $peachySql->delete(["user_id" => $id]);
+        $this->assertSame(1, $affected);
     }
 
     /**
@@ -125,20 +121,18 @@ class DbTest extends \PHPUnit_Framework_TestCase
             ];
         }
 
-        $peachySql->insert($cols, $vals, function ($ids, SqlResult $result) use ($peachySql, $rowCount, $expected, $cols) {
-            $this->assertGreaterThan(0, $result->getAffected());
-            $this->assertSame($rowCount, count($ids));
+        $ids = $peachySql->insert($cols, $vals);
+        $this->assertSame($rowCount, count($ids));
 
-            $rows = $peachySql->select($cols, ['user_id' => $ids]);
-            $this->assertSame($expected, $rows);
+        $rows = $peachySql->select($cols, ['user_id' => $ids]);
+        $this->assertSame($expected, $rows);
 
-            // update the inserted rows
-            $numUpdated = $peachySql->update(['lname' => 'updated'], ['user_id' => $ids]);
-            $this->assertSame($rowCount, $numUpdated);
+        // update the inserted rows
+        $numUpdated = $peachySql->update(['lname' => 'updated'], ['user_id' => $ids]);
+        $this->assertSame($rowCount, $numUpdated);
 
-            // delete the inserted rows
-            $numDeleted = $peachySql->delete(['user_id' => $ids]);
-            $this->assertSame($rowCount, $numDeleted);
-        });
+        // delete the inserted rows
+        $numDeleted = $peachySql->delete(['user_id' => $ids]);
+        $this->assertSame($rowCount, $numDeleted);
     }
 }
