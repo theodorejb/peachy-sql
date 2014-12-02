@@ -9,17 +9,19 @@ It supports both MySQL (via MySQLi) and SQL Server (via Microsoft's
 
 ## Installation
 
-To install via [Composer](https://getcomposer.org/), add the following to the composer.json file in your project root:
+To install via [Composer](https://getcomposer.org/), add the following to the
+composer.json file in your project root:
 
 ```json
 {
     "require": {
-        "theodorejb/peachy-sql": "2.x"
+        "theodorejb/peachy-sql": "3.x"
     }
 }
 ```
 
-Then run `composer install` and require `vendor/autoload.php` in your application's bootstrap file.
+Then run `composer install` and require `vendor/autoload.php` in your
+application's bootstrap file.
 
 ## Usage
 
@@ -47,9 +49,11 @@ echo json_encode($result->getAll());
 Because PeachySQL always returns selected rows as an associative array,
 it is easy to make changes to the data structure and output it as JSON.
 
-In addition to `getAll()`, the `SQLResult` object returned by `query()` has `getFirst()`, `getAffected()`, and
-`getQuery()` methods (to return the first selected row, the number of affected rows, and the executed query string,
-respectively). If using MySQL, `query()` will return an extended `MySQLResult` object which adds a `getInsertId()` method.
+In addition to `getAll()`, the `SQLResult` object returned by `query()` has
+`getFirst()`, `getAffected()`, and `getQuery()` methods (to return the first
+selected row, the number of affected rows, and the executed query string,
+respectively). If using MySQL, `query()` will return an extended `MySQLResult`
+object which adds a `getInsertId()` method.
 
 ### Shorthand methods
 
@@ -76,28 +80,39 @@ $userTable = new PeachySQL\SqlServer($sqlSrvConn, [
 ]);
 ```
 
-You can then make use of PeachySQL's five shorthand methods: `select()`, `insert()`, `insertAssoc()`, `update()`,
-and `delete()`. To prevent SQL injection, the queries PeachySQL generates for these methods always use bound
-parameters for values, and column names are checked against the list of valid columns in the options array.
+You can then make use of PeachySQL's five shorthand methods: `select()`,
+`insertOne()`, `insertBulk()`, `update()`, and `delete()`. To prevent SQL
+injection, the queries PeachySQL generates for these methods always use bound
+parameters for values, and column names are checked against the list of valid
+columns in the options array.
 
 ```php
 // select first and last name columns where user_id is equal to 5
 $rows = $userTable->select(['fname', 'lname'], ['user_id' => 5]);
 
+// insert a single row from an associative array
+$userData = ['fname' => 'Donald', 'lname' => 'Chamberlin'];
+$id = $userTable->insertOne($userData)->getId();
+
 // bulk-insert 3 rows into the Users table
 $userData = [
-    ['Theodore', 'Brown'],
-    ['Grace',    'Hopper'],
-    ['Douglas',  'Engelbart']
+    [
+        'fname' => 'Theodore',
+        'lname' => 'Brown'
+    ],
+    [
+        'fname' => 'Grace',
+        'lname' => 'Hopper'
+    ],
+    [
+        'fname' => 'Douglas',
+        'lname' => 'Engelbart'
+    ]
 ];
 
 // $ids will contain an array of the values inserted
 // into the auto-incremented user_id column.
-$ids = $userTable->insert(['fname', 'lname'], $userData);
-
-// insert a single row from an associative array
-$userData = ['fname' => 'Donald', 'lname' => 'Chamberlin'];
-$id = $userTable->insertAssoc($userData);
+$ids = $userTable->insertBulk($userData)->getIds();
 
 // update the user with user_id 4
 $newData = ['fname' => 'Raymond', 'lname' => 'Boyce'];
@@ -113,15 +128,28 @@ Call the `begin()` method to start a transaction.
 You can then call `query()` and any of the shorthand methods as needed,
 before committing or rolling back the transaction with `commit()` or `rollback()`.
 
+### Arbitrarily large bulk inserts
+
+SQL Server allows a maximum of 1,000 rows to be inserted at a time,
+and limits individual queries to 2,099 or fewer bound parameters.
+MySQL supports a maximum of 65,536 bound parameters per query.
+These limits can be easily reached when attempting to bulk-insert hundreds
+or thousands of rows at a time. To avoid these limits, PeachySQL automatically
+splits large bulk insert queries into batches to efficiently handle any number
+of rows. The default limits (listed above) can be customized via the
+"maxBoundParams" and "maxInsertRows" options.
+
 ### Other methods and options
 
 The database connection can be swapped out at any time with `setConnection()`,
-and `setOptions()` and `getOptions()` methods allow PeachySQL options to be changed and retrieved at will.
+and `setOptions()` and `getOptions()` methods allow PeachySQL options to be
+changed and retrieved at will.
 
-In addition to the "table", "columns", and SQL Server-specific "idCol" options mentioned above,
-there is a MySQL-specific "autoIncrementIncrement" option which can be used to set the interval
-between successive auto-incremented values in the table (defaults to 1). This option is used to
-determine the array of insert IDs for bulk-inserts, since MySQL only provides the first insert ID.
+In addition to the previously mentioned options, there is a MySQL-specific
+"autoIncrementIncrement" option which can be used to set the interval between
+successive auto-incremented values in the table (defaults to 1). This option is
+used to determine the array of insert IDs for bulk-inserts, since MySQL only
+provides the first insert ID.
 
 ## Author
 
