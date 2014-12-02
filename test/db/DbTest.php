@@ -51,7 +51,7 @@ class DbTest extends \PHPUnit_Framework_TestCase
             'dob' => date('Y-m-d', strtotime('tomorrow'))
         ];
 
-        $id = $peachySql->insertAssoc($colVals);
+        $id = $peachySql->insertOne($colVals)->getId();
         $rows = $peachySql->select(['user_id'], ['user_id' => $id]);
         $this->assertSame([['user_id' => $id]], $rows); // the row should be selectable
         $peachySql->rollback(); // cancel the transaction
@@ -69,7 +69,7 @@ class DbTest extends \PHPUnit_Framework_TestCase
     /**
      * @dataProvider dbTypeProvider
      */
-    public function testInsertAssoc(PeachySql $peachySql)
+    public function testInsertOne(PeachySql $peachySql)
     {
         $colVals = [
             'fname' => 'Theodore',
@@ -77,7 +77,7 @@ class DbTest extends \PHPUnit_Framework_TestCase
             'dob' => date('Y-m-d', strtotime('tomorrow'))
         ];
 
-        $id = $peachySql->insertAssoc($colVals);
+        $id = $peachySql->insertOne($colVals)->getId();
         $this->assertInternalType("int", $id);
         $affected = $peachySql->delete(["user_id" => $id]);
         $this->assertSame(1, $affected);
@@ -103,32 +103,55 @@ class DbTest extends \PHPUnit_Framework_TestCase
     /**
      * @dataProvider dbTypeProvider
      */
-    public function testBasic(PeachySql $peachySql)
+    public function testInsert(PeachySql $peachySql)
     {
         $cols = ['fname', 'lname', 'dob'];
 
-        $rowCount = 500; // the number of rows to insert/update/delete
-        $expected = []; // expected result when selecting inserted rows
+        $vals = [
+            ['fname1', 'lname1', '2014-12-01'],
+            ['fname2', 'lname2', '2014-12-02'],
+        ];
+
+        $ids = $peachySql->insert($cols, $vals);
+        $this->assertSameSize($vals, $ids);
+        $affected = $peachySql->delete(['user_id' => $ids]);
+        $this->assertSame(count($vals), $affected);
+    }
+
+    /**
+     * @dataProvider dbTypeProvider
+     */
+    public function testInsertBulk(PeachySql $peachySql)
+    {
+        $rowCount = 700; // the number of rows to insert/update/delete
+        $colVals = [];
 
         for ($i = 1; $i <= $rowCount; $i++) {
             $fname = 'fname' . $i;
             $lname = 'lname' . $i;
             $year = (1900 + $i) . '-01-01';
 
-            $vals[] = [$fname, $lname, $year];
-
-            $expected[] = [
+            $colVals[] = [
                 'fname' => $fname,
                 'lname' => $lname,
                 'dob' => $year
             ];
         }
 
-        $ids = $peachySql->insert($cols, $vals);
-        $this->assertSame($rowCount, count($ids));
+        if ($peachySql instanceof SqlServer) {
+            $expectedQueries = 2;
+        } else {
+            $expectedQueries = 1;
+        }
 
-        $rows = $peachySql->select($cols, ['user_id' => $ids]);
-        $this->assertSame($expected, $rows);
+        $result = $peachySql->insertBulk($colVals);
+        $this->assertSame($expectedQueries, $result->getQueryCount());
+        $ids = $result->getIds();
+        $this->assertSame($rowCount, count($ids));
+        $this->assertGreaterThanOrEqual($rowCount, $result->getAffected());
+
+        $rows = $peachySql->select(array_keys($colVals[0]), ['user_id' => $ids]);
+        $this->assertSame($colVals, $rows);
 
         // update the inserted rows
         $numUpdated = $peachySql->update(['lname' => 'updated'], ['user_id' => $ids]);
