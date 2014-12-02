@@ -1,6 +1,6 @@
 <?php
 
-// Any of these settings can be overridden by creating a "user.config.php" file in
+// Any of these settings can be overridden by creating a "config.user.php" file in
 // this directory which returns a subset of or replacement for the following array.
 
 return [
