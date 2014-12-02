@@ -26,6 +26,18 @@ abstract class PeachySql
     const OPT_COLUMNS = "columns";
 
     /**
+     * Option key for specifying the maximum number of parameters which can be bound in
+     * a single query. If set, PeachySQL will batch insert queries to avoid the limit.
+     */
+    const OPT_MAX_PARAMS = "maxBoundParams";
+
+    /**
+     * Option key for specifying the maximum number of rows which can be inserted in
+     * a single query. If set, PeachySQL will batch insert queries to remove the limit.
+     */
+    const OPT_MAX_INSERT_ROWS = "maxInsertRows";
+
+    /**
      * Default options
      * @var array
      */
@@ -107,7 +119,23 @@ abstract class PeachySql
      */
     public function insertBulk(array $colVals)
     {
-        return $this->insertBatch($colVals);
+        // check whether the query needs to be split into multiple batches
+        $batches = Insert::batchRows($colVals, $this->options[self::OPT_MAX_PARAMS], $this->options[self::OPT_MAX_INSERT_ROWS]);
+
+        if ($batches === null) {
+            return $this->insertBatch($colVals);
+        } else {
+            $ids = [];
+            $affected = 0;
+
+            foreach ($batches as $batch) {
+                $result = $this->insertBatch($batch);
+                $ids = array_merge($ids, $result->getIds());
+                $affected += $result->getAffected();
+            }
+
+            return new BulkInsertResult($ids, $affected);
+        }
     }
 
     /**

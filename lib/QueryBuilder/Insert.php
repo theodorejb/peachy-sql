@@ -9,6 +9,48 @@ namespace PeachySQL\QueryBuilder;
 class Insert extends Query
 {
     /**
+     * Returns the array of columns/values, split into groups containing the largest
+     * number of rows possible. Returns null if only a single insert query is required.
+     *
+     * @param array $colVals
+     * @param int $maxParams The maximum number of bound parameters allowed per query
+     * @param int $maxRows The maximum number of rows which can be inserted at once
+     * @return array|null
+     * @throws \Exception if $colVals isn't a valid array of columns/values
+     */
+    public static function batchRows(array $colVals, $maxParams, $maxRows)
+    {
+        self::validateColValsStructure($colVals);
+        $maxRowsPerQuery = null;
+
+        if ($maxParams !== null) {
+            $maxRowsPerQuery = floor($maxParams / count($colVals[0])); // max bound params divided by params per row
+        }
+
+        if ($maxRows !== null && ($maxRowsPerQuery === null || $maxRowsPerQuery > $maxRows)) {
+            $maxRowsPerQuery = $maxRows;
+        }
+
+        if ($maxRowsPerQuery === null || count($colVals) <= $maxRowsPerQuery) {
+            return null; // only a single query is required
+        } else {
+            $group = 0;
+            $batches = [];
+
+            foreach ($colVals as $idx => $row) {
+                // if the index isn't zero and it's a multiple of max rows, add a new query group
+                if ($idx !== 0 && $idx % $maxRowsPerQuery === 0) {
+                    $group += 1;
+                }
+
+                $batches[$group][] = $row;
+            }
+
+            return $batches;
+        }
+    }
+
+    /**
      * Generates an INSERT query with placeholders for values and optional OUTPUT clause
      * @param string   $tableName The name of the table to insert into
      * @param array    $colVals   An associative array of columns/values to insert

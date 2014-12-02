@@ -27,7 +27,9 @@ class SqlServer extends PeachySql
      * @var array
      */
     private $sqlServerOptions = [
-        self::OPT_IDCOL => null,
+        self::OPT_IDCOL           => null,
+        self::OPT_MAX_PARAMS      => 2099,
+        self::OPT_MAX_INSERT_ROWS => 1000,
     ];
 
     /**

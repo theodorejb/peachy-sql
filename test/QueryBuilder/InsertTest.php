@@ -8,6 +8,52 @@ namespace PeachySQL\QueryBuilder;
  */
 class InsertTest extends \PHPUnit_Framework_TestCase
 {
+    public function batchRowsTestCases()
+    {
+        $colVals = [
+            [
+                "column1" => "test",
+                "column2" => "test2"
+            ],
+            [
+                "column1" => "test3",
+                "column2" => "test4"
+            ],
+            [
+                "column1" => "test5",
+                "column2" => "test6"
+            ],
+            [
+                "column1" => "test7",
+                "column2" => "test8"
+            ],
+        ];
+
+        $firstTwoRows = [$colVals[0], $colVals[1]];
+        $lastTwoRows = [$colVals[2], $colVals[3]];
+        $firstThreeRows = [$colVals[0], $colVals[1], $colVals[2]];
+        $lastRow = [$colVals[3]];
+
+        return [
+            [$colVals, null, null, null], // one query
+            [$colVals, 1000, 1000, null], // one query
+            [$colVals, 8, 4, null], // one query
+            [$colVals, 4, null, [$firstTwoRows, $lastTwoRows]], // max of 4 bound params = 2 rows at a time
+            [$colVals, 6, 1000, [$firstThreeRows, $lastRow]], // max of 6 bound params = 3 rows at a time
+            [$colVals, null, 3, [$firstThreeRows, $lastRow]], // 3 rows at a time max
+            [$colVals, 6, 2, [$firstTwoRows, $lastTwoRows]], // six bound params max overridden by max of two rows
+        ];
+    }
+
+    /**
+     * @dataProvider batchRowsTestCases
+     */
+    public function testBatchRows(array $colVals, $maxParams, $maxRows, $expected)
+    {
+        $result = Insert::batchRows($colVals, $maxParams, $maxRows);
+        $this->assertSame($expected, $result);
+    }
+
     public function testBuildQuery()
     {
         $colVals = [

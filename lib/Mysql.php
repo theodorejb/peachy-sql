@@ -29,6 +29,8 @@ class Mysql extends PeachySql
      */
     private $mysqlOptions = [
         self::OPT_AUTO_INCREMENT_INCREMENT => 1,
+        self::OPT_MAX_PARAMS               => 65536, // 2^16
+        self::OPT_MAX_INSERT_ROWS          => null,
     ];
 
     /**
