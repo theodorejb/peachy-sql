@@ -19,13 +19,20 @@ class BulkInsertResult
     private $affected;
 
     /**
+     * @var int
+     */
+    private $queryCount;
+
+    /**
      * @param int[] $ids
      * @param int $affected
+     * @param int $queryCount
      */
-    public function __construct(array $ids, $affected)
+    public function __construct(array $ids, $affected, $queryCount = 1)
     {
         $this->ids = $ids;
         $this->affected = $affected;
+        $this->queryCount = $queryCount;
     }
 
     /**
@@ -44,5 +51,14 @@ class BulkInsertResult
     public function getAffected()
     {
         return $this->affected;
+    }
+
+    /**
+     * Returns the number of individual queries used to perform the bulk insert
+     * @return int
+     */
+    public function getQueryCount()
+    {
+        return $this->queryCount;
     }
 }

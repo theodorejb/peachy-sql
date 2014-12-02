@@ -134,7 +134,7 @@ abstract class PeachySql
                 $affected += $result->getAffected();
             }
 
-            return new BulkInsertResult($ids, $affected);
+            return new BulkInsertResult($ids, $affected, count($batches));
         }
     }
 
