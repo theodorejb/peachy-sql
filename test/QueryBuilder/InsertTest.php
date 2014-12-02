@@ -10,10 +10,13 @@ class InsertTest extends \PHPUnit_Framework_TestCase
 {
     public function testBuildQuery()
     {
-        $columns = ['col1', 'col2', 'col3'];
-        $values = [['val1', 'val2', 'val3']];
+        $colVals = [
+            'col1' => 'val1',
+            'col2' => 'val2',
+            'col3' => 'val3',
+        ];
 
-        $actual = Insert::buildQuery('TestTable', $columns, $columns, $values);
+        $actual = Insert::buildQuery('TestTable', [$colVals], array_keys($colVals));
         $expected = 'INSERT INTO TestTable (col1, col2, col3) VALUES (?,?,?)';
         $this->assertSame($expected, $actual['sql']);
         $this->assertSame(['val1', 'val2', 'val3'], $actual['params']);
@@ -22,12 +25,20 @@ class InsertTest extends \PHPUnit_Framework_TestCase
     /**
      * Tests building an insert query with OUTPUT clause for SQL Server
      */
-    public function testBuildQueryWithInsertId()
+    public function testBuildQueryWithIdColumn()
     {
-        $columns = ['col1', 'col2'];
-        $values = [['foo1', 'foo2'], ['bar1', 'bar2']];
+        $colVals = [
+            [
+                'col1' => 'foo1',
+                'col2' => 'foo2',
+            ],
+            [
+                'col1' => 'bar1',
+                'col2' => 'bar2',
+            ],
+        ];
 
-        $actual = Insert::buildQuery('TestTable', $columns, $columns, $values, 'pkColumn');
+        $actual = Insert::buildQuery('TestTable', $colVals, array_keys($colVals[0]), 'pkColumn');
         $expected = 'DECLARE @ids TABLE(RowID int);'
             . ' INSERT INTO TestTable (col1, col2)'
             . ' OUTPUT inserted.pkColumn INTO @ids(RowID)'
@@ -42,6 +53,7 @@ class InsertTest extends \PHPUnit_Framework_TestCase
      */
     public function testBuildQueryInvalidColumns()
     {
-        Insert::buildQuery("TestTable", ["fizzbuzz", "foo"], ["foo", "bar"], ["val1", "val2"]);
+        $colVals = [['fizzbuzz' => 'foo', 'foo' => 'bar']];
+        Insert::buildQuery('TestTable', $colVals, ['val1', 'val2']);
     }
 }

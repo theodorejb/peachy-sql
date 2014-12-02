@@ -3,6 +3,7 @@
 namespace PeachySQL;
 
 use PeachySQL\QueryBuilder\Delete;
+use PeachySQL\QueryBuilder\Insert;
 use PeachySQL\QueryBuilder\Select;
 use PeachySQL\QueryBuilder\Update;
 
@@ -52,12 +53,10 @@ abstract class PeachySql
     abstract public function query($sql, array $params = []);
 
     /**
-     * Inserts the specified values into the specified columns. Performs a bulk 
-     * insert if $values is two-dimensional.
-     * @param array $columns
-     * @param array $values
+     * @param array $colVals E.g. [["Username => "user1", "Password" => "pass1"], ...]
+     * @return BulkInsertResult
      */
-    abstract public function insert(array $columns, array $values);
+    abstract protected function insertBatch(array $colVals);
 
     /**
      * Returns the current PeachySQL options.
@@ -101,14 +100,65 @@ abstract class PeachySql
     }
 
     /**
+     * Inserts one or more rows into the table
+     *
+     * @param array $colVals E.g. [["Username => "user1", "Password" => "pass1"], ...]
+     * @return BulkInsertResult
+     */
+    public function insertBulk(array $colVals)
+    {
+        return $this->insertBatch($colVals);
+    }
+
+    /**
+     * Inserts a single row from an associative array of columns/values.
+     *
+     * @param array $colVals E.g. ["Username => "user1", "Password" => "pass1"]
+     * @return InsertResult
+     */
+    public function insertOne(array $colVals)
+    {
+        $result = $this->insertBatch([$colVals]);
+        $ids = $result->getIds();
+        $id = empty($ids) ? null : $ids[0];
+        return new InsertResult($id, $result->getAffected());
+    }
+
+    /**
+     * Inserts the specified values into the specified columns. Performs a bulk insert if
+     * $values is two-dimensional. Returns the ID or array of IDs for the inserted row(s).
+     *
+     * @param array $columns
+     * @param array $values
+     * @return int[]|int
+     * @deprecated since v3.0.0 - use insertBulk or insertOne instead
+     */
+    public function insert(array $columns, array $values)
+    {
+        if (Insert::isBulk($values)) {
+            $colVals = [];
+
+            foreach ($values as $row) {
+                $colVals[] = array_combine($columns, $row);
+            }
+
+            return $this->insertBulk($colVals)->getIds();
+        } else {
+            $colVals = array_combine($columns, $values);
+            return $this->insertOne($colVals)->getId();
+        }
+    }
+
+    /**
      * Inserts a single row from an associative array of columns/values
      *
      * @param array $colVals E.g. ["Username => "user1", "Password" => "pass1"]
      * @return int The ID of the inserted row
+     * @deprecated since v3.0.0 - use insertOne instead
      */
     public function insertAssoc(array $colVals)
     {
-        return $this->insert(array_keys($colVals), array_values($colVals));
+        return $this->insertOne($colVals)->getId();
     }
 
     /**

@@ -177,34 +177,24 @@ class Mysql extends PeachySql
     }
 
     /**
-     * Inserts one or more rows into the table. If multiple rows are inserted 
-     * (via nested arrays) an array of insert IDs will be passed to the callback. 
-     * If inserting a single row with a flat array of values the insert ID will 
-     * instead be passed as an integer.
-     * 
-     * @param string[] $columns  The columns to be inserted into. E.g. ["Username", "Password"].
-     * @param array    $values   A flat array of values (to insert one row), or an array containing 
-     *                           one or more subarrays (to bulk-insert multiple rows).
-     *                           E.g. ["user", "pass"] or [ ["user1", "pass1"], ["user2", "pass2"] ].
-     * @return int|int[]
+     * Performs a single bulk insert query
+     * @param array $colVals
+     * @return BulkInsertResult
      */
-    public function insert(array $columns, array $values)
+    protected function insertBatch(array $colVals)
     {
-        $query = Insert::buildQuery($this->options[self::OPT_TABLE], $columns, $this->options[self::OPT_COLUMNS], $values);
-        $result = $this->query($query["sql"], $query["params"]);
-        $firstId = $result->getInsertId(); // id of first inserted row, or zero if no insert ID
+        $query = Insert::buildQuery($this->options[self::OPT_TABLE], $colVals, $this->options[self::OPT_COLUMNS]);
+        $result = $this->query($query['sql'], $query['params']);
+        $firstId = $result->getInsertId(); // ID of first inserted row, or zero if no insert ID
 
-        if ($query['isBulk']) {
-            // return array of IDs
-            if ($firstId) {
-                $lastId = $firstId + (count($values) - 1);
-                return range($firstId, $lastId, $this->options[self::OPT_AUTO_INCREMENT_INCREMENT]);
-            } else {
-                return [];
-            }
+        if ($firstId) {
+            $lastId = $firstId + count($colVals) - 1;
+            $ids = range($firstId, $lastId, $this->options[self::OPT_AUTO_INCREMENT_INCREMENT]);
         } else {
-            return $firstId;
+            $ids = [];
         }
+
+        return new BulkInsertResult($ids, $result->getAffected());
     }
 
     /**
