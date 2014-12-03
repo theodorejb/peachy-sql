@@ -66,7 +66,7 @@ $options = [
 	'columns' => ['user_id', 'fname', 'lname']
 ];
 
-$userTable = new PeachySQL\MySQL($mysqlConn, $options);
+$userTable = new PeachySQL\Mysql($mysqlConn, $options);
 ```
 
 If using SQL Server, an additional option can be passed to specify the table's identity column.
