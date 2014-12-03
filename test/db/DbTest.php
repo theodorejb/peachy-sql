@@ -140,15 +140,17 @@ class DbTest extends \PHPUnit_Framework_TestCase
 
         if ($peachySql instanceof SqlServer) {
             $expectedQueries = 2;
+            $expectedAffected = $rowCount * 2; // since each ID is output into a table variable
         } else {
             $expectedQueries = 1;
+            $expectedAffected = $rowCount;
         }
 
         $result = $peachySql->insertBulk($colVals);
         $this->assertSame($expectedQueries, $result->getQueryCount());
+        $this->assertSame($expectedAffected, $result->getAffected());
         $ids = $result->getIds();
         $this->assertSame($rowCount, count($ids));
-        $this->assertGreaterThanOrEqual($rowCount, $result->getAffected());
 
         $rows = $peachySql->select(array_keys($colVals[0]), ['user_id' => $ids]);
         $this->assertSame($colVals, $rows);
