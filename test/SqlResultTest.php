@@ -11,15 +11,15 @@ class SqlResultTest extends \PHPUnit_Framework_TestCase
     public function testGetRows()
     {
         $exampleRows = [
-            ["id" => 1, "name" => "foo"],
-            ["id" => 2, "name" => "bar"],
+            ['id' => 1, 'name' => 'foo'],
+            ['id' => 2, 'name' => 'bar'],
         ];
 
-        $result = new SqlResult($exampleRows, 0, "");
+        $result = new SqlResult($exampleRows, 0, '');
         $this->assertSame($exampleRows, $result->getAll());
         $this->assertSame($exampleRows[0], $result->getFirst());
 
-        $noRowsResult = new SqlResult([], 0, "");
+        $noRowsResult = new SqlResult([], 0, '');
         $this->assertSame([], $noRowsResult->getAll());
         $this->assertSame(null, $noRowsResult->getFirst());
     }

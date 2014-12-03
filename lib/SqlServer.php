@@ -14,7 +14,7 @@ class SqlServer extends PeachySql
     /**
      * Option key for specifying the table's ID column (used to retrieve insert IDs)
      */
-    const OPT_IDCOL = "idCol";
+    const OPT_IDCOL = 'idCol';
 
     /**
      * A SQLSRV connection resource
@@ -72,7 +72,7 @@ class SqlServer extends PeachySql
     public function begin()
     {
         if (!sqlsrv_begin_transaction($this->connection)) {
-            throw new SqlException("Failed to begin transaction", sqlsrv_errors());
+            throw new SqlException('Failed to begin transaction', sqlsrv_errors());
         }
     }
 
@@ -83,7 +83,7 @@ class SqlServer extends PeachySql
     public function commit()
     {
         if (!sqlsrv_commit($this->connection)) {
-            throw new SqlException("Failed to commit transaction", sqlsrv_errors());
+            throw new SqlException('Failed to commit transaction', sqlsrv_errors());
         }
     }
 
@@ -94,7 +94,7 @@ class SqlServer extends PeachySql
     public function rollback()
     {
         if (!sqlsrv_rollback($this->connection)) {
-            throw new SqlException("Failed to roll back transaction", sqlsrv_errors());
+            throw new SqlException('Failed to roll back transaction', sqlsrv_errors());
         }
     }
 
@@ -109,7 +109,7 @@ class SqlServer extends PeachySql
     public function query($sql, array $params = [])
     {
         if (!$stmt = sqlsrv_query($this->connection, $sql, $params)) {
-            throw new SqlException("Query failed", sqlsrv_errors(), $sql, $params);
+            throw new SqlException('Query failed', sqlsrv_errors(), $sql, $params);
         }
 
         $rows = [];
@@ -129,7 +129,7 @@ class SqlServer extends PeachySql
         } while ($nextResult = sqlsrv_next_result($stmt));
 
         if ($nextResult === false) {
-            throw new SqlException("Failed to get next result", sqlsrv_errors(), $sql, $params);
+            throw new SqlException('Failed to get next result', sqlsrv_errors(), $sql, $params);
         }
 
         sqlsrv_free_stmt($stmt);

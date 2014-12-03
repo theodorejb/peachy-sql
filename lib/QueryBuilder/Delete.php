@@ -9,8 +9,10 @@ namespace PeachySQL\QueryBuilder;
 class Delete extends Query
 {
     /**
-     * @param string   $tableName
-     * @param array    $where An array of columns/values to restrict the delete to
+     * Generates a delete query using the specified table name and where clause
+     *
+     * @param string   $tableName The name of the table to delete from
+     * @param array    $where     An array of columns/values to restrict the delete to
      * @param string[] $validCols An array of valid column names
      * @return array An array containing the SQL string and bound parameters
      */

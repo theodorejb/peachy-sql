@@ -76,7 +76,7 @@ This is necessary so that PeachySQL can generate an output clause to retrieve in
 $userTable = new PeachySQL\SqlServer($sqlSrvConn, [
     'table'   => 'Users',
     'columns' => ['user_id', 'fname', 'lname'],
-    'idCol' => 'user_id'
+    'idCol'   => 'user_id'
 ]);
 ```
 

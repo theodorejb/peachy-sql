@@ -17,25 +17,25 @@ abstract class PeachySql
     /**
      * Option key for specifying the table to select, insert, update, and delete from
      */
-    const OPT_TABLE = "table";
+    const OPT_TABLE = 'table';
 
     /**
      * Option key for specifying valid columns in the table. To prevent SQL injection,
      * this option must be set to generate queries which reference one or more columns.
      */
-    const OPT_COLUMNS = "columns";
+    const OPT_COLUMNS = 'columns';
 
     /**
      * Option key for specifying the maximum number of parameters which can be bound in
      * a single query. If set, PeachySQL will batch insert queries to avoid the limit.
      */
-    const OPT_MAX_PARAMS = "maxBoundParams";
+    const OPT_MAX_PARAMS = 'maxBoundParams';
 
     /**
      * Option key for specifying the maximum number of rows which can be inserted in
      * a single query. If set, PeachySQL will batch insert queries to remove the limit.
      */
-    const OPT_MAX_INSERT_ROWS = "maxInsertRows";
+    const OPT_MAX_INSERT_ROWS = 'maxInsertRows';
 
     /**
      * Default options

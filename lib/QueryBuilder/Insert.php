@@ -13,8 +13,8 @@ class Insert extends Query
      * number of rows possible. Returns null if only a single insert query is required.
      *
      * @param array $colVals
-     * @param int $maxParams The maximum number of bound parameters allowed per query
-     * @param int $maxRows The maximum number of rows which can be inserted at once
+     * @param int   $maxParams The maximum number of bound parameters allowed per query
+     * @param int   $maxRows   The maximum number of rows which can be inserted at once
      * @return array|null
      * @throws \Exception if $colVals isn't a valid array of columns/values
      */
@@ -52,10 +52,11 @@ class Insert extends Query
 
     /**
      * Generates an INSERT query with placeholders for values and optional OUTPUT clause
+     *
      * @param string   $tableName The name of the table to insert into
      * @param array    $colVals   An associative array of columns/values to insert
      * @param string[] $validCols An array of valid columns
-     * @param string $idCol
+     * @param string   $idCol     If specified, a SQL Server OUTPUT clause will be included
      * @return array
      */
     public static function buildQuery($tableName, array $colVals, array $validCols, $idCol = null)
@@ -102,7 +103,7 @@ class Insert extends Query
     }
 
     /**
-     * Returns true if the array of values is for a bulk insert.
+     * Returns true if the array of values is for a bulk insert
      * @param array $values
      * @return bool
      */

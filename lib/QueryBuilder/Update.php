@@ -9,6 +9,8 @@ namespace PeachySQL\QueryBuilder;
 class Update extends Query
 {
     /**
+     * Generates an update query using the specified table name and set/where arrays
+     *
      * @param string   $tableName The name of the table to update
      * @param array    $set       An array of columns/values to update
      * @param array    $where     An array of columns/values to restrict the update to

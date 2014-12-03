@@ -8,25 +8,14 @@ namespace PeachySQL;
  */
 class BulkInsertResult
 {
-    /**
-     * @var int[]
-     */
     private $ids;
-
-    /**
-     * @var int
-     */
     private $affected;
-
-    /**
-     * @var int
-     */
     private $queryCount;
 
     /**
      * @param int[] $ids
-     * @param int $affected
-     * @param int $queryCount
+     * @param int   $affected
+     * @param int   $queryCount
      */
     public function __construct(array $ids, $affected, $queryCount = 1)
     {

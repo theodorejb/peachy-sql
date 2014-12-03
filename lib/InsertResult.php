@@ -8,14 +8,7 @@ namespace PeachySQL;
  */
 class InsertResult
 {
-    /**
-     * @var int
-     */
     private $id;
-
-    /**
-     * @var int
-     */
     private $affected;
 
     /**

@@ -7,22 +7,8 @@ namespace PeachySQL;
  */
 class SqlResult
 {
-    /**
-     * An array of rows selected in the query
-     * @var array
-     */
     private $rows;
-
-    /**
-     * The number of rows affected by the query
-     * @var int
-     */
     private $affected;
-
-    /**
-     * The SQL query
-     * @var string
-     */
     private $query;
 
     /**

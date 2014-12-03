@@ -15,7 +15,7 @@ class Mysql extends PeachySql
      * Options key for specifying the interval between successive auto-incremented 
      * values in the table (used to retrieve array of insert IDs for bulk inserts)
      */
-    const OPT_AUTO_INCREMENT_INCREMENT = "autoIncrementIncrement";
+    const OPT_AUTO_INCREMENT_INCREMENT = 'autoIncrementIncrement';
 
     /**
      * The connection used to access the database
@@ -75,10 +75,10 @@ class Mysql extends PeachySql
         // begin_transaction is new in PHP 5.5
         if (method_exists($this->connection, 'begin_transaction')) {
             if (!$this->connection->begin_transaction()) {
-                throw new SqlException("Failed to begin transaction", $this->connection->error_list);
+                throw new SqlException('Failed to begin transaction', $this->connection->error_list);
             }
         } elseif (!$this->connection->query('BEGIN;')) {
-            throw new SqlException("Failed to begin transaction", $this->connection->error_list);
+            throw new SqlException('Failed to begin transaction', $this->connection->error_list);
         }
     }
 
@@ -89,7 +89,7 @@ class Mysql extends PeachySql
     public function commit()
     {
         if (!$this->connection->commit()) {
-            throw new SqlException("Failed to commit transaction", $this->connection->error_list);
+            throw new SqlException('Failed to commit transaction', $this->connection->error_list);
         }
     }
 
@@ -100,7 +100,7 @@ class Mysql extends PeachySql
     public function rollback()
     {
         if (!$this->connection->rollback()) {
-            throw new SqlException("Failed to roll back transaction", $this->connection->error_list);
+            throw new SqlException('Failed to roll back transaction', $this->connection->error_list);
         }
     }
 
@@ -116,7 +116,7 @@ class Mysql extends PeachySql
     {
         // prepare the statement
         if (!$stmt = $this->connection->prepare($sql)) {
-            throw new SqlException("Failed to prepare statement", $this->connection->error_list, $sql, $params);
+            throw new SqlException('Failed to prepare statement', $this->connection->error_list, $sql, $params);
         }
 
         if (!empty($params)) {
@@ -128,12 +128,12 @@ class Mysql extends PeachySql
             }
 
             if (!call_user_func_array(array($stmt, 'bind_param'), $typesValues)) {
-                throw new SqlException("Failed to bind params", $stmt->error_list, $sql, $params);
+                throw new SqlException('Failed to bind params', $stmt->error_list, $sql, $params);
             }
         }
 
         if (!$stmt->execute()) {
-            throw new SqlException("Failed to execute prepared statement", $stmt->error_list, $sql, $params);
+            throw new SqlException('Failed to execute prepared statement', $stmt->error_list, $sql, $params);
         }
 
         $insertId = $stmt->insert_id; // id of first inserted row, otherwise 0
@@ -155,7 +155,7 @@ class Mysql extends PeachySql
             }
 
             if (!call_user_func_array(array($stmt, 'bind_result'), $fields)) {
-                throw new SqlException("Failed to bind results", $stmt->error_list, $sql, $params);
+                throw new SqlException('Failed to bind results', $stmt->error_list, $sql, $params);
             }
 
             $i = 0;
@@ -203,7 +203,7 @@ class Mysql extends PeachySql
      * To bind parameters in mysqli, the type of each parameter must be specified.
      * See http://php.net/manual/en/mysqli-stmt.bind-param.php.
      * 
-     * @param  array  $params
+     * @param array $params
      * @return string A string containing the type character for each parameter
      */
     private static function getMysqlParamTypes(array $params)
@@ -212,6 +212,6 @@ class Mysql extends PeachySql
         // converts strings to the column's actual datatype when processing 
         // queries" (see http://stackoverflow.com/a/14370546/1170489).
 
-        return str_repeat("s", count($params));
+        return str_repeat('s', count($params));
     }
 }

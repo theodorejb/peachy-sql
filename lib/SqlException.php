@@ -8,27 +8,21 @@ namespace PeachySQL;
  */
 class SqlException extends \Exception
 {
-    /**
-     * An error array returned by sqlsrv_errors() or mysqli::$error_list)
-     * @var array
-     */
     private $errors;
-
-    /**
-     * The failed query
-     * @var string
-     */
     private $query;
-
-    /**
-     * An array of bound parameters
-     * @var array
-     */
     private $params;
 
-    public function __construct($message, array $errors, $query = null, array $params = null, \Exception $previous = null, $code = 0)
+    /**
+     * @param string     $msg    The error message
+     * @param array      $errors An error array returned by sqlsrv_errors() or mysqli::$error_list)
+     * @param string     $query  The failed query
+     * @param array      $params Any parameters bound to the failed query
+     * @param \Exception $prev   Optionally set a previous exception
+     * @param int        $code   Optionally set an error code
+     */
+    public function __construct($msg, array $errors, $query = null, array $params = null, \Exception $prev = null, $code = 0)
     {
-        parent::__construct($message, $code, $previous);
+        parent::__construct($msg, $code, $prev);
 
         $this->errors = $errors;
         $this->query = $query;

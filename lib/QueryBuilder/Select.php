@@ -9,8 +9,9 @@ namespace PeachySQL\QueryBuilder;
 class Select extends Query
 {
     /**
-     * Builds a select query using the specified table name, columns, and where clause array.
-     * @param string   $tableName The name of the table to query
+     * Builds a select query using the specified table name, columns, and where clause array
+     *
+     * @param string   $tableName The name of the table to select from
      * @param string[] $columns   An array of columns to select from (all columns if empty)
      * @param string[] $validCols An array of valid columns (to prevent SQL injection)
      * @param array    $where     An array of columns/values to filter the select query
