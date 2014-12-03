@@ -49,10 +49,10 @@ echo json_encode($result->getAll());
 Because PeachySQL always returns selected rows as an associative array,
 it is easy to make changes to the data structure and output it as JSON.
 
-In addition to `getAll()`, the `SQLResult` object returned by `query()` has
+In addition to `getAll()`, the `SqlResult` object returned by `query()` has
 `getFirst()`, `getAffected()`, and `getQuery()` methods (to return the first
 selected row, the number of affected rows, and the executed query string,
-respectively). If using MySQL, `query()` will return an extended `MySQLResult`
+respectively). If using MySQL, `query()` will return an extended `MysqlResult`
 object which adds a `getInsertId()` method.
 
 ### Shorthand methods
