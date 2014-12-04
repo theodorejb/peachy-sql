@@ -2,6 +2,7 @@
 
 namespace PeachySQL;
 
+use mysqli;
 use PeachySQL\QueryBuilder\Insert;
 
 /**
@@ -19,7 +20,7 @@ class Mysql extends PeachySql
 
     /**
      * The connection used to access the database
-     * @var \mysqli
+     * @var mysqli
      */
     private $connection;
 
@@ -34,10 +35,10 @@ class Mysql extends PeachySql
     ];
 
     /**
-     * @param \mysqli $connection A mysqli connection instance
+     * @param mysqli $connection A mysqli connection instance
      * @param array $options Options used when querying the database
      */
-    public function __construct(\mysqli $connection, array $options = [])
+    public function __construct(mysqli $connection, array $options = [])
     {
         $this->setConnection($connection);
         $this->setOptions($options);
@@ -45,14 +46,10 @@ class Mysql extends PeachySql
 
     /**
      * Easily switch to a different mysqli database connection
-     * @param \mysqli $connection
+     * @param mysqli $connection
      */
-    public function setConnection(\mysqli $connection)
+    public function setConnection(mysqli $connection)
     {
-        if (!$connection instanceof \mysqli) {
-            throw new \InvalidArgumentException('Connection must be a mysqli instance');
-        }
-
         $this->connection = $connection;
     }
 
