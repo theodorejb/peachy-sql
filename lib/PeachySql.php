@@ -42,7 +42,7 @@ abstract class PeachySql
      * @var array
      */
     protected $options = [
-        self::OPT_TABLE => null,
+        self::OPT_TABLE   => null,
         self::OPT_COLUMNS => [],
     ];
 

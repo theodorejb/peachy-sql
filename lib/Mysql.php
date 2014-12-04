@@ -124,7 +124,7 @@ class Mysql extends PeachySql
                 $typesValues[] = &$param;
             }
 
-            if (!call_user_func_array(array($stmt, 'bind_param'), $typesValues)) {
+            if (!call_user_func_array([$stmt, 'bind_param'], $typesValues)) {
                 throw new SqlException('Failed to bind params', $stmt->error_list, $sql, $params);
             }
         }
@@ -151,7 +151,7 @@ class Mysql extends PeachySql
                 $fields[] = &$rowData[$field->name];
             }
 
-            if (!call_user_func_array(array($stmt, 'bind_result'), $fields)) {
+            if (!call_user_func_array([$stmt, 'bind_result'], $fields)) {
                 throw new SqlException('Failed to bind results', $stmt->error_list, $sql, $params);
             }
 
