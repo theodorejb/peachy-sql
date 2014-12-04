@@ -148,7 +148,7 @@ class SqlServer extends PeachySql
         $query = Insert::buildQuery($this->options[self::OPT_TABLE], $colVals, $this->options[self::OPT_COLUMNS], $this->options[self::OPT_IDCOL]);
         $result = $this->query($query['sql'], $query['params']);
         $rows = $result->getAll(); // contains any insert IDs
-        $ids = array_map(function ($row) { return $row["RowID"]; }, $rows);
+        $ids = array_map(function ($row) { return $row['RowID']; }, $rows);
         return new BulkInsertResult($ids, $result->getAffected());
     }
 }

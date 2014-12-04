@@ -26,11 +26,11 @@ class DbTest extends \PHPUnit_Framework_TestCase
             PeachySql::OPT_COLUMNS => ['user_id', 'fname', 'lname', 'dob'],
         ];
 
-        if ($config["testWith"]["mysql"]) {
+        if ($config['testWith']['mysql']) {
             $implementations[] = [new Mysql(TestDbConnector::getMysqlConn(), $options)];
         }
 
-        if ($config["testWith"]["sqlsrv"]) {
+        if ($config['testWith']['sqlsrv']) {
             $sqlServerOptions = array_merge($options, [SqlServer::OPT_IDCOL => 'user_id']);
             $implementations[] = [new SqlServer(TestDbConnector::getSqlsrvConn(), $sqlServerOptions)];
         }
@@ -78,8 +78,8 @@ class DbTest extends \PHPUnit_Framework_TestCase
         ];
 
         $id = $peachySql->insertOne($colVals)->getId();
-        $this->assertInternalType("int", $id);
-        $affected = $peachySql->delete(["user_id" => $id]);
+        $this->assertInternalType('int', $id);
+        $affected = $peachySql->delete(['user_id' => $id]);
         $this->assertSame(1, $affected);
     }
 

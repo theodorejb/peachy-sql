@@ -211,6 +211,6 @@ abstract class PeachySql
     public function delete(array $where)
     {
         $query = Delete::buildQuery($this->options[self::OPT_TABLE], $where, $this->options[self::OPT_COLUMNS]);
-        return $this->query($query["sql"], $query["params"])->getAffected();
+        return $this->query($query['sql'], $query['params'])->getAffected();
     }
 }

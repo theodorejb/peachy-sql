@@ -29,7 +29,7 @@ abstract class Query
      */
     public static function validateTableName($name)
     {
-        if ($name === null || $name === "") {
+        if ($name === null || $name === '') {
             throw new \Exception('A valid table name must be set to generate queries');
         }
     }
