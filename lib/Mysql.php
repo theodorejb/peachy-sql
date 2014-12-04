@@ -36,7 +36,7 @@ class Mysql extends PeachySql
 
     /**
      * @param mysqli $connection A mysqli connection instance
-     * @param array $options Options used when querying the database
+     * @param array  $options    Array of PeachySQL options
      */
     public function __construct(mysqli $connection, array $options = [])
     {

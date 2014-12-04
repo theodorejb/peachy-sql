@@ -16,7 +16,6 @@ class Insert extends Query
      * @param int   $maxParams The maximum number of bound parameters allowed per query
      * @param int   $maxRows   The maximum number of rows which can be inserted at once
      * @return array|null
-     * @throws \Exception if $colVals isn't a valid array of columns/values
      */
     public static function batchRows(array $colVals, $maxParams, $maxRows)
     {
