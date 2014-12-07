@@ -33,13 +33,13 @@ class Insert extends Query
         if ($maxRowsPerQuery === null || count($colVals) <= $maxRowsPerQuery) {
             return null; // only a single query is required
         } else {
-            $group = 0;
+            $group = -1;
             $batches = [];
 
-            foreach ($colVals as $idx => $row) {
-                // if the index isn't zero and it's a multiple of max rows, add a new query group
-                if ($idx !== 0 && $idx % $maxRowsPerQuery === 0) {
-                    $group += 1;
+            foreach ($colVals as $index => $row) {
+                // if the index is a multiple of max rows, add a new query group
+                if ($index % $maxRowsPerQuery === 0) {
+                    $group += 1; // true when index is 0, so first group will be 0
                 }
 
                 $batches[$group][] = $row;
@@ -62,11 +62,10 @@ class Insert extends Query
     {
         self::validateColValsStructure($colVals);
         self::validateTableName($tableName);
+
         $columns = array_keys($colVals[0]);
         self::validateColumns($columns, $validCols);
-
-        $insertCols = implode(', ', $columns);
-        $insert = "INSERT INTO $tableName ($insertCols)";
+        $insert = "INSERT INTO $tableName (" . implode(', ', $columns) . ')';
 
         $valSetStr = substr_replace(' (' . str_repeat('?,', count($columns)), '),', -1); // replace trailing comma
         $valStr = ' VALUES' . substr_replace(str_repeat($valSetStr, count($colVals)), '', -1); // remove trailing comma

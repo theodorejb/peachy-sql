@@ -43,36 +43,30 @@ abstract class Query
      */
     protected static function buildWhereClause(array $columnVals, array $validCols)
     {
-        $sql = '';
-        $params = [];
-
-        if (!empty($columnVals)) {
-            self::validateColumns(array_keys($columnVals), $validCols);
-            $sql .= ' WHERE';
-
-            foreach ($columnVals as $column => $value) {
-                if ($value === null) {
-                    $comparison = 'IS NULL';
-                } elseif (is_array($value) && !empty($value)) {
-                    $comparison = 'IN('; // use IN(...) syntax
-
-                    foreach ($value as $val) {
-                        $comparison .= '?,';
-                        $params[] = $val;
-                    }
-
-                    $comparison = substr_replace($comparison, ')', -1); // replace trailing comma
-                } else {
-                    $comparison = '= ?';
-                    $params[] = $value;
-                }
-
-                $sql .= " $column $comparison AND";
-            }
-
-            $sql = substr_replace($sql, '', -4); // remove the trailing AND
+        if (empty($columnVals)) {
+            return ['sql' => '', 'params' => []];
         }
 
+        self::validateColumns(array_keys($columnVals), $validCols);
+        $sql = ' WHERE';
+        $params = [];
+
+        foreach ($columnVals as $column => $value) {
+            if ($value === null) {
+                $comparison = 'IS NULL';
+            } elseif (is_array($value)) {
+                // use IN(...) syntax
+                $comparison = substr_replace('IN(' . str_repeat('?,', count($value)), ')', -1); // replace trailing comma
+                $params = array_merge($params, $value);
+            } else {
+                $comparison = '= ?';
+                $params[] = $value;
+            }
+
+            $sql .= " $column $comparison AND";
+        }
+
+        $sql = substr_replace($sql, '', -4); // remove the trailing AND
         return ['sql' => $sql, 'params' => $params];
     }
 }
