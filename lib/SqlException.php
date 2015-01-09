@@ -30,6 +30,20 @@ class SqlException extends \Exception
     }
 
     /**
+     * @return string The SQLSTATE error for the exception
+     */
+    public function getSqlState()
+    {
+        if (isset($this->errors[0]['sqlstate'])) {
+            return $this->errors[0]['sqlstate']; // MySQL
+        } elseif (isset($this->errors[0]['SQLSTATE'])) {
+            return $this->errors[0]['SQLSTATE']; // SQL Server
+        } else {
+            return null;
+        }
+    }
+
+    /**
      * Returns the list of errors from sqlsrv_errors() or mysqli::$error_list
      * @return array
      */
