@@ -20,6 +20,12 @@ class SqlException extends \Exception
      */
     public function __construct($msg, array $errors, $query = null, array $params = null)
     {
+        if (isset($errors[0]['error'])) {
+            $msg .= ': ' . $errors[0]['error']; // MySQL
+        } elseif (isset($errors[0]['message'])) {
+            $msg .= ': ' . $errors[0]['message']; // SQL Server
+        }
+
         if (isset($errors[0]['errno'])) {
             $code = $errors[0]['errno']; // MySQL
         } elseif (isset($errors[0]['code'])) {
