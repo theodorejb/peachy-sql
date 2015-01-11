@@ -6,7 +6,7 @@ namespace PeachySQL;
  * Has methods to retrieve the SQL query, bound parameters, and error array
  * (returned by sqlsrv_errors() or mysqli::$error_list).
  */
-class SqlException extends \Exception
+class SqlException extends \RuntimeException
 {
     private $errors;
     private $query;
