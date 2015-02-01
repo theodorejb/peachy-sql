@@ -52,6 +52,8 @@ class DbTest extends \PHPUnit_Framework_TestCase
         ];
 
         $id = $peachySql->insertOne($colVals)->getId();
+        $this->assertInternalType('int', $id);
+
         $rows = $peachySql->select(['user_id'], ['user_id' => $id]);
         $this->assertSame([['user_id' => $id]], $rows); // the row should be selectable
         $peachySql->rollback(); // cancel the transaction
@@ -64,23 +66,6 @@ class DbTest extends \PHPUnit_Framework_TestCase
         $peachySql->commit(); // complete the transaction
         $newRows = $peachySql->select(['user_id'], ['user_id' => $newId]);
         $this->assertSame([['user_id' => $newId]], $newRows); // the row should exist
-    }
-
-    /**
-     * @dataProvider dbTypeProvider
-     */
-    public function testInsertOne(PeachySql $peachySql)
-    {
-        $colVals = [
-            'fname' => 'Theodore',
-            'lname' => 'Brown',
-            'dob' => date('Y-m-d', strtotime('tomorrow'))
-        ];
-
-        $id = $peachySql->insertOne($colVals)->getId();
-        $this->assertInternalType('int', $id);
-        $affected = $peachySql->delete(['user_id' => $id]);
-        $this->assertSame(1, $affected);
     }
 
     /**
