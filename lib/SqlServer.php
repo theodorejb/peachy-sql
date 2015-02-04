@@ -105,7 +105,7 @@ class SqlServer extends PeachySql
      *
      * @param string $sql
      * @param array  $params Values to bind to placeholders in the query string
-     * @return SqlResult
+     * @return SqlServerResult
      * @throws SqlException if an error occurs
      */
     public function query($sql, array $params = [])
@@ -114,28 +114,7 @@ class SqlServer extends PeachySql
             throw new SqlException('Query failed', sqlsrv_errors(), $sql, $params);
         }
 
-        $rows = [];
-        $affected = 0;
-
-        do {
-            // get any selected rows
-            while ($row = sqlsrv_fetch_array($stmt, SQLSRV_FETCH_ASSOC)) {
-                $rows[] = $row;
-            }
-
-            $affectedRows = sqlsrv_rows_affected($stmt);
-
-            if ($affectedRows > 0) {
-                $affected += $affectedRows;
-            }
-        } while ($nextResult = sqlsrv_next_result($stmt));
-
-        if ($nextResult === false) {
-            throw new SqlException('Failed to get next result', sqlsrv_errors(), $sql, $params);
-        }
-
-        sqlsrv_free_stmt($stmt);
-        return new SqlResult($rows, $affected, $sql);
+        return new SqlServerResult($stmt, $sql, $params);
     }
 
     /**
@@ -147,8 +126,12 @@ class SqlServer extends PeachySql
     {
         $query = Insert::buildQuery($this->options[self::OPT_TABLE], $colVals, $this->options[self::OPT_COLUMNS], $this->options[self::OPT_IDCOL]);
         $result = $this->query($query['sql'], $query['params']);
-        $rows = $result->getAll(); // contains any insert IDs
-        $ids = array_map(function ($row) { return $row['RowID']; }, $rows);
+
+        $ids = [];
+        foreach ($result->getIterator() as $row) {
+            $ids[] = $row['RowID'];
+        }
+
         return new BulkInsertResult($ids, $result->getAffected());
     }
 }

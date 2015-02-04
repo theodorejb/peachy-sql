@@ -5,23 +5,34 @@ namespace PeachySQL;
 /**
  * Contains rows, affected count, and the query string for a completed SQL query
  */
-class SqlResult
+abstract class SqlResult
 {
-    private $rows;
     private $affected;
-    private $query;
+    protected $query;
+    protected $params;
 
     /**
-     * @param array  $rows
-     * @param int    $affected
+     * @param int $affected
      * @param string $query
+     * @param array $params
      */
-    public function __construct(array $rows, $affected, $query)
+    public function __construct($affected, $query, array $params)
     {
-        $this->rows = $rows;
         $this->affected = $affected;
         $this->query = $query;
+        $this->params = $params;
     }
+
+    /**
+     * @return \Generator
+     */
+    abstract public function getIterator();
+
+    /**
+     * Closes the statement
+     * @return void
+     */
+    abstract public function close();
 
     /**
      * Returns all rows selected by the query
@@ -29,7 +40,13 @@ class SqlResult
      */
     public function getAll()
     {
-        return $this->rows;
+        $rows = [];
+
+        foreach ($this->getIterator() as $row) {
+            $rows[] = $row;
+        }
+
+        return $rows;
     }
 
     /**
@@ -38,7 +55,13 @@ class SqlResult
      */
     public function getFirst()
     {
-        return empty($this->rows) ? null : $this->rows[0];
+        $row = $this->getIterator()->current();
+
+        if ($row !== null) {
+            $this->close(); // don't leave the SQL statement open
+        }
+
+        return $row;
     }
 
     /**

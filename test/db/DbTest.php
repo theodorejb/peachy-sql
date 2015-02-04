@@ -54,12 +54,13 @@ class DbTest extends \PHPUnit_Framework_TestCase
         $id = $peachySql->insertOne($colVals)->getId();
         $this->assertInternalType('int', $id);
 
-        $rows = $peachySql->select(['user_id'], ['user_id' => $id]);
-        $this->assertSame([['user_id' => $id]], $rows); // the row should be selectable
-        $peachySql->rollback(); // cancel the transaction
+        $sql = 'SELECT user_id FROM Users WHERE user_id = ?';
+        $row = $peachySql->query($sql, [$id])->getFirst();
+        $this->assertSame(['user_id' => $id], $row); // the row should be selectable
 
-        $sameRows = $peachySql->select([], ['user_id' => $id]);
-        $this->assertSame([], $sameRows); // the row should no longer exist
+        $peachySql->rollback(); // cancel the transaction
+        $sameRow = $peachySql->query($sql, [$id])->getFirst();
+        $this->assertSame(null, $sameRow); // the row should no longer exist
 
         $peachySql->begin(); // start another transaction
         $newId = $peachySql->insertAssoc($colVals);
@@ -83,6 +84,34 @@ class DbTest extends \PHPUnit_Framework_TestCase
         }
 
         $this->fail('Bad query failed to throw exception');
+    }
+
+    /**
+     * @dataProvider dbTypeProvider
+     */
+    public function testIteratorQuery(PeachySql $peachySql)
+    {
+        $colVals = [
+            ['fname' => 'fname1', 'lname' => 'lname2', 'dob' => date('Y-m-d', strtotime('yesterday'))],
+            ['fname' => 'fname1', 'lname' => 'lname2', 'dob' => date('Y-m-d', strtotime('next monday'))],
+        ];
+
+        $ids = $peachySql->insertBulk($colVals)->getIds();
+        $placeholders = substr_replace(str_repeat('?,', count($ids)), '', -1);
+        $sql = "SELECT * FROM Users WHERE user_id IN ($placeholders)";
+
+        $iterator = $peachySql->query($sql, $ids)->getIterator();
+        $this->assertInstanceOf('Generator', $iterator);
+        $colValsCompare = [];
+
+        foreach ($iterator as $row) {
+            unset($row['user_id']);
+            $colValsCompare[] = $row;
+        }
+
+        $this->assertSame($colVals, $colValsCompare);
+        $affected = $peachySql->delete(['user_id' => $ids]);
+        $this->assertSame(count($colVals), $affected);
     }
 
     /**
@@ -125,15 +154,13 @@ class DbTest extends \PHPUnit_Framework_TestCase
 
         if ($peachySql instanceof SqlServer) {
             $expectedQueries = 2;
-            $expectedAffected = $rowCount * 2; // since each ID is output into a table variable
         } else {
             $expectedQueries = 1;
-            $expectedAffected = $rowCount;
         }
 
         $result = $peachySql->insertBulk($colVals);
         $this->assertSame($expectedQueries, $result->getQueryCount());
-        $this->assertSame($expectedAffected, $result->getAffected());
+        $this->assertSame($rowCount, $result->getAffected());
         $ids = $result->getIds();
         $this->assertSame($rowCount, count($ids));
 
