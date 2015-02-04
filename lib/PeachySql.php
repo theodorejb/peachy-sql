@@ -154,43 +154,6 @@ abstract class PeachySql
     }
 
     /**
-     * Inserts the specified values into the specified columns. Performs a bulk insert if
-     * $values is two-dimensional. Returns the ID or array of IDs for the inserted row(s).
-     *
-     * @param array $columns
-     * @param array $values
-     * @return int[]|int
-     * @deprecated since v3.0.0 - use insertBulk or insertOne instead
-     */
-    public function insert(array $columns, array $values)
-    {
-        if (Insert::isBulk($values)) {
-            $colVals = [];
-
-            foreach ($values as $row) {
-                $colVals[] = array_combine($columns, $row);
-            }
-
-            return $this->insertBulk($colVals)->getIds();
-        } else {
-            $colVals = array_combine($columns, $values);
-            return $this->insertOne($colVals)->getId();
-        }
-    }
-
-    /**
-     * Inserts a single row from an associative array of columns/values
-     *
-     * @param array $colVals E.g. ["Username => "user1", "Password" => "pass1"]
-     * @return int The ID of the inserted row
-     * @deprecated since v3.0.0 - use insertOne instead
-     */
-    public function insertAssoc(array $colVals)
-    {
-        return $this->insertOne($colVals)->getId();
-    }
-
-    /**
      * Updates the specified columns and values in rows matching the where clause
      * 
      * @param array $set   E.g. ["Username" => "newName", "Password" => "newPass"]

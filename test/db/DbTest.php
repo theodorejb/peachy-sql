@@ -63,7 +63,7 @@ class DbTest extends \PHPUnit_Framework_TestCase
         $this->assertSame(null, $sameRow); // the row should no longer exist
 
         $peachySql->begin(); // start another transaction
-        $newId = $peachySql->insertAssoc($colVals);
+        $newId = $peachySql->insertOne($colVals)->getId();
         $peachySql->commit(); // complete the transaction
         $newRows = $peachySql->select(['user_id'], ['user_id' => $newId]);
         $this->assertSame([['user_id' => $newId]], $newRows); // the row should exist
@@ -112,24 +112,6 @@ class DbTest extends \PHPUnit_Framework_TestCase
         $this->assertSame($colVals, $colValsCompare);
         $affected = $peachySql->delete(['user_id' => $ids]);
         $this->assertSame(count($colVals), $affected);
-    }
-
-    /**
-     * @dataProvider dbTypeProvider
-     */
-    public function testInsert(PeachySql $peachySql)
-    {
-        $cols = ['fname', 'lname', 'dob'];
-
-        $vals = [
-            ['fname1', 'lname1', '2014-12-01'],
-            ['fname2', 'lname2', '2014-12-02'],
-        ];
-
-        $ids = $peachySql->insert($cols, $vals);
-        $this->assertSameSize($vals, $ids);
-        $affected = $peachySql->delete(['user_id' => $ids]);
-        $this->assertSame(count($vals), $affected);
     }
 
     /**
