@@ -55,7 +55,13 @@ abstract class SqlResult
      */
     public function getFirst()
     {
-        $row = $this->getIterator()->current();
+        $iterator = $this->getIterator();
+
+        if (defined('HHVM_VERSION')) {
+            $iterator->next(); // see https://github.com/facebook/hhvm/issues/1871
+        }
+
+        $row = $iterator->current();
 
         if ($row !== null) {
             $this->close(); // don't leave the SQL statement open
