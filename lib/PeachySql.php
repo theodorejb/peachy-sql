@@ -103,11 +103,12 @@ abstract class PeachySql
      * @param string[] $columns An array of columns to select (empty to select all columns)
      * @param array    $where   An associative array of columns and values to filter selected rows.
      *                          E.g. ["id" => 3] to only return rows where the id column is equal to 3.
+     * @param string[] $orderBy A list of column names to sort by (ascending only)
      * @return array
      */
-    public function select(array $columns = [], array $where = [])
+    public function select(array $columns = [], array $where = [], array $orderBy = [])
     {
-        $query = Select::buildQuery($this->options[self::OPT_TABLE], $columns, $this->options[self::OPT_COLUMNS], $where);
+        $query = Select::buildQuery($this->options[self::OPT_TABLE], $columns, $this->options[self::OPT_COLUMNS], $where, $orderBy);
         return $this->query($query['sql'], $query['params'])->getAll();
     }
 

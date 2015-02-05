@@ -34,6 +34,19 @@ class SelectTest extends \PHPUnit_Framework_TestCase
         $this->assertSame(['TestUser', 'TestPassword'], $actual['params']);
     }
 
+    public function testBuildQueryOrderBy()
+    {
+        $cols = ['username', 'firstname', 'lastname'];
+        $validCols = $cols;
+        $where = [];
+        $orderBy = ['lastname', 'firstname'];
+
+        $actual = Select::buildQuery('TestTable', $cols, $validCols, $where, $orderBy);
+        $expected = 'SELECT username, firstname, lastname FROM TestTable ORDER BY lastname, firstname';
+        $this->assertSame($expected, $actual['sql']);
+        $this->assertSame([], $actual['params']);
+    }
+
     /**
      * @expectedException \UnexpectedValueException
      */
@@ -48,5 +61,13 @@ class SelectTest extends \PHPUnit_Framework_TestCase
     public function testBuildQueryInvalidColumnsInWhere()
     {
         Select::buildQuery('TestTable', ['foo'], ['foo', 'bar'], ['fizzbuzz' => null]);
+    }
+
+    /**
+     * @expectedException \UnexpectedValueException
+     */
+    public function testBuildQueryInvalidColumnsInOrderBy()
+    {
+        Select::buildQuery('TestTable', ['foo'], ['foo'], ['foo' => 1], ['bar']);
     }
 }
