@@ -69,12 +69,7 @@ class Mysql extends PeachySql
      */
     public function begin()
     {
-        // begin_transaction is new in PHP 5.5
-        if (method_exists($this->connection, 'begin_transaction')) {
-            if (!$this->connection->begin_transaction()) {
-                throw new SqlException('Failed to begin transaction', $this->connection->error_list);
-            }
-        } elseif (!$this->connection->query('BEGIN;')) {
+        if (!$this->connection->begin_transaction()) {
             throw new SqlException('Failed to begin transaction', $this->connection->error_list);
         }
     }
