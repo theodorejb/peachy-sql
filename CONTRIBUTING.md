@@ -10,7 +10,7 @@ If you'd like to help out, you've come to the right place!
 
 ## Tests
 
-From a console in working directory, execute `"vendor/bin/phpunit"` to run all unit tests.
+From a console in the working directory, execute `"vendor/bin/phpunit"` to run all unit tests.
 
 ### Database setup
 
