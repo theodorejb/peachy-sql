@@ -44,10 +44,6 @@ class SqlServerResult extends SqlResult
         }
     }
 
-    /**
-     * Returns an iterator which an be used to loop through each row in the result
-     * @return \Generator
-     */
     public function getIterator()
     {
         if ($this->stmt !== null) {

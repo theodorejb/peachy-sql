@@ -32,11 +32,6 @@ class MysqlResult extends SqlResult
         return $this->insertId;
     }
 
-    /**
-     * Returns an iterator which an be used to loop through each row in the result
-     * @return \Generator
-     * @throws SqlException if results cannot be bound
-     */
     public function getIterator()
     {
         if ($this->stmt !== null) {

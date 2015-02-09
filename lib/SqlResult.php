@@ -24,6 +24,7 @@ abstract class SqlResult
     }
 
     /**
+     * Returns an iterator which can be used to loop through each row in the result
      * @return \Generator
      */
     abstract public function getIterator();
