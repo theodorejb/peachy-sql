@@ -99,14 +99,4 @@ class Insert extends Query
             throw new \Exception('A valid array of columns/values to insert must be specified');
         }
     }
-
-    /**
-     * Returns true if the array of values is for a bulk insert
-     * @param array $values
-     * @return bool
-     */
-    public static function isBulk(array $values)
-    {
-        return !empty($values[0]) && is_array($values[0]);
-    }
 }
