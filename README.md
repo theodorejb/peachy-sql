@@ -48,11 +48,13 @@ echo json_encode($result->getAll());
 
 The `SqlResult` object returned by `query` has the following methods:
 
-1. `getIterator` - returns a [Generator](http://php.net/manual/en/language.generators.overview.php) object which can be used to iterate over large result sets without caching them in memory.
-2. `getAll` - returns all selected rows as an array of associative arrays.
-3. `getFirst` - returns the first selected row as an associative array (or `null` if no rows were selected).
-4. `getAffected` - returns the number of rows affected by the query.
-5. `getQuery` - returns the executed query string.
+Method        | Behavior
+------------- | --------
+`getIterator` | Returns a [Generator](http://php.net/manual/en/language.generators.overview.php) object which can be used to iterate over large result sets without caching them in memory.
+`getAll`      | Returns all selected rows as an array of associative arrays.
+`getFirst`    | Returns the first selected row as an associative array (or `null` if no rows were selected).
+`getAffected` | Returns the number of rows affected by the query.
+`getQuery`    | Returns the executed query string.
 
 If using MySQL, `query` will return a `MysqlResult` subclass which adds a `getInsertId` method.
 
@@ -160,8 +162,9 @@ MySQL supports a maximum of 65,536 bound parameters per query.
 These limits can be easily reached when attempting to bulk-insert hundreds
 or thousands of rows at a time. To avoid these limits, the `insertBulk` method
 automatically splits large bulk insert queries into batches to efficiently
-handle any number of rows. The default limits (listed above) can be customized
-via the "maxBoundParams" and "maxInsertRows" PeachySQL options.
+handle any number of rows (`getQueryCount` returns the number of required batches).
+The default limits (listed above) can be customized via the "maxBoundParams" and
+"maxInsertRows" PeachySQL options.
 
 #### update and delete
 
@@ -183,14 +186,14 @@ $userTable->delete(['user_id' => [1, 2, 3]]);
 
 ### Transactions
 
-Call the `begin()` method to start a transaction.
-You can then call `query()` and any of the shorthand methods as needed,
-before committing or rolling back the transaction with `commit()` or `rollback()`.
+Call the `begin` method to start a transaction. `query` and any of the shorthand
+methods can then be called as needed, before committing or rolling back the
+transaction with `commit` or `rollback`.
 
 ### Other methods and options
 
-The database connection can be swapped out at any time with `setConnection()`,
-and `setOptions()` and `getOptions()` methods allow PeachySQL options to be
+The database connection can be swapped out at any time with `setConnection`,
+and `setOptions` and `getOptions` methods allow PeachySQL options to be
 changed and retrieved at will.
 
 In addition to the previously mentioned options, there is a MySQL-specific
