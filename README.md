@@ -54,7 +54,6 @@ Method        | Behavior
 `getAll`      | Returns all selected rows as an array of associative arrays.
 `getFirst`    | Returns the first selected row as an associative array (or `null` if no rows were selected).
 `getAffected` | Returns the number of rows affected by the query.
-`getQuery`    | Returns the executed query string.
 
 If using MySQL, `query` will return a `MysqlResult` subclass which adds a `getInsertId` method.
 

@@ -79,13 +79,4 @@ abstract class SqlResult
     {
         return $this->affected;
     }
-
-    /**
-     * Returns the SQL query
-     * @return string
-     */
-    public function getQuery()
-    {
-        return $this->query;
-    }
 }
