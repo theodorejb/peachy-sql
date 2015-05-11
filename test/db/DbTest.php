@@ -80,6 +80,21 @@ class DbTest extends \PHPUnit_Framework_TestCase
             $peachySql->query($badQuery); // should throw exception
         } catch (SqlException $e) {
             $this->assertSame($badQuery, $e->getQuery());
+            $this->assertSame('42000', $e->getSqlState());
+
+            if ($peachySql instanceof SqlServer) {
+                $expectedCode = 102;
+                $expectedMessage = "Query failed: [Microsoft][ODBC Driver 11 for SQL Server]"
+                    . "[SQL Server]Incorrect syntax near 'WHERE'.";
+            } else {
+                $expectedCode = 1064;
+                $expectedMessage = "Failed to prepare statement: You have an error in your"
+                    . " SQL syntax; check the manual that corresponds to your MySQL server"
+                    . " version for the right syntax to use near '' at line 1";
+            }
+
+            $this->assertSame($expectedCode, $e->getCode());
+            $this->assertSame($expectedMessage, $e->getMessage());
             return;
         }
 

@@ -108,7 +108,13 @@ class Mysql extends PeachySql
     {
         // prepare the statement
         if (!$stmt = $this->connection->prepare($sql)) {
-            throw new SqlException('Failed to prepare statement', $this->connection->error_list, $sql, $params);
+            $error = [
+                'error' => $this->connection->error,
+                'errno' => $this->connection->errno,
+                'sqlstate' => $this->connection->sqlstate
+            ];
+
+            throw new SqlException('Failed to prepare statement', [$error], $sql, $params);
         }
 
         if (!empty($params)) {
