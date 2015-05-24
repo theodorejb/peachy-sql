@@ -68,9 +68,10 @@ class TestDbConnector
     {
         $sql = 'CREATE TABLE Users (
                     user_id INT PRIMARY KEY IDENTITY(1,1) NOT NULL,
-                    fname VARCHAR(20) NOT NULL,
-                    lname VARCHAR(20) NOT NULL,
-                    dob DATE NOT NULL
+                    name VARCHAR(50) NOT NULL,
+                    dob DATE NOT NULL,
+                    weight FLOAT NOT NULL,
+                    uuid BINARY(16) NOT NULL
                 );';
 
         if (!sqlsrv_query($conn, $sql)) {
@@ -82,9 +83,10 @@ class TestDbConnector
     {
         $sql = 'CREATE TABLE Users (
                     user_id INT PRIMARY KEY AUTO_INCREMENT NOT NULL,
-                    fname VARCHAR(20) NOT NULL,
-                    lname VARCHAR(20) NOT NULL,
-                    dob DATE NOT NULL
+                    name VARCHAR(50) NOT NULL,
+                    dob DATE NOT NULL,
+                    weight FLOAT NOT NULL,
+                    uuid BINARY(16) NOT NULL
                 );';
 
         if (!$conn->query($sql)) {

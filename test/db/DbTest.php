@@ -1,6 +1,7 @@
 <?php
 
 namespace PeachySQL;
+use Rhumsaa\Uuid\Uuid;
 
 /**
  * Database tests for the PeachySQL library.
@@ -23,7 +24,7 @@ class DbTest extends \PHPUnit_Framework_TestCase
 
         $options = [
             PeachySql::OPT_TABLE => 'Users',
-            PeachySql::OPT_COLUMNS => ['user_id', 'fname', 'lname', 'dob'],
+            PeachySql::OPT_COLUMNS => ['user_id', 'name', 'dob', 'weight', 'uuid'],
         ];
 
         if ($config['testWith']['mysql']) {
@@ -46,10 +47,15 @@ class DbTest extends \PHPUnit_Framework_TestCase
         $peachySql->begin(); // start transaction
 
         $colVals = [
-            'fname' => 'Theodore',
-            'lname' => 'Brown',
-            'dob' => date('Y-m-d', strtotime('tomorrow'))
+            'name' => 'George McFly',
+            'dob' => '1938-04-01',
+            'weight' => 133.8,
+            'uuid' => Uuid::uuid4()->getBytes()
         ];
+
+        if ($peachySql instanceof SqlServer) {
+            $colVals['uuid'] = self::getSqlServerBinaryParam($colVals['uuid']);
+        }
 
         $id = $peachySql->insertOne($colVals)->getId();
         $this->assertInternalType('int', $id);
@@ -107,11 +113,22 @@ class DbTest extends \PHPUnit_Framework_TestCase
     public function testIteratorQuery(PeachySql $peachySql)
     {
         $colVals = [
-            ['fname' => 'fname1', 'lname' => 'lname2', 'dob' => date('Y-m-d', strtotime('yesterday'))],
-            ['fname' => 'fname1', 'lname' => 'lname2', 'dob' => date('Y-m-d', strtotime('next monday'))],
+            ['name' => 'Martin S. McFly', 'dob' => '1968-06-20', 'weight' => 140.7, 'uuid' => Uuid::uuid4()->getBytes()],
+            ['name' => 'Jennifer Parker', 'dob' => '1968-10-29', 'weight' => 129.4, 'uuid' => Uuid::uuid4()->getBytes()],
         ];
 
-        $ids = $peachySql->insertBulk($colVals)->getIds();
+        if ($peachySql instanceof SqlServer) {
+            $insertColVals = [];
+
+            foreach ($colVals as $row) {
+                $row['uuid'] = self::getSqlServerBinaryParam($row['uuid']);
+                $insertColVals[] = $row;
+            }
+        } else {
+            $insertColVals = $colVals;
+        }
+
+        $ids = $peachySql->insertBulk($insertColVals)->getIds();
         $placeholders = substr_replace(str_repeat('?,', count($ids)), '', -1);
         $sql = "SELECT * FROM Users WHERE user_id IN ($placeholders)";
 
@@ -121,6 +138,7 @@ class DbTest extends \PHPUnit_Framework_TestCase
 
         foreach ($iterator as $row) {
             unset($row['user_id']);
+            $row['weight'] = round($row['weight'], 1); // so that float comparison will work in HHVM
             $colValsCompare[] = $row;
         }
 
@@ -134,42 +152,60 @@ class DbTest extends \PHPUnit_Framework_TestCase
      */
     public function testInsertBulk(PeachySql $peachySql)
     {
-        $rowCount = 700; // the number of rows to insert/update/delete
+        $rowCount = 525; // the number of rows to insert/update/delete
         $colVals = [];
 
         for ($i = 1; $i <= $rowCount; $i++) {
-            $fname = 'fname' . $i;
-            $lname = 'lname' . $i;
-            $year = (1900 + $i) . '-01-01';
-
             $colVals[] = [
-                'fname' => $fname,
-                'lname' => $lname,
-                'dob' => $year
+                'name' => 'name' . $i,
+                'dob' => (1900 + $i) . '-01-01',
+                'weight' => round(rand(1001, 2899) / 10, 1),
+                'uuid' => Uuid::uuid4()->getBytes(),
             ];
         }
 
         if ($peachySql instanceof SqlServer) {
             $expectedQueries = 2;
+            $insertColVals = [];
+
+            foreach ($colVals as $row) {
+                $row['uuid'] = self::getSqlServerBinaryParam($row['uuid']);
+                $insertColVals[] = $row;
+            }
         } else {
             $expectedQueries = 1;
+            $insertColVals = $colVals;
         }
 
-        $result = $peachySql->insertBulk($colVals);
+        $result = $peachySql->insertBulk($insertColVals);
         $this->assertSame($expectedQueries, $result->getQueryCount());
         $this->assertSame($rowCount, $result->getAffected());
         $ids = $result->getIds();
         $this->assertSame($rowCount, count($ids));
 
         $rows = $peachySql->select(array_keys($colVals[0]), ['user_id' => $ids]);
+        array_walk($rows, function (&$row) {
+            $row['weight'] = round($row['weight'], 1); // so that float comparison will work in HHVM
+        });
+
         $this->assertSame($colVals, $rows);
 
         // update the inserted rows
-        $numUpdated = $peachySql->update(['lname' => 'updated'], ['user_id' => $ids]);
+        $numUpdated = $peachySql->update(['name' => 'updated'], ['user_id' => $ids]);
         $this->assertSame($rowCount, $numUpdated);
 
         // delete the inserted rows
         $numDeleted = $peachySql->delete(['user_id' => $ids]);
         $this->assertSame($rowCount, $numDeleted);
+    }
+
+    private static function getSqlServerBinaryParam($binaryStr, $length = 16)
+    {
+        return [
+            $binaryStr,
+            SQLSRV_PARAM_IN,
+            SQLSRV_PHPTYPE_STRING(SQLSRV_ENC_BINARY),
+            SQLSRV_SQLTYPE_BINARY($length)
+        ];
     }
 }

@@ -136,16 +136,16 @@ It returns a `BulkInsertResult` object with `getIds`, `getAffected`, and `getQue
 ```php
 $userData = [
     [
-        'fname' => 'Theodore',
-        'lname' => 'Brown'
-    ],
-    [
         'fname' => 'Grace',
         'lname' => 'Hopper'
     ],
     [
         'fname' => 'Douglas',
         'lname' => 'Engelbart'
+    ],
+    [
+        'fname' => 'Margaret',
+        'lname' => 'Hamilton'
     ]
 ];
 
