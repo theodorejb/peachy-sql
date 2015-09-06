@@ -4,6 +4,7 @@ namespace PeachySQL;
 
 use InvalidArgumentException;
 use PeachySQL\QueryBuilder\Insert;
+use PeachySQL\SqlServer\Options;
 
 /**
  * Implements the standard PeachySQL features for SQL Server (using SQLSRV extension)
@@ -13,34 +14,20 @@ use PeachySQL\QueryBuilder\Insert;
 class SqlServer extends PeachySql
 {
     /**
-     * Option key for specifying the table's ID column (used to retrieve insert IDs)
-     */
-    const OPT_IDCOL = 'idCol';
-
-    /**
      * A SQLSRV connection resource
      * @var resource
      */
     private $connection;
 
-    /**
-     * Default SQL Server-specific options
-     * @var array
-     */
-    private $sqlServerOptions = [
-        self::OPT_IDCOL           => null,
-        self::OPT_MAX_PARAMS      => 2099,
-        self::OPT_MAX_INSERT_ROWS => 1000,
-    ];
-
-    /**
-     * @param resource $connection A SQLSRV connection resource
-     * @param array    $options    Array of PeachySQL options
-     */
-    public function __construct($connection, array $options = [])
+    public function __construct($connection, Options $options = null)
     {
         $this->setConnection($connection);
-        $this->setOptions($options);
+
+        if ($options === null) {
+            $options = new Options();
+        }
+
+        $this->options = $options;
     }
 
     /**
@@ -55,16 +42,6 @@ class SqlServer extends PeachySql
         }
 
         $this->connection = $connection;
-    }
-
-    /**
-     * Set options used to select, insert, update, and delete from the database
-     * @param array $options
-     */
-    public function setOptions(array $options)
-    {
-        $this->options = array_merge($this->sqlServerOptions, $this->options);
-        parent::setOptions($options);
     }
 
     /**
@@ -124,7 +101,7 @@ class SqlServer extends PeachySql
      */
     protected function insertBatch(array $colVals)
     {
-        $query = Insert::buildQuery($this->options[self::OPT_TABLE], $colVals, $this->options[self::OPT_COLUMNS], $this->options[self::OPT_IDCOL]);
+        $query = Insert::buildQuery($this->options->getTable(), $colVals, $this->options->getColumns(), $this->options->getIdColumn());
         $result = $this->query($query['sql'], $query['params']);
 
         $ids = [];

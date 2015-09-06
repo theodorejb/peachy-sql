@@ -47,36 +47,43 @@ If using MySQL, `query` will return a `MysqlResult` subclass which adds a `getIn
 Internally, `getAll` and `getFirst` are implemented using `getIterator`.
 As such they can only be called once for a given `SqlResult` object.
 
+### Options
+
+PeachySQL comes with five shorthand methods for selecting, inserting, updating,
+and deleting records. To use these methods, a table name and list of valid
+columns must be specified by passing an options object as the second argument to
+the PeachySQL constructor.
+
+```php
+$options = new PeachySQL\Mysql\Options();
+```
+or
+```php
+$options = new PeachySQL\SqlServer\Options();
+```
+
+```php
+$options->setTable('Users');
+$options->setColumns(['user_id', 'fname', 'lname']);
+```
+
+**Note:** each of the options setter methods has a corresponding getter method
+(e.g. `getColumns`) to retrieve the current setting value.
+
+If using SQL Server, there is an additional option to set the table's identity
+column. This is necessary so that PeachySQL can generate an output clause to
+retrieve insert IDs.
+
+```php
+$options->setIdColumn('user_id');
+$userTable = new PeachySQL\SqlServer($sqlSrvConn, $options);
+```
+
 ### Shorthand methods
 
-When creating a new instance of PeachySQL, an array of options can be passed
-to the constructor specifying a table name and list of valid columns:
-
-```php
-$options = [
-    'table'   => 'Users',
-	'columns' => ['user_id', 'fname', 'lname']
-];
-
-$userTable = new PeachySQL\Mysql($mysqlConn, $options);
-```
-
-If using SQL Server, an additional option can be passed to specify the table's identity column.
-This is necessary so that PeachySQL can generate an output clause to retrieve insert IDs.
-
-```php
-$userTable = new PeachySQL\SqlServer($sqlSrvConn, [
-    'table'   => 'Users',
-    'columns' => ['user_id', 'fname', 'lname'],
-    'idCol'   => 'user_id'
-]);
-```
-
-You can then make use of PeachySQL's five shorthand methods: `select`,
-`insertOne`, `insertBulk`, `update`, and `delete`. To prevent SQL
-injection, the queries PeachySQL generates for these methods always use bound
-parameters for values, and column names are checked against the list of valid
-columns in the options array.
+**Note:** to prevent SQL injection, the queries PeachySQL generates for these
+methods always use bound parameters for values, and column names are validated
+against the list of columns defined in the options object.
 
 #### select
 
@@ -142,15 +149,14 @@ $affected = $result->getAffected(); // 3
 $queries = $result->getQueryCount(); // 1
 ```
 
-SQL Server allows a maximum of 1,000 rows to be inserted at a time,
-and limits individual queries to 2,099 or fewer bound parameters.
-MySQL supports a maximum of 65,536 bound parameters per query.
-These limits can be easily reached when attempting to bulk-insert hundreds
-or thousands of rows at a time. To avoid these limits, the `insertBulk` method
-automatically splits large bulk insert queries into batches to efficiently
-handle any number of rows (`getQueryCount` returns the number of required batches).
-The default limits (listed above) can be customized via the "maxBoundParams" and
-"maxInsertRows" PeachySQL options.
+SQL Server allows a maximum of 1,000 rows to be inserted at a time, and limits
+individual queries to 2,099 or fewer bound parameters. MySQL supports a maximum
+of 65,536 bound parameters per query. These limits can be easily reached when
+attempting to bulk-insert hundreds or thousands of rows at a time. To avoid
+these limits, the `insertBulk` method automatically splits large bulk insert
+queries into batches to efficiently handle any number of rows (`getQueryCount`
+returns the number of required batches). The default limits (listed above) can
+be customized via the `setMaxBoundParams` and `setMaxInsertRows` option setters.
 
 #### update and delete
 
@@ -179,14 +185,17 @@ transaction with `commit` or `rollback`.
 ### Other methods and options
 
 The database connection can be swapped out at any time with `setConnection`,
-and `setOptions` and `getOptions` methods allow PeachySQL options to be
-changed and retrieved at will.
+and the specified options object can be retrieved via the `getOptions` method.
 
-In addition to the previously mentioned options, there is a MySQL-specific
-"autoIncrementIncrement" option which can be used to set the interval between
-successive auto-incremented values in the table (defaults to 1). This option is
-used to determine the array of insert IDs for bulk-inserts, since MySQL only
-provides the first insert ID.
+There is a MySQL-specific option to override the interval between successive
+auto-incremented IDs in the table (defaults to 1). PeachySQL uses this value to
+determine the array of insert IDs for bulk-inserts, since MySQL only provides
+the first insert ID.
+
+```php
+$userTable->getOptions()->setAutoIncrementValue(2);
+$userTable->insertBulk($userData)->getIds(); // e.g. [67, 69, 71]
+```
 
 ## Author
 

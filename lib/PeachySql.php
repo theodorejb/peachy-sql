@@ -15,36 +15,9 @@ use PeachySQL\QueryBuilder\Update;
 abstract class PeachySql
 {
     /**
-     * Option key for specifying the table to select, insert, update, and delete from
+     * @var BaseOptions
      */
-    const OPT_TABLE = 'table';
-
-    /**
-     * Option key for specifying valid columns in the table. To prevent SQL injection,
-     * this option must be set to generate queries which reference one or more columns.
-     */
-    const OPT_COLUMNS = 'columns';
-
-    /**
-     * Option key for specifying the maximum number of parameters which can be bound in
-     * a single query. If set, PeachySQL will batch insert queries to avoid the limit.
-     */
-    const OPT_MAX_PARAMS = 'maxBoundParams';
-
-    /**
-     * Option key for specifying the maximum number of rows which can be inserted in
-     * a single query. If set, PeachySQL will batch insert queries to remove the limit.
-     */
-    const OPT_MAX_INSERT_ROWS = 'maxInsertRows';
-
-    /**
-     * Default options
-     * @var array
-     */
-    protected $options = [
-        self::OPT_TABLE   => null,
-        self::OPT_COLUMNS => [],
-    ];
+    protected $options;
 
     /** Begins a transaction */
     abstract public function begin();
@@ -71,30 +44,12 @@ abstract class PeachySql
     abstract protected function insertBatch(array $colVals);
 
     /**
-     * Returns the current PeachySQL options.
-     * @return array
+     * Returns the current PeachySQL options
+     * @return BaseOptions
      */
     public function getOptions()
     {
         return $this->options;
-    }
-
-    /**
-     * Allows PeachySQL options to be changed at any time
-     * @param array $options
-     * @throws \Exception if an option is invalid
-     */
-    public function setOptions(array $options)
-    {
-        $validKeys = array_keys($this->options);
-
-        foreach (array_keys($options) as $key) {
-            if (!in_array($key, $validKeys, true)) {
-                throw new \Exception("Invalid option '$key'");
-            }
-        }
-
-        $this->options = array_merge($this->options, $options);
     }
 
     /**
@@ -108,7 +63,7 @@ abstract class PeachySql
      */
     public function select(array $columns = [], array $where = [], array $orderBy = [])
     {
-        $query = Select::buildQuery($this->options[self::OPT_TABLE], $columns, $this->options[self::OPT_COLUMNS], $where, $orderBy);
+        $query = Select::buildQuery($this->options->getTable(), $columns, $this->options->getColumns(), $where, $orderBy);
         return $this->query($query['sql'], $query['params'])->getAll();
     }
 
@@ -121,7 +76,7 @@ abstract class PeachySql
     public function insertBulk(array $colVals)
     {
         // check whether the query needs to be split into multiple batches
-        $batches = Insert::batchRows($colVals, $this->options[self::OPT_MAX_PARAMS], $this->options[self::OPT_MAX_INSERT_ROWS]);
+        $batches = Insert::batchRows($colVals, $this->options->getMaxBoundParams(), $this->options->getMaxInsertRows());
 
         if ($batches === null) {
             return $this->insertBatch($colVals);
@@ -162,7 +117,7 @@ abstract class PeachySql
      */
     public function update(array $set, array $where)
     {
-        $query = Update::buildQuery($this->options[self::OPT_TABLE], $set, $where, $this->options[self::OPT_COLUMNS]);
+        $query = Update::buildQuery($this->options->getTable(), $set, $where, $this->options->getColumns());
         return $this->query($query['sql'], $query['params'])->getAffected();
     }
 
@@ -174,7 +129,7 @@ abstract class PeachySql
      */
     public function delete(array $where)
     {
-        $query = Delete::buildQuery($this->options[self::OPT_TABLE], $where, $this->options[self::OPT_COLUMNS]);
+        $query = Delete::buildQuery($this->options->getTable(), $where, $this->options->getColumns());
         return $this->query($query['sql'], $query['params'])->getAffected();
     }
 }

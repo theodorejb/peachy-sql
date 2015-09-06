@@ -22,11 +22,11 @@ class Insert extends Query
         self::validateColValsStructure($colVals);
         $maxRowsPerQuery = null;
 
-        if ($maxParams !== null) {
+        if ($maxParams > 0) {
             $maxRowsPerQuery = floor($maxParams / count($colVals[0])); // max bound params divided by params per row
         }
 
-        if ($maxRows !== null && ($maxRowsPerQuery === null || $maxRowsPerQuery > $maxRows)) {
+        if ($maxRows > 0 && ($maxRowsPerQuery === null || $maxRowsPerQuery > $maxRows)) {
             $maxRowsPerQuery = $maxRows;
         }
 
@@ -58,7 +58,7 @@ class Insert extends Query
      * @param string   $idCol     If specified, a SQL Server OUTPUT clause will be included
      * @return array
      */
-    public static function buildQuery($tableName, array $colVals, array $validCols, $idCol = null)
+    public static function buildQuery($tableName, array $colVals, array $validCols, $idCol = '')
     {
         self::validateColValsStructure($colVals);
         self::validateTableName($tableName);
@@ -73,7 +73,7 @@ class Insert extends Query
 
         // Insert IDs must be output into a table variable so that the query will work on tables
         // with insert triggers (see http://technet.microsoft.com/en-us/library/ms177564.aspx).
-        if ($idCol !== null) {
+        if ($idCol !== '') {
             $decStr = 'DECLARE @ids TABLE(RowID int); ';
             $outStr = " OUTPUT inserted.$idCol INTO @ids(RowID)";
             $selStr = '; SELECT * FROM @ids;';

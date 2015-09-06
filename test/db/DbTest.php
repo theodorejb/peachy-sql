@@ -1,6 +1,7 @@
 <?php
 
 namespace PeachySQL;
+
 use Rhumsaa\Uuid\Uuid;
 
 /**
@@ -22,17 +23,20 @@ class DbTest extends \PHPUnit_Framework_TestCase
         $config = TestDbConnector::getConfig();
         $implementations = [];
 
-        $options = [
-            PeachySql::OPT_TABLE => 'Users',
-            PeachySql::OPT_COLUMNS => ['user_id', 'name', 'dob', 'weight', 'uuid'],
-        ];
+        $setBaseOptions = function (BaseOptions $options) {
+            $options->setTable('Users');
+            $options->setColumns(['user_id', 'name', 'dob', 'weight', 'uuid']);
+            return $options;
+        };
 
         if ($config['testWith']['mysql']) {
-            $implementations[] = [new Mysql(TestDbConnector::getMysqlConn(), $options)];
+            $implementations[] = [new Mysql(TestDbConnector::getMysqlConn(), $setBaseOptions(new Mysql\Options()))];
         }
 
         if ($config['testWith']['sqlsrv']) {
-            $sqlServerOptions = array_merge($options, [SqlServer::OPT_IDCOL => 'user_id']);
+            $sqlServerOptions = new SqlServer\Options();
+            $setBaseOptions($sqlServerOptions);
+            $sqlServerOptions->setIdColumn('user_id');
             $implementations[] = [new SqlServer(TestDbConnector::getSqlsrvConn(), $sqlServerOptions)];
         }
 

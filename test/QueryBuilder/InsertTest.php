@@ -35,12 +35,12 @@ class InsertTest extends \PHPUnit_Framework_TestCase
         $lastRow = [$colVals[3]];
 
         return [
-            [$colVals, null, null, null], // one query
+            [$colVals, 0, 0, null], // one query
             [$colVals, 1000, 1000, null], // one query
             [$colVals, 8, 4, null], // one query
-            [$colVals, 4, null, [$firstTwoRows, $lastTwoRows]], // max of 4 bound params = 2 rows at a time
+            [$colVals, 4, 0, [$firstTwoRows, $lastTwoRows]], // max of 4 bound params = 2 rows at a time
             [$colVals, 6, 1000, [$firstThreeRows, $lastRow]], // max of 6 bound params = 3 rows at a time
-            [$colVals, null, 3, [$firstThreeRows, $lastRow]], // 3 rows at a time max
+            [$colVals, 0, 3, [$firstThreeRows, $lastRow]], // 3 rows at a time max
             [$colVals, 6, 2, [$firstTwoRows, $lastTwoRows]], // six bound params max overridden by max of two rows
         ];
     }

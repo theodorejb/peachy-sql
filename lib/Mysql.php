@@ -3,6 +3,7 @@
 namespace PeachySQL;
 
 use mysqli;
+use PeachySQL\Mysql\Options;
 use PeachySQL\QueryBuilder\Insert;
 
 /**
@@ -13,35 +14,20 @@ use PeachySQL\QueryBuilder\Insert;
 class Mysql extends PeachySql
 {
     /**
-     * Options key for specifying the interval between successive auto-incremented 
-     * values in the table (used to retrieve array of insert IDs for bulk inserts)
-     */
-    const OPT_AUTO_INCREMENT_INCREMENT = 'autoIncrementIncrement';
-
-    /**
      * The connection used to access the database
      * @var mysqli
      */
     private $connection;
 
-    /**
-     * Default MySQL-specific options
-     * @var array
-     */
-    private $mysqlOptions = [
-        self::OPT_AUTO_INCREMENT_INCREMENT => 1,
-        self::OPT_MAX_PARAMS               => 65536, // 2^16
-        self::OPT_MAX_INSERT_ROWS          => null,
-    ];
-
-    /**
-     * @param mysqli $connection A mysqli connection instance
-     * @param array  $options    Array of PeachySQL options
-     */
-    public function __construct(mysqli $connection, array $options = [])
+    public function __construct(mysqli $connection, Options $options = null)
     {
         $this->setConnection($connection);
-        $this->setOptions($options);
+
+        if ($options === null) {
+            $options = new Options();
+        }
+
+        $this->options = $options;
     }
 
     /**
@@ -51,16 +37,6 @@ class Mysql extends PeachySql
     public function setConnection(mysqli $connection)
     {
         $this->connection = $connection;
-    }
-
-    /**
-     * Set options used to select, insert, update, and delete from the database
-     * @param array $options
-     */
-    public function setOptions(array $options)
-    {
-        $this->options = array_merge($this->mysqlOptions, $this->options);
-        parent::setOptions($options);
     }
 
     /**
@@ -144,13 +120,13 @@ class Mysql extends PeachySql
      */
     protected function insertBatch(array $colVals)
     {
-        $query = Insert::buildQuery($this->options[self::OPT_TABLE], $colVals, $this->options[self::OPT_COLUMNS]);
+        $query = Insert::buildQuery($this->options->getTable(), $colVals, $this->options->getColumns());
         $result = $this->query($query['sql'], $query['params']);
         $firstId = $result->getInsertId(); // ID of first inserted row, or zero if no insert ID
 
         if ($firstId) {
             $lastId = $firstId + count($colVals) - 1;
-            $ids = range($firstId, $lastId, $this->options[self::OPT_AUTO_INCREMENT_INCREMENT]);
+            $ids = range($firstId, $lastId, $this->options->getAutoIncrementValue());
         } else {
             $ids = [];
         }
