@@ -2,12 +2,12 @@
 
 <phpunit bootstrap="test/bootstrap.php" color="true">
     <testsuites>
-		<testsuite name="default">
-			<directory>./test</directory>
-		</testsuite>
-		<testsuite name="no-db">
+        <testsuite name="default">
             <directory>./test</directory>
-			<exclude>./test/db</exclude>
+        </testsuite>
+        <testsuite name="no-db">
+            <directory>./test</directory>
+            <exclude>./test/db</exclude>
         </testsuite>
     </testsuites>
 </phpunit>
