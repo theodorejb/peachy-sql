@@ -77,21 +77,16 @@ abstract class PeachySql
     {
         // check whether the query needs to be split into multiple batches
         $batches = Insert::batchRows($colVals, $this->options->getMaxBoundParams(), $this->options->getMaxInsertRows());
+        $ids = [];
+        $affected = 0;
 
-        if ($batches === null) {
-            return $this->insertBatch($colVals);
-        } else {
-            $ids = [];
-            $affected = 0;
-
-            foreach ($batches as $batch) {
-                $result = $this->insertBatch($batch);
-                $ids = array_merge($ids, $result->getIds());
-                $affected += $result->getAffected();
-            }
-
-            return new BulkInsertResult($ids, $affected, count($batches));
+        foreach ($batches as $batch) {
+            $result = $this->insertBatch($batch);
+            $ids = array_merge($ids, $result->getIds());
+            $affected += $result->getAffected();
         }
+
+        return new BulkInsertResult($ids, $affected, count($batches));
     }
 
     /**

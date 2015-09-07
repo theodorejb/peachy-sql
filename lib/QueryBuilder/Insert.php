@@ -10,43 +10,28 @@ class Insert extends Query
 {
     /**
      * Returns the array of columns/values, split into groups containing the largest
-     * number of rows possible. Returns null if only a single insert query is required.
+     * number of rows possible.
      *
      * @param array $colVals
      * @param int   $maxParams The maximum number of bound parameters allowed per query
      * @param int   $maxRows   The maximum number of rows which can be inserted at once
-     * @return array|null
+     * @return array
      */
     public static function batchRows(array $colVals, $maxParams, $maxRows)
     {
         self::validateColValsStructure($colVals);
-        $maxRowsPerQuery = null;
 
         if ($maxParams > 0) {
             $maxRowsPerQuery = floor($maxParams / count($colVals[0])); // max bound params divided by params per row
+        } else {
+            $maxRowsPerQuery = count($colVals);
         }
 
-        if ($maxRows > 0 && ($maxRowsPerQuery === null || $maxRowsPerQuery > $maxRows)) {
+        if ($maxRows > 0 && $maxRowsPerQuery > $maxRows) {
             $maxRowsPerQuery = $maxRows;
         }
 
-        if ($maxRowsPerQuery === null || count($colVals) <= $maxRowsPerQuery) {
-            return null; // only a single query is required
-        } else {
-            $group = -1;
-            $batches = [];
-
-            foreach ($colVals as $index => $row) {
-                // if the index is a multiple of max rows, add a new query group
-                if ($index % $maxRowsPerQuery === 0) {
-                    $group += 1; // true when index is 0, so first group will be 0
-                }
-
-                $batches[$group][] = $row;
-            }
-
-            return $batches;
-        }
+        return array_chunk($colVals, $maxRowsPerQuery);
     }
 
     /**
