@@ -2,26 +2,13 @@
 
 [![Packagist Version](https://img.shields.io/packagist/v/theodorejb/peachy-sql.svg)](https://packagist.org/packages/theodorejb/peachy-sql) [![Total Downloads](https://img.shields.io/packagist/dt/theodorejb/peachy-sql.svg)](https://packagist.org/packages/theodorejb/peachy-sql) [![License](https://img.shields.io/packagist/l/theodorejb/peachy-sql.svg)](https://packagist.org/packages/theodorejb/peachy-sql) [![Build Status](https://travis-ci.org/theodorejb/peachy-sql.svg?branch=master)](https://travis-ci.org/theodorejb/peachy-sql)
 
-PeachySQL is a speedy database abstraction layer with a goal of simplifying the
-experience of performing common SQL queries and building JSON APIs in PHP.
-It supports both MySQL (via MySQLi) and SQL Server (via Microsoft's
-[SQLSRV extension](http://www.php.net/manual/en/book.sqlsrv.php)) and runs on PHP 5.5+ as well as HHVM.
+PeachySQL is a speedy database abstraction layer which makes it easy to execute
+prepared statements and work with large amounts of data. It supports both MySQL
+and SQL Server, and runs on PHP 5.5+ as well as HHVM.
 
-## Installation
+## Install via Composer
 
-To install via [Composer](https://getcomposer.org/), add the following to the
-composer.json file in your project root:
-
-```json
-{
-    "require": {
-        "theodorejb/peachy-sql": "4.x"
-    }
-}
-```
-
-Then run `composer install` and require `vendor/autoload.php` in your
-application's bootstrap file.
+`composer require theodorejb/peachy-sql`
 
 ## Usage
 
