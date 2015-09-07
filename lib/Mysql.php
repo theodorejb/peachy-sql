@@ -21,22 +21,13 @@ class Mysql extends PeachySql
 
     public function __construct(mysqli $connection, Options $options = null)
     {
-        $this->setConnection($connection);
+        $this->connection = $connection;
 
         if ($options === null) {
             $options = new Options();
         }
 
         $this->options = $options;
-    }
-
-    /**
-     * Easily switch to a different mysqli database connection
-     * @param mysqli $connection
-     */
-    public function setConnection(mysqli $connection)
-    {
-        $this->connection = $connection;
     }
 
     /**

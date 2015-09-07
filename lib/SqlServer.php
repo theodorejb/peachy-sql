@@ -2,7 +2,6 @@
 
 namespace PeachySQL;
 
-use InvalidArgumentException;
 use PeachySQL\QueryBuilder\Insert;
 use PeachySQL\SqlServer\Options;
 
@@ -21,27 +20,17 @@ class SqlServer extends PeachySql
 
     public function __construct($connection, Options $options = null)
     {
-        $this->setConnection($connection);
+        if (!is_resource($connection) || get_resource_type($connection) !== 'SQL Server Connection') {
+            throw new \InvalidArgumentException('Connection must be a SQL Server Connection resource');
+        }
+
+        $this->connection = $connection;
 
         if ($options === null) {
             $options = new Options();
         }
 
         $this->options = $options;
-    }
-
-    /**
-     * Easily switch to a different SQL Server database connection
-     * @param resource $connection
-     * @throws InvalidArgumentException if the connection isn't an SQLSRV resource
-     */
-    public function setConnection($connection)
-    {
-        if (!is_resource($connection) || get_resource_type($connection) !== 'SQL Server Connection') {
-            throw new InvalidArgumentException('Connection must be a SQL Server Connection resource');
-        }
-
-        $this->connection = $connection;
     }
 
     /**

@@ -184,8 +184,8 @@ transaction with `commit` or `rollback`.
 
 ### Other methods and options
 
-The database connection can be swapped out at any time with `setConnection`,
-and the specified options object can be retrieved via the `getOptions` method.
+The settings object passed to PeachySQL can be retrieved at any time using the
+`getOptions` method.
 
 There is a MySQL-specific option to override the interval between successive
 auto-incremented IDs in the table (defaults to 1). PeachySQL uses this value to
