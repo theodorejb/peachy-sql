@@ -29,11 +29,20 @@ abstract class PeachySql
     abstract public function rollback();
 
     /**
+     * Prepares a SQL query for later execution
+     *
+     * @param string $sql
+     * @param array $params
+     * @return BaseStatement
+     */
+    abstract public function prepare($sql, array $params = []);
+
+    /**
      * Executes a single SQL query
      *
      * @param string $sql
      * @param array  $params
-     * @return SqlResult
+     * @return BaseStatement
      */
     abstract public function query($sql, array $params = []);
 

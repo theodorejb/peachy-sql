@@ -5,23 +5,30 @@ namespace PeachySQL;
 /**
  * Contains rows, affected count, and the query string for a completed SQL query
  */
-abstract class SqlResult
+abstract class BaseStatement
 {
-    private $affected;
+    protected $affected;
+    protected $usedPrepare;
     protected $query;
     protected $params;
 
     /**
-     * @param int $affected
+     * @param bool $usedPrepare True if the statement was created using `prepare`
      * @param string $query
      * @param array $params
      */
-    public function __construct($affected, $query, array $params)
+    public function __construct($usedPrepare, $query, array $params)
     {
-        $this->affected = $affected;
+        $this->usedPrepare = $usedPrepare;
         $this->query = $query;
         $this->params = $params;
     }
+
+    /**
+     * Executes the prepared statement
+     * @return void
+     */
+    abstract public function execute();
 
     /**
      * Returns an iterator which can be used to loop through each row in the result

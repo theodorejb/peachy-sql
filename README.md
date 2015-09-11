@@ -24,8 +24,28 @@ or
 $peachySql = new PeachySQL\SqlServer($sqlSrvConn);
 ```
 
-After instantiation, arbitrary queries can be executed by passing a
-SQL string and array of bound parameters to the `query` method:
+After instantiation, arbitrary statements can be prepared by passing a
+SQL string and array of bound parameters to the `prepare` method:
+
+```php
+$sql = "UPDATE Users SET fname = ? WHERE user_id = ?";
+$stmt = $peachySql->prepare($sql, [&$fname, &$id]);
+
+$nameUpdates = [
+    3 => 'Theodore',
+    7 => 'Luke',
+];
+
+foreach ($nameUpdates as $id => $fname) {
+    $stmt->execute();
+}
+
+$stmt->close();
+```
+
+Most of the time prepared statements only need to be executed a single time.
+To make this easier, PeachySQL provides a `query` method which automatically
+prepares, executes, and closes a statement after results are retrieved:
 
 ```php
 $sql = 'SELECT * FROM Users WHERE fname LIKE ? AND lname LIKE ?';
@@ -33,19 +53,21 @@ $result = $peachySql->query($sql, ['theo%', 'b%']);
 echo json_encode($result->getAll());
 ```
 
-The `SqlResult` object returned by `query` has the following methods:
+Both `prepare` and `query` return a `Statement` object with the following methods:
 
 Method        | Behavior
 ------------- | --------
+`execute`     | Executes the prepared statement (automatically called when using `query`).
 `getIterator` | Returns a [Generator](http://php.net/manual/en/language.generators.overview.php) object which can be used to iterate over large result sets without caching them in memory.
 `getAll`      | Returns all selected rows as an array of associative arrays.
 `getFirst`    | Returns the first selected row as an associative array (or `null` if no rows were selected).
 `getAffected` | Returns the number of rows affected by the query.
+`close`       | Closes the prepared statement and frees its resources (automatically called when using `query`).
 
-If using MySQL, `query` will return a `MysqlResult` subclass which adds a `getInsertId` method.
+If using MySQL, the `Mysql\Statement` object additionally includes a `getInsertId` method.
 
 Internally, `getAll` and `getFirst` are implemented using `getIterator`.
-As such they can only be called once for a given `SqlResult` object.
+As such they can only be called once for a given statement.
 
 ### Options
 
@@ -94,7 +116,7 @@ The `select` method takes three arguments, all of which are optional:
 3. An array of column names to sort by.
 
 Selected rows are returned as an array of associative arrays,
-similar to calling the `getAll` method on a `SqlResult` object for a custom query.
+similar to calling the `getAll` method on a statement object for a custom query.
 
 ```php
 // select all columns and rows in the table, ordered by last name and then first name
@@ -178,9 +200,9 @@ $userTable->delete(['user_id' => [1, 2, 3]]);
 
 ### Transactions
 
-Call the `begin` method to start a transaction. `query` and any of the shorthand
-methods can then be called as needed, before committing or rolling back the
-transaction with `commit` or `rollback`.
+Call the `begin` method to start a transaction. `prepare`, `execute`, `query`
+and any of the shorthand methods can then be called as needed, before committing
+or rolling back the transaction with `commit` or `rollback`.
 
 ### Other methods and options
 

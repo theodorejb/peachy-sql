@@ -4,6 +4,7 @@ namespace PeachySQL;
 
 use PeachySQL\QueryBuilder\Insert;
 use PeachySQL\SqlServer\Options;
+use PeachySQL\SqlServer\Statement;
 
 /**
  * Implements the standard PeachySQL features for SQL Server (using SQLSRV extension)
@@ -67,11 +68,26 @@ class SqlServer extends PeachySql
     }
 
     /**
-     * Executes a single SQL Server query
-     *
+     * Returns a prepared statement which can be executed multiple times
      * @param string $sql
      * @param array  $params Values to bind to placeholders in the query string
-     * @return SqlServerResult
+     * @return Statement
+     * @throws SqlException if an error occurs
+     */
+    public function prepare($sql, array $params = [])
+    {
+        if (!$stmt = sqlsrv_prepare($this->connection, $sql, $params)) {
+            throw new SqlException('Query failed', sqlsrv_errors(), $sql, $params);
+        }
+
+        return new Statement($stmt, true, $sql, $params);
+    }
+
+    /**
+     * Prepares and executes a single SQL Server query
+     * @param string $sql
+     * @param array  $params Values to bind to placeholders in the query string
+     * @return Statement
      * @throws SqlException if an error occurs
      */
     public function query($sql, array $params = [])
@@ -80,7 +96,9 @@ class SqlServer extends PeachySql
             throw new SqlException('Query failed', sqlsrv_errors(), $sql, $params);
         }
 
-        return new SqlServerResult($stmt, $sql, $params);
+        $statement = new Statement($stmt, false, $sql, $params);
+        $statement->execute();
+        return $statement;
     }
 
     /**

@@ -118,7 +118,7 @@ class DbTest extends \PHPUnit_Framework_TestCase
     {
         $colVals = [
             ['name' => 'Martin S. McFly', 'dob' => '1968-06-20', 'weight' => 140.7, 'uuid' => Uuid::uuid4()->getBytes()],
-            ['name' => 'Jennifer Parker', 'dob' => '1968-10-29', 'weight' => 129.4, 'uuid' => Uuid::uuid4()->getBytes()],
+            ['name' => 'Emmett L. Brown', 'dob' => '1920-01-01', 'weight' => 155.4, 'uuid' => Uuid::uuid4()->getBytes()],
         ];
 
         if ($peachySql instanceof SqlServer) {
@@ -147,8 +147,29 @@ class DbTest extends \PHPUnit_Framework_TestCase
         }
 
         $this->assertSame($colVals, $colValsCompare);
-        $affected = $peachySql->delete(['user_id' => $ids]);
-        $this->assertSame(count($colVals), $affected);
+
+        // use a prepared statement to update both of the rows
+        $sql = "UPDATE Users SET name = ? WHERE user_id = ?";
+        $id = $name = null;
+        $stmt = $peachySql->prepare($sql, [&$name, &$id]);
+
+        $realNames = [
+            $ids[0] => 'Michael J. Fox',
+            $ids[1] => 'Christopher A. Lloyd',
+        ];
+
+        foreach ($realNames as $id => $name) {
+            $stmt->execute();
+        }
+
+        $stmt->close();
+        $updatedNames = $peachySql->select(['name'], ['user_id' => $ids]);
+        $expected = [
+            ['name' => $realNames[$ids[0]]],
+            ['name' => $realNames[$ids[1]]],
+        ];
+
+        $this->assertSame($expected, $updatedNames);
     }
 
     /**

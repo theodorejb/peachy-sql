@@ -1,24 +1,35 @@
 <?php
 
-namespace PeachySQL;
+namespace PeachySQL\Mysql;
 
 use mysqli_stmt;
+use PeachySQL\BaseStatement;
+use PeachySQL\SqlException;
 
-class MysqlResult extends SqlResult
+class Statement extends BaseStatement
 {
     private $insertId;
     private $stmt;
     private $meta;
 
-    public function __construct(mysqli_stmt $stmt, $query, array $params)
+    public function __construct(mysqli_stmt $stmt, $usedPrepare, $query, array $params)
     {
-        parent::__construct($stmt->affected_rows, $query, $params);
-
-        $this->insertId = $stmt->insert_id; // id of first inserted row, otherwise 0
-        $this->meta = $stmt->result_metadata();
+        parent::__construct($usedPrepare, $query, $params);
         $this->stmt = $stmt;
+    }
 
-        if (!$this->meta) {
+    public function execute()
+    {
+        if (!$this->stmt->execute()) {
+            throw new SqlException('Failed to execute prepared statement',
+                $this->stmt->error_list, $this->query, $this->params);
+        }
+
+        $this->affected = $this->stmt->affected_rows;
+        $this->insertId = $this->stmt->insert_id; // id of first inserted row, otherwise 0;
+        $this->meta = $this->stmt->result_metadata();
+
+        if (!$this->usedPrepare && !$this->meta) {
             $this->close(); // no results, so statement can be closed
         }
     }
@@ -63,7 +74,9 @@ class MysqlResult extends SqlResult
                 yield $row;
             }
 
-            $this->close();
+            if (!$this->usedPrepare) {
+                $this->close();
+            }
         }
     }
 

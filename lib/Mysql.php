@@ -4,6 +4,7 @@ namespace PeachySQL;
 
 use mysqli;
 use PeachySQL\Mysql\Options;
+use PeachySQL\Mysql\Statement;
 use PeachySQL\QueryBuilder\Insert;
 
 /**
@@ -18,10 +19,12 @@ class Mysql extends PeachySql
      * @var mysqli
      */
     private $connection;
+    private $usedPrepare;
 
     public function __construct(mysqli $connection, Options $options = null)
     {
         $this->connection = $connection;
+        $this->usedPrepare = true;
 
         if ($options === null) {
             $options = new Options();
@@ -64,16 +67,14 @@ class Mysql extends PeachySql
     }
 
     /**
-     * Executes a single MySQL query
-     *
+     * Returns a prepared statement which can be executed multiple times
      * @param string $sql
-     * @param array  $params Values to bind to placeholders in the query string
-     * @return MysqlResult
+     * @param array $params
+     * @return Statement
      * @throws SqlException if an error occurs
      */
-    public function query($sql, array $params = [])
+    public function prepare($sql, array $params = [])
     {
-        // prepare the statement
         if (!$stmt = $this->connection->prepare($sql)) {
             $error = [
                 'error' => $this->connection->error,
@@ -88,6 +89,7 @@ class Mysql extends PeachySql
             $typesValues = [self::getMysqlParamTypes($params)];
 
             // so that call_user_func_array will pass by reference
+            // argument unpacking can't be used due to https://github.com/facebook/hhvm/issues/6229
             foreach ($params as &$param) {
                 $typesValues[] = &$param;
             }
@@ -97,11 +99,22 @@ class Mysql extends PeachySql
             }
         }
 
-        if (!$stmt->execute()) {
-            throw new SqlException('Failed to execute prepared statement', $stmt->error_list, $sql, $params);
-        }
+        return new Statement($stmt, $this->usedPrepare, $sql, $params);
+    }
 
-        return new MysqlResult($stmt, $sql, $params);
+    /**
+     * Prepares and executes a single MySQL query
+     * @param string $sql
+     * @param array  $params Values to bind to placeholders in the query string
+     * @return Statement
+     */
+    public function query($sql, array $params = [])
+    {
+        $this->usedPrepare = false;
+        $stmt = $this->prepare($sql, $params);
+        $this->usedPrepare = true;
+        $stmt->execute();
+        return $stmt;
     }
 
     /**
