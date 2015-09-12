@@ -16,7 +16,7 @@ class Select extends Query
      * @param string[] $validCols An array of valid columns (to prevent SQL injection)
      * @param array    $where     An array of columns/values to filter the select query
      * @param string[] $orderBy   One or more column names to sort by
-     * @return array An array containing the SELECT query and bound parameters
+     * @return SqlParams
      */
     public static function buildQuery($tableName, array $columns = [], array $validCols = [], array $where = [], array $orderBy = [])
     {
@@ -30,8 +30,8 @@ class Select extends Query
             $insertCols = '*';
         }
 
-        $sql = "SELECT $insertCols FROM $tableName" . $whereClause['sql'] . self::buildOrderByClause($orderBy, $validCols);
-        return ['sql' => $sql, 'params' => $whereClause['params']];
+        $sql = "SELECT $insertCols FROM $tableName" . $whereClause->getSql() . self::buildOrderByClause($orderBy, $validCols);
+        return new SqlParams($sql, $whereClause->getParams());
     }
 
     /**

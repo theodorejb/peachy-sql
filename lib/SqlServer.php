@@ -108,8 +108,8 @@ class SqlServer extends PeachySql
      */
     protected function insertBatch(array $colVals)
     {
-        $query = Insert::buildQuery($this->options->getTable(), $colVals, $this->options->getColumns(), $this->options->getIdColumn());
-        $result = $this->query($query['sql'], $query['params']);
+        $sqlParams = Insert::buildQuery($this->options->getTable(), $colVals, $this->options->getColumns(), $this->options->getIdColumn());
+        $result = $this->query($sqlParams->getSql(), $sqlParams->getParams());
 
         $ids = [];
         foreach ($result->getIterator() as $row) {

@@ -15,7 +15,7 @@ class Update extends Query
      * @param array    $set       An array of columns/values to update
      * @param array    $where     An array of columns/values to restrict the update to
      * @param string[] $validCols An array of valid columns
-     * @return array An array containing the SQL string and bound parameters
+     * @return SqlParams
      * @throws \Exception if the $set or $where arrays are empty
      */
     public static function buildQuery($tableName, array $set, array $where, array $validCols)
@@ -37,9 +37,8 @@ class Update extends Query
 
         $sql = substr_replace($sql, '', -2); // remove trailing comma
         $whereClause = self::buildWhereClause($where, $validCols);
-        $sql .= $whereClause['sql'];
-        $allParams = array_merge($params, $whereClause['params']);
+        $sql .= $whereClause->getSql();
 
-        return ['sql' => $sql, 'params' => $allParams];
+        return new SqlParams($sql, array_merge($params, $whereClause->getParams()));
     }
 }

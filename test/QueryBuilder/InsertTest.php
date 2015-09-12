@@ -64,8 +64,8 @@ class InsertTest extends \PHPUnit_Framework_TestCase
 
         $actual = Insert::buildQuery('TestTable', [$colVals], array_keys($colVals));
         $expected = 'INSERT INTO TestTable (col1, col2, col3) VALUES (?,?,?)';
-        $this->assertSame($expected, $actual['sql']);
-        $this->assertSame(['val1', 'val2', 'val3'], $actual['params']);
+        $this->assertSame($expected, $actual->getSql());
+        $this->assertSame(['val1', 'val2', 'val3'], $actual->getParams());
     }
 
     /**
@@ -90,8 +90,8 @@ class InsertTest extends \PHPUnit_Framework_TestCase
             . ' OUTPUT inserted.pkColumn INTO @ids(RowID)'
             . ' VALUES (?,?), (?,?);'
             . ' SELECT * FROM @ids;';
-        $this->assertSame($expected, $actual['sql']);
-        $this->assertSame(['foo1', 'foo2', 'bar1', 'bar2'], $actual['params']);
+        $this->assertSame($expected, $actual->getSql());
+        $this->assertSame(['foo1', 'foo2', 'bar1', 'bar2'], $actual->getParams());
     }
 
     /**

@@ -19,8 +19,8 @@ class UpdateTest extends \PHPUnit_Framework_TestCase
         $actual = Update::buildQuery('TestTable', $set, $where, ['id', 'username', 'othercol']);
         $expected = 'UPDATE TestTable SET username = ?, othercol = ? WHERE id = ?';
 
-        $this->assertSame($expected, $actual['sql']);
-        $this->assertSame(['TestUser', null, 21], $actual['params']);
+        $this->assertSame($expected, $actual->getSql());
+        $this->assertSame(['TestUser', null, 21], $actual->getParams());
     }
 
     /**

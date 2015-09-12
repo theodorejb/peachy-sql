@@ -14,8 +14,8 @@ class DeleteTest extends \PHPUnit_Framework_TestCase
         $actual = Delete::buildQuery('TestTable', $where, ['id', 'username']);
         $expected = 'DELETE FROM TestTable WHERE id = ? AND username IN(?,?)';
 
-        $this->assertSame($expected, $actual['sql']);
-        $this->assertSame([5, 'tester', 'tester2'], $actual['params']);
+        $this->assertSame($expected, $actual->getSql());
+        $this->assertSame([5, 'tester', 'tester2'], $actual->getParams());
     }
 
     /**

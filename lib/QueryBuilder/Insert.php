@@ -41,7 +41,7 @@ class Insert extends Query
      * @param array    $colVals   An associative array of columns/values to insert
      * @param string[] $validCols An array of valid columns
      * @param string   $idCol     If specified, a SQL Server OUTPUT clause will be included
-     * @return array
+     * @return SqlParams
      */
     public static function buildQuery($tableName, array $colVals, array $validCols, $idCol = '')
     {
@@ -63,15 +63,10 @@ class Insert extends Query
             $outStr = " OUTPUT inserted.$idCol INTO @ids(RowID)";
             $selStr = '; SELECT * FROM @ids;';
         } else {
-            $decStr = '';
-            $outStr = '';
-            $selStr = '';
+            $decStr = $outStr = $selStr = '';
         }
 
-        return [
-            'sql'    => $decStr . $insert . $outStr . $valStr . $selStr,
-            'params' => $params,
-        ];
+        return new SqlParams($decStr . $insert . $outStr . $valStr . $selStr, $params);
     }
 
     /**

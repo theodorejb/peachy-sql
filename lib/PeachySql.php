@@ -72,8 +72,8 @@ abstract class PeachySql
      */
     public function select(array $columns = [], array $where = [], array $orderBy = [])
     {
-        $query = Select::buildQuery($this->options->getTable(), $columns, $this->options->getColumns(), $where, $orderBy);
-        return $this->query($query['sql'], $query['params'])->getAll();
+        $sqlParams = Select::buildQuery($this->options->getTable(), $columns, $this->options->getColumns(), $where, $orderBy);
+        return $this->query($sqlParams->getSql(), $sqlParams->getParams())->getAll();
     }
 
     /**
@@ -121,8 +121,8 @@ abstract class PeachySql
      */
     public function update(array $set, array $where)
     {
-        $query = Update::buildQuery($this->options->getTable(), $set, $where, $this->options->getColumns());
-        return $this->query($query['sql'], $query['params'])->getAffected();
+        $sqlParams = Update::buildQuery($this->options->getTable(), $set, $where, $this->options->getColumns());
+        return $this->query($sqlParams->getSql(), $sqlParams->getParams())->getAffected();
     }
 
     /**
@@ -133,7 +133,7 @@ abstract class PeachySql
      */
     public function delete(array $where)
     {
-        $query = Delete::buildQuery($this->options->getTable(), $where, $this->options->getColumns());
-        return $this->query($query['sql'], $query['params'])->getAffected();
+        $sqlParams = Delete::buildQuery($this->options->getTable(), $where, $this->options->getColumns());
+        return $this->query($sqlParams->getSql(), $sqlParams->getParams())->getAffected();
     }
 }

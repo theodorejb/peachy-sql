@@ -12,7 +12,7 @@ class SelectTest extends \PHPUnit_Framework_TestCase
     {
         $actual = Select::buildQuery('TestTable');
         $expected = 'SELECT * FROM TestTable';
-        $this->assertSame($expected, $actual['sql']);
+        $this->assertSame($expected, $actual->getSql());
     }
 
     public function testBuildQueryWhere()
@@ -30,8 +30,8 @@ class SelectTest extends \PHPUnit_Framework_TestCase
         $actual = Select::buildQuery('TestTable', $cols, $validCols, $where);
         $expected = 'SELECT username, password FROM TestTable WHERE '
             . 'username = ? AND password = ? AND othercol IS NULL';
-        $this->assertSame($expected, $actual['sql']);
-        $this->assertSame(['TestUser', 'TestPassword'], $actual['params']);
+        $this->assertSame($expected, $actual->getSql());
+        $this->assertSame(['TestUser', 'TestPassword'], $actual->getParams());
     }
 
     public function testBuildQueryOrderBy()
@@ -43,8 +43,8 @@ class SelectTest extends \PHPUnit_Framework_TestCase
 
         $actual = Select::buildQuery('TestTable', $cols, $validCols, $where, $orderBy);
         $expected = 'SELECT username, firstname, lastname FROM TestTable ORDER BY lastname, firstname';
-        $this->assertSame($expected, $actual['sql']);
-        $this->assertSame([], $actual['params']);
+        $this->assertSame($expected, $actual->getSql());
+        $this->assertSame([], $actual->getParams());
     }
 
     /**

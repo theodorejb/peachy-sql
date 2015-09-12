@@ -39,12 +39,12 @@ abstract class Query
      *                             E.g. ["id" => 3] to only return rows where id is equal to 3.
      *                             If the value is an array, an IN(...) clause will be used.
      * @param string[] $validCols An array of valid columns for the table
-     * @return array An array containing the SQL WHERE clause and bound parameters
+     * @return SqlParams
      */
     protected static function buildWhereClause(array $columnVals, array $validCols)
     {
         if (empty($columnVals)) {
-            return ['sql' => '', 'params' => []];
+            return new SqlParams('', []);
         }
 
         self::validateColumns(array_keys($columnVals), $validCols);
@@ -67,6 +67,6 @@ abstract class Query
         }
 
         $sql = substr_replace($sql, '', -4); // remove the trailing AND
-        return ['sql' => $sql, 'params' => $params];
+        return new SqlParams($sql, $params);
     }
 }

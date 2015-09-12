@@ -14,13 +14,13 @@ class Delete extends Query
      * @param string   $tableName The name of the table to delete from
      * @param array    $where     An array of columns/values to restrict the delete to
      * @param string[] $validCols An array of valid column names
-     * @return array An array containing the SQL string and bound parameters
+     * @return SqlParams
      */
     public static function buildQuery($tableName, array $where, array $validCols)
     {
         self::validateTableName($tableName);
         $whereClause = self::buildWhereClause($where, $validCols);
-        $sql = "DELETE FROM $tableName" . $whereClause['sql'];
-        return ['sql' => $sql, 'params' => $whereClause['params']];
+        $sql = "DELETE FROM $tableName" . $whereClause->getSql();
+        return new SqlParams($sql, $whereClause->getParams());
     }
 }
