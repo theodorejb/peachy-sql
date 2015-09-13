@@ -10,19 +10,14 @@ class DeleteTest extends \PHPUnit_Framework_TestCase
 {
     public function testBuildQuery()
     {
+        $options = new \PeachySQL\Mysql\Options();
+        $options->setTable('TestTable');
+
         $where = ['id' => 5, 'username' => ['tester', 'tester2']];
-        $actual = Delete::buildQuery('TestTable', $where, ['id', 'username']);
-        $expected = 'DELETE FROM TestTable WHERE id = ? AND username IN(?,?)';
+        $actual = (new Delete($options))->buildQuery($where);
+        $expected = 'DELETE FROM TestTable WHERE `id` = ? AND `username` IN(?,?)';
 
         $this->assertSame($expected, $actual->getSql());
         $this->assertSame([5, 'tester', 'tester2'], $actual->getParams());
-    }
-
-    /**
-     * @expectedException \UnexpectedValueException
-     */
-    public function testBuildQueryInvalidColumnsInWhere()
-    {
-        Delete::buildQuery('TestTable', ['fizzbuzz' => null], ['foo', 'bar']);
     }
 }

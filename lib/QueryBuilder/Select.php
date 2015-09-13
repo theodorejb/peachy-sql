@@ -9,43 +9,39 @@ namespace PeachySQL\QueryBuilder;
 class Select extends Query
 {
     /**
-     * Builds a select query using the specified table name, columns, and where clause array
+     * Builds a select query using the specified columns, where clause, and order by arrays
      *
-     * @param string   $tableName The name of the table to select from
      * @param string[] $columns   An array of columns to select from (all columns if empty)
-     * @param string[] $validCols An array of valid columns (to prevent SQL injection)
      * @param array    $where     An array of columns/values to filter the select query
      * @param string[] $orderBy   One or more column names to sort by
      * @return SqlParams
      */
-    public static function buildQuery($tableName, array $columns = [], array $validCols = [], array $where = [], array $orderBy = [])
+    public function buildQuery(array $columns = [], array $where = [], array $orderBy = [])
     {
-        self::validateTableName($tableName);
-        $whereClause = self::buildWhereClause($where, $validCols);
+        $whereClause = $this->buildWhereClause($where);
 
         if (!empty($columns)) {
-            self::validateColumns($columns, $validCols);
-            $insertCols = implode(', ', $columns);
+            $insertCols = implode(', ', $this->escapeColumns($columns));
         } else {
             $insertCols = '*';
         }
 
-        $sql = "SELECT $insertCols FROM $tableName" . $whereClause->getSql() . self::buildOrderByClause($orderBy, $validCols);
+        $sql = "SELECT $insertCols FROM " . $this->options->getTable()
+            . $whereClause->getSql() . $this->buildOrderByClause($orderBy);
+
         return new SqlParams($sql, $whereClause->getParams());
     }
 
     /**
      * @param string[] $orderBy One or more column names to sort by
-     * @param string[] $validCols
      * @return string
      */
-    private static function buildOrderByClause(array $orderBy, array $validCols)
+    private function buildOrderByClause(array $orderBy)
     {
         if (empty($orderBy)) {
             return '';
         }
 
-        self::validateColumns($orderBy, $validCols);
-        return ' ORDER BY ' . implode(', ', $orderBy);
+        return ' ORDER BY ' . implode(', ', $this->escapeColumns($orderBy));
     }
 }

@@ -9,18 +9,15 @@ namespace PeachySQL\QueryBuilder;
 class Delete extends Query
 {
     /**
-     * Generates a delete query using the specified table name and where clause
+     * Generates a delete query using the specified where clause
      *
-     * @param string   $tableName The name of the table to delete from
-     * @param array    $where     An array of columns/values to restrict the delete to
-     * @param string[] $validCols An array of valid column names
+     * @param array $where An array of columns/values to restrict the delete to
      * @return SqlParams
      */
-    public static function buildQuery($tableName, array $where, array $validCols)
+    public function buildQuery(array $where)
     {
-        self::validateTableName($tableName);
-        $whereClause = self::buildWhereClause($where, $validCols);
-        $sql = "DELETE FROM $tableName" . $whereClause->getSql();
+        $whereClause = $this->buildWhereClause($where);
+        $sql = 'DELETE FROM ' . $this->options->getTable() . $whereClause->getSql();
         return new SqlParams($sql, $whereClause->getParams());
     }
 }

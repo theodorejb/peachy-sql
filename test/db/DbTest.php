@@ -22,20 +22,17 @@ class DbTest extends \PHPUnit_Framework_TestCase
     {
         $config = TestDbConnector::getConfig();
         $implementations = [];
-
-        $setBaseOptions = function (BaseOptions $options) {
-            $options->setTable('Users');
-            $options->setColumns(['user_id', 'name', 'dob', 'weight', 'uuid']);
-            return $options;
-        };
+        $table = 'Users';
 
         if ($config['testWith']['mysql']) {
-            $implementations[] = [new Mysql(TestDbConnector::getMysqlConn(), $setBaseOptions(new Mysql\Options()))];
+            $mysqlOptions = new Mysql\Options();
+            $mysqlOptions->setTable($table);
+            $implementations[] = [new Mysql(TestDbConnector::getMysqlConn(), $mysqlOptions)];
         }
 
         if ($config['testWith']['sqlsrv']) {
             $sqlServerOptions = new SqlServer\Options();
-            $setBaseOptions($sqlServerOptions);
+            $sqlServerOptions->setTable($table);
             $sqlServerOptions->setIdColumn('user_id');
             $implementations[] = [new SqlServer(TestDbConnector::getSqlsrvConn(), $sqlServerOptions)];
         }

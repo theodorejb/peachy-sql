@@ -8,12 +8,20 @@ namespace PeachySQL;
 abstract class BaseOptions
 {
     private $table = '';
-    private $columns = [];
     protected $maxBoundParams = 0;
     protected $maxInsertRows = 0;
 
     /**
-     * Specify the table to select, insert, update, and delete from
+     * Escapes a table or column name, and validates that it isn't blank
+     * @param string $identifier
+     * @return string
+     */
+    abstract public function escapeIdentifier($identifier);
+
+    /**
+     * Specify the table to select, insert, update, and delete from.
+     * Table names are not automatically escaped since this would prevent
+     * using multi-part table identifiers.
      * @param string $table
      */
     public function setTable($table)
@@ -30,29 +38,11 @@ abstract class BaseOptions
      */
     public function getTable()
     {
-        return $this->table;
-    }
-
-    /**
-     * @param string[] $columns
-     */
-    public function setColumns(array $columns)
-    {
-        foreach ($columns as $column) {
-            if (gettype($column) !== 'string') {
-                throw new \InvalidArgumentException('All column names must be strings');
-            }
+        if ($this->table === '') {
+            throw new \RuntimeException('Table has not been set');
         }
 
-        $this->columns = $columns;
-    }
-
-    /**
-     * @return string[]
-     */
-    public function getColumns()
-    {
-        return $this->columns;
+        return $this->table;
     }
 
     /**

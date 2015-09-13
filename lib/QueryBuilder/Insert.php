@@ -37,24 +37,26 @@ class Insert extends Query
     /**
      * Generates an INSERT query with placeholders for values and optional OUTPUT clause
      *
-     * @param string   $tableName The name of the table to insert into
-     * @param array    $colVals   An associative array of columns/values to insert
-     * @param string[] $validCols An array of valid columns
-     * @param string   $idCol     If specified, a SQL Server OUTPUT clause will be included
+     * @param array $colVals An associative array of columns/values to insert
      * @return SqlParams
      */
-    public static function buildQuery($tableName, array $colVals, array $validCols, $idCol = '')
+    public function buildQuery(array $colVals)
     {
         self::validateColValsStructure($colVals);
-        self::validateTableName($tableName);
 
-        $columns = array_keys($colVals[0]);
-        self::validateColumns($columns, $validCols);
+        $columns = $this->escapeColumns(array_keys($colVals[0]));
+        $tableName = $this->options->getTable();
         $insert = "INSERT INTO $tableName (" . implode(', ', $columns) . ')';
 
         $valSetStr = substr_replace(' (' . str_repeat('?,', count($columns)), '),', -1); // replace trailing comma
         $valStr = ' VALUES' . substr_replace(str_repeat($valSetStr, count($colVals)), '', -1); // remove trailing comma
         $params = call_user_func_array('array_merge', array_map('array_values', $colVals));
+
+        if ($this->options instanceof \PeachySQL\SqlServer\Options) {
+            $idCol = $this->options->getIdColumn();
+        } else {
+            $idCol = '';
+        }
 
         // Insert IDs must be output into a table variable so that the query will work on tables
         // with insert triggers (see http://technet.microsoft.com/en-us/library/ms177564.aspx).

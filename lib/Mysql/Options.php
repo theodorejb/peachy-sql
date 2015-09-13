@@ -12,6 +12,18 @@ class Options extends BaseOptions
     protected $maxBoundParams = 65536; // 2^16
     private $autoIncrementVal = 1;
 
+    public function escapeIdentifier($identifier)
+    {
+        if (gettype($identifier) !== 'string') {
+            throw new \InvalidArgumentException('Identifier must be a string');
+        } elseif ($identifier === '') {
+            throw new \InvalidArgumentException('Identifier cannot be blank');
+        }
+
+        // identifiers are escaped with backticks
+        return '`' . str_replace('`', '``', $identifier) . '`';
+    }
+
     /**
      * Specify the interval between successive auto-incremented IDs in
      * the table (used to retrieve array of insert IDs for bulk inserts).

@@ -124,7 +124,7 @@ class Mysql extends PeachySql
      */
     protected function insertBatch(array $colVals)
     {
-        $sqlParams = Insert::buildQuery($this->options->getTable(), $colVals, $this->options->getColumns());
+        $sqlParams = (new Insert($this->options))->buildQuery($colVals);
         $result = $this->query($sqlParams->getSql(), $sqlParams->getParams());
         $firstId = $result->getInsertId(); // ID of first inserted row, or zero if no insert ID
 

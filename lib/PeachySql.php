@@ -72,7 +72,7 @@ abstract class PeachySql
      */
     public function select(array $columns = [], array $where = [], array $orderBy = [])
     {
-        $sqlParams = Select::buildQuery($this->options->getTable(), $columns, $this->options->getColumns(), $where, $orderBy);
+        $sqlParams = (new Select($this->options))->buildQuery($columns, $where, $orderBy);
         return $this->query($sqlParams->getSql(), $sqlParams->getParams())->getAll();
     }
 
@@ -121,7 +121,7 @@ abstract class PeachySql
      */
     public function update(array $set, array $where)
     {
-        $sqlParams = Update::buildQuery($this->options->getTable(), $set, $where, $this->options->getColumns());
+        $sqlParams = (new Update($this->options))->buildQuery($set, $where);
         return $this->query($sqlParams->getSql(), $sqlParams->getParams())->getAffected();
     }
 
@@ -133,7 +133,7 @@ abstract class PeachySql
      */
     public function delete(array $where)
     {
-        $sqlParams = Delete::buildQuery($this->options->getTable(), $where, $this->options->getColumns());
+        $sqlParams = (new Delete($this->options))->buildQuery($where);
         return $this->query($sqlParams->getSql(), $sqlParams->getParams())->getAffected();
     }
 }

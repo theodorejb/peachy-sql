@@ -72,9 +72,8 @@ As such they can only be called once for a given statement.
 ### Options
 
 PeachySQL comes with five shorthand methods for selecting, inserting, updating,
-and deleting records. To use these methods, a table name and list of valid
-columns must be specified by passing an options object as the second argument to
-the PeachySQL constructor.
+and deleting records. To use these methods, a table name must be specified by
+passing an options object as the second argument to the PeachySQL constructor.
 
 ```php
 $options = new PeachySQL\Mysql\Options();
@@ -86,11 +85,10 @@ $options = new PeachySQL\SqlServer\Options();
 
 ```php
 $options->setTable('Users');
-$options->setColumns(['user_id', 'fname', 'lname']);
 ```
 
 **Note:** each of the options setter methods has a corresponding getter method
-(e.g. `getColumns`) to retrieve the current setting value.
+(e.g. `getTable`) to retrieve the current setting value.
 
 If using SQL Server, there is an additional option to set the table's identity
 column. This is necessary so that PeachySQL can generate an output clause to
@@ -103,9 +101,8 @@ $userTable = new PeachySQL\SqlServer($sqlSrvConn, $options);
 
 ### Shorthand methods
 
-**Note:** to prevent SQL injection, the queries PeachySQL generates for these
-methods always use bound parameters for values, and column names are validated
-against the list of columns defined in the options object.
+**Note:** to prevent SQL injection, the queries PeachySQL generates for these methods
+always use bound parameters for values, and column names are automatically escaped.
 
 #### select
 

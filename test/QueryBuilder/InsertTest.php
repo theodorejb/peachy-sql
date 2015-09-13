@@ -62,8 +62,10 @@ class InsertTest extends \PHPUnit_Framework_TestCase
             'col3' => 'val3',
         ];
 
-        $actual = Insert::buildQuery('TestTable', [$colVals], array_keys($colVals));
-        $expected = 'INSERT INTO TestTable (col1, col2, col3) VALUES (?,?,?)';
+        $options = new \PeachySQL\Mysql\Options();
+        $options->setTable('TestTable');
+        $actual = (new Insert($options))->buildQuery([$colVals]);
+        $expected = 'INSERT INTO TestTable (`col1`, `col2`, `col3`) VALUES (?,?,?)';
         $this->assertSame($expected, $actual->getSql());
         $this->assertSame(['val1', 'val2', 'val3'], $actual->getParams());
     }
@@ -84,22 +86,17 @@ class InsertTest extends \PHPUnit_Framework_TestCase
             ],
         ];
 
-        $actual = Insert::buildQuery('TestTable', $colVals, array_keys($colVals[0]), 'pkColumn');
+        $options = new \PeachySQL\SqlServer\Options();
+        $options->setTable('TestTable');
+        $options->setIdColumn('pkColumn');
+
+        $actual = (new Insert($options))->buildQuery($colVals);
         $expected = 'DECLARE @ids TABLE(RowID int);'
-            . ' INSERT INTO TestTable (col1, col2)'
-            . ' OUTPUT inserted.pkColumn INTO @ids(RowID)'
+            . ' INSERT INTO TestTable ([col1], [col2])'
+            . ' OUTPUT inserted.[pkColumn] INTO @ids(RowID)'
             . ' VALUES (?,?), (?,?);'
             . ' SELECT * FROM @ids;';
         $this->assertSame($expected, $actual->getSql());
         $this->assertSame(['foo1', 'foo2', 'bar1', 'bar2'], $actual->getParams());
-    }
-
-    /**
-     * @expectedException \UnexpectedValueException
-     */
-    public function testBuildQueryInvalidColumns()
-    {
-        $colVals = [['fizzbuzz' => 'foo', 'foo' => 'bar']];
-        Insert::buildQuery('TestTable', $colVals, ['val1', 'val2']);
     }
 }

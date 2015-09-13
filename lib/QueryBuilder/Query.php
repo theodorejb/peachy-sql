@@ -1,53 +1,41 @@
 <?php
 
 namespace PeachySQL\QueryBuilder;
+use PeachySQL\BaseOptions;
 
 /**
  * Base class used for query generation and validation
  */
 abstract class Query
 {
-    /**
-     * Throws an exception if a column does not exist in the array of valid columns
-     * @param string[] $columns
-     * @param string[] $validColumns
-     * @throws \UnexpectedValueException
-     */
-    public static function validateColumns(array $columns, array $validColumns)
+    protected $options;
+
+    public function __construct(BaseOptions $options)
     {
-        foreach ($columns as $col) {
-            if (!in_array($col, $validColumns, true)) {
-                throw new \UnexpectedValueException("Invalid column '$col'");
-            }
-        }
+        $this->options = $options;
     }
 
     /**
-     * Throws an exception if the specified table name is null or blank
-     * @param string $name
-     * @throws \Exception
+     * @param string[] $columns
+     * @return string[]
      */
-    public static function validateTableName($name)
+    protected function escapeColumns(array $columns)
     {
-        if ($name === null || $name === '') {
-            throw new \Exception('A valid table name must be set to generate queries');
-        }
+        return array_map([$this->options, 'escapeIdentifier'], $columns);
     }
 
     /**
      * @param array    $columnVals An associative array of columns and values to filter rows.
      *                             E.g. ["id" => 3] to only return rows where id is equal to 3.
      *                             If the value is an array, an IN(...) clause will be used.
-     * @param string[] $validCols An array of valid columns for the table
      * @return SqlParams
      */
-    protected static function buildWhereClause(array $columnVals, array $validCols)
+    protected function buildWhereClause(array $columnVals)
     {
         if (empty($columnVals)) {
             return new SqlParams('', []);
         }
 
-        self::validateColumns(array_keys($columnVals), $validCols);
         $sql = ' WHERE';
         $params = [];
 
@@ -63,7 +51,7 @@ abstract class Query
                 $params[] = $value;
             }
 
-            $sql .= " $column $comparison AND";
+            $sql .= ' ' . $this->options->escapeIdentifier($column) . " $comparison AND";
         }
 
         $sql = substr_replace($sql, '', -4); // remove the trailing AND
