@@ -129,8 +129,9 @@ class Mysql extends PeachySql
         $firstId = $result->getInsertId(); // ID of first inserted row, or zero if no insert ID
 
         if ($firstId) {
-            $lastId = $firstId + count($colVals) - 1;
-            $ids = range($firstId, $lastId, $this->options->getAutoIncrementValue());
+            $incrementValue = $this->options->getAutoIncrementValue();
+            $lastId = $firstId + $incrementValue * (count($colVals) - 1);
+            $ids = range($firstId, $lastId, $incrementValue);
         } else {
             $ids = [];
         }
