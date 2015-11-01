@@ -108,7 +108,7 @@ abstract class PeachySql
     {
         $result = $this->insertBatch([$colVals]);
         $ids = $result->getIds();
-        $id = empty($ids) ? null : $ids[0];
+        $id = empty($ids) ? 0 : $ids[0];
         return new InsertResult($id, $result->getAffected());
     }
 

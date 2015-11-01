@@ -14,4 +14,14 @@ class InsertResultTest extends \PHPUnit_Framework_TestCase
         $this->assertSame(24, $result->getId());
         $this->assertSame(2, $result->getAffected());
     }
+
+    /**
+     * @expectedException \Exception
+     * @expectedExceptionMessage Inserted row does not have an auto-incremented ID
+     */
+    public function testNoInsertId()
+    {
+        $result = new InsertResult(0, 1);
+        $result->getId();
+    }
 }

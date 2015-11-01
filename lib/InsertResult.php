@@ -27,6 +27,10 @@ class InsertResult
      */
     public function getId()
     {
+        if ($this->id === 0) {
+            throw new \Exception('Inserted row does not have an auto-incremented ID');
+        }
+
         return $this->id;
     }
 
