@@ -59,17 +59,11 @@ abstract class BaseStatement
 
     /**
      * Returns the first selected row, or null if zero rows were returned
-     * @return array
+     * @return array|null
      */
     public function getFirst()
     {
-        $iterator = $this->getIterator();
-
-        if (defined('HHVM_VERSION')) {
-            $iterator->next(); // see https://github.com/facebook/hhvm/issues/1871
-        }
-
-        $row = $iterator->current();
+        $row = $this->getIterator()->current();
 
         if ($row !== null) {
             $this->close(); // don't leave the SQL statement open
