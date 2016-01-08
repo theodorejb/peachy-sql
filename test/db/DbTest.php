@@ -130,7 +130,7 @@ class DbTest extends \PHPUnit_Framework_TestCase
         }
 
         $ids = $peachySql->insertBulk($insertColVals)->getIds();
-        $placeholders = substr_replace(str_repeat('?,', count($ids)), '', -1);
+        $placeholders = str_repeat('?,', count($ids) - 1) . '?';
         $sql = "SELECT * FROM Users WHERE user_id IN ($placeholders)";
 
         $iterator = $peachySql->query($sql, $ids)->getIterator();

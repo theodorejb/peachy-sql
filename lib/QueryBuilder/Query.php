@@ -44,7 +44,7 @@ abstract class Query
                 $comparison = 'IS NULL';
             } elseif (is_array($value)) {
                 // use IN(...) syntax
-                $comparison = substr_replace('IN(' . str_repeat('?,', count($value)), ')', -1); // replace trailing comma
+                $comparison = 'IN(' . str_repeat('?,', count($value) - 1) . '?)';
                 $params = array_merge($params, $value);
             } else {
                 $comparison = '= ?';

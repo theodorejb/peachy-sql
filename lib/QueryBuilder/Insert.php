@@ -48,7 +48,7 @@ class Insert extends Query
         $tableName = $this->options->getTable();
         $insert = "INSERT INTO $tableName (" . implode(', ', $columns) . ')';
 
-        $valSetStr = substr_replace(' (' . str_repeat('?,', count($columns)), '),', -1); // replace trailing comma
+        $valSetStr = ' (' . str_repeat('?,', count($columns) - 1) . '?),';
         $valStr = ' VALUES' . substr_replace(str_repeat($valSetStr, count($colVals)), '', -1); // remove trailing comma
         $params = call_user_func_array('array_merge', array_map('array_values', $colVals));
 
