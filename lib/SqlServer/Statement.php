@@ -52,7 +52,8 @@ class Statement extends BaseStatement
 
     public function getIterator()
     {
-        if ($this->stmt !== null) {
+        // only fetch rows if the statement is open
+        if (is_resource($this->stmt)) {
             while ($row = sqlsrv_fetch_array($this->stmt, SQLSRV_FETCH_ASSOC)) {
                 yield $row;
             }

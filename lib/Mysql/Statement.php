@@ -86,6 +86,10 @@ class Statement extends BaseStatement
      */
     public function close()
     {
+        if ($this->stmt === null) {
+            throw new \Exception('Statement has already been closed');
+        }
+
         if (!$this->stmt->close()) {
             throw new SqlException('Failed to close statement', $this->stmt->error_list, $this->query, $this->params);
         }

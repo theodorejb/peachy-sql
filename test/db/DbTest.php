@@ -43,6 +43,39 @@ class DbTest extends \PHPUnit_Framework_TestCase
     /**
      * @dataProvider dbTypeProvider
      */
+    public function testNoIdentityInsert(PeachySql $peachySql)
+    {
+        $sql = "CREATE TABLE Test ( name VARCHAR(50) NOT NULL )";
+        $peachySql->query($sql);
+
+        $options = $peachySql->getOptions();
+        $oldTable = $options->getTable();
+        $options->setTable('Test');
+
+        if ($peachySql instanceof SqlServer) {
+            $oldIdColumn = $options->getIdColumn();
+            $options->setIdColumn('');
+        }
+
+        $colVals = [
+            ['name' => 'name1'],
+            ['name' => 'name2'],
+        ];
+
+        $result = $peachySql->insertBulk($colVals);
+        $this->assertEmpty($result->getIds());
+        $this->assertSame($colVals, $peachySql->select());
+        $peachySql->query("DROP TABLE Test");
+        $options->setTable($oldTable);
+
+        if (isset($oldIdColumn)) {
+            $options->setIdColumn($oldIdColumn);
+        }
+    }
+
+    /**
+     * @dataProvider dbTypeProvider
+     */
     public function testTransactions(PeachySql $peachySql)
     {
         $peachySql->begin(); // start transaction
