@@ -123,18 +123,16 @@ class DbTest extends \PHPUnit_Framework_TestCase
             $this->assertSame('42000', $e->getSqlState());
 
             if ($peachySql instanceof SqlServer) {
-                $expectedCode = 102;
-                $expectedMessage = "Query failed: [Microsoft][ODBC Driver 11 for SQL Server]"
-                    . "[SQL Server]Incorrect syntax near 'WHERE'.";
+                $this->assertSame(102, $e->getCode());
+                $this->assertStringEndsWith("Incorrect syntax near 'WHERE'.", $e->getMessage());
             } else {
-                $expectedCode = 1064;
+                $this->assertSame(1064, $e->getCode());
                 $expectedMessage = "Failed to prepare statement: You have an error in your"
                     . " SQL syntax; check the manual that corresponds to your MySQL server"
                     . " version for the right syntax to use near '' at line 1";
+                $this->assertSame($expectedMessage, $e->getMessage());
             }
 
-            $this->assertSame($expectedCode, $e->getCode());
-            $this->assertSame($expectedMessage, $e->getMessage());
             return;
         }
 
