@@ -9,39 +9,59 @@ namespace PeachySQL\QueryBuilder;
 class Select extends Query
 {
     /**
-     * Builds a select query using the specified columns, where clause, and order by arrays
-     *
-     * @param string[] $columns   An array of columns to select from (all columns if empty)
-     * @param array    $where     An array of columns/values to filter the select query
-     * @param string[] $orderBy   One or more column names to sort by
-     * @return SqlParams
-     */
-    public function buildQuery(array $columns = [], array $where = [], array $orderBy = [])
-    {
-        $whereClause = $this->buildWhereClause($where);
-
-        if (!empty($columns)) {
-            $insertCols = implode(', ', $this->escapeColumns($columns));
-        } else {
-            $insertCols = '*';
-        }
-
-        $sql = "SELECT $insertCols FROM " . $this->options->getTable()
-            . $whereClause->getSql() . $this->buildOrderByClause($orderBy);
-
-        return new SqlParams($sql, $whereClause->getParams());
-    }
-
-    /**
-     * @param string[] $orderBy One or more column names to sort by
+     * @param array $orderBy
+     * @param bool $escapeColumns
      * @return string
+     * @throws \Exception if there is an invalid sort direction
      */
-    private function buildOrderByClause(array $orderBy)
+    public function buildOrderByClause(array $orderBy, $escapeColumns = true)
     {
         if (empty($orderBy)) {
             return '';
         }
 
-        return ' ORDER BY ' . implode(', ', $this->escapeColumns($orderBy));
+        $sql = ' ORDER BY ';
+
+        // [column1, column2, ...]
+        if (isset($orderBy[0])) {
+            if ($escapeColumns) {
+                $orderBy = $this->escapeColumns($orderBy);
+            }
+
+            return $sql . implode(', ', $orderBy);
+        }
+
+        // [column1 => direction, column2 => direction, ...]
+        foreach ($orderBy as $column => $direction) {
+            if ($escapeColumns) {
+                $column = $this->options->escapeIdentifier($column);
+            }
+
+            $sql .= $column;
+
+            if ($direction === 'asc') {
+                $sql .= ' ASC, ';
+            } elseif ($direction === 'desc') {
+                $sql .= ' DESC, ';
+            } else {
+                throw new \Exception("{$direction} is not a valid sort direction for column {$column}. Use asc or desc.");
+            }
+        }
+
+        return substr_replace($sql, '', -2); // remove trailing comma and space
+    }
+
+    /**
+     * @param int $limit
+     * @param int $offset
+     * @return string
+     */
+    public function buildPagination($limit, $offset)
+    {
+        if ($this->options instanceof \PeachySQL\SqlServer\Options) {
+            return "OFFSET {$offset} ROWS FETCH NEXT {$limit} ROWS ONLY";
+        } else {
+            return "LIMIT {$limit} OFFSET {$offset}";
+        }
     }
 }

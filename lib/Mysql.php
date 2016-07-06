@@ -119,19 +119,20 @@ class Mysql extends PeachySql
 
     /**
      * Performs a single bulk insert query
+     * @param string $table
      * @param array $colVals
+     * @param int $identityIncrement
      * @return BulkInsertResult
      */
-    protected function insertBatch(array $colVals)
+    protected function insertBatch($table, array $colVals, $identityIncrement = 1)
     {
-        $sqlParams = (new Insert($this->options))->buildQuery($colVals);
+        $sqlParams = (new Insert($this->options))->buildQuery($table, $colVals);
         $result = $this->query($sqlParams->getSql(), $sqlParams->getParams());
         $firstId = $result->getInsertId(); // ID of first inserted row, or zero if no insert ID
 
         if ($firstId) {
-            $incrementValue = $this->options->getAutoIncrementValue();
-            $lastId = $firstId + $incrementValue * (count($colVals) - 1);
-            $ids = range($firstId, $lastId, $incrementValue);
+            $lastId = $firstId + $identityIncrement * (count($colVals) - 1);
+            $ids = range($firstId, $lastId, $identityIncrement);
         } else {
             $ids = [];
         }

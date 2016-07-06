@@ -69,67 +69,43 @@ If using MySQL, the `Mysql\Statement` object additionally includes a `getInsertI
 Internally, `getAll` and `getFirst` are implemented using `getIterator`.
 As such they can only be called once for a given statement.
 
-### Options
+### Shorthand methods
 
 PeachySQL comes with five shorthand methods for selecting, inserting, updating,
-and deleting records. To use these methods, a table name must be specified by
-passing an options object as the second argument to the PeachySQL constructor.
-
-```php
-$options = new PeachySQL\Mysql\Options();
-```
-or
-```php
-$options = new PeachySQL\SqlServer\Options();
-```
-
-```php
-$options->setTable('Users');
-```
-
-**Note:** each of the options setter methods has a corresponding getter method
-(e.g. `getTable`) to retrieve the current setting value.
-
-If using SQL Server, there is an additional option to set the table's identity
-column. This is necessary so that PeachySQL can generate an output clause to
-retrieve insert IDs.
-
-```php
-$options->setIdColumn('user_id');
-$userTable = new PeachySQL\SqlServer($sqlSrvConn, $options);
-```
-
-### Shorthand methods
+and deleting records.
 
 **Note:** to prevent SQL injection, the queries PeachySQL generates for these methods
 always use bound parameters for values, and column names are automatically escaped.
 
-#### select
+#### selectFrom
 
-The `select` method takes three arguments, all of which are optional:
+The `selectFrom` method takes a single argument containing a SQL SELECT statement.
+It returns an object with three chainable methods:
 
-1. An array of columns to select.
-2. A WHERE array to filter results.
-3. An array of column names to sort by.
+1. `where`
+2. `orderBy`
+3. `paginate`
 
-Selected rows are returned as an array of associative arrays,
-similar to calling the `getAll` method on a statement object for a custom query.
+Additionally the object has a `getSqlParams` method which builds the select query, and a `query` method
+which executes the query and returns a `Statement` object.
 
 ```php
-// select all columns and rows in the table, ordered by last name and then first name
-$rows = $userTable->select([], [], ['lname', 'fname']);
+// select all columns and rows in a table, ordered by last name and then first name
+$rows = $peachySql->selectFrom("SELECT * FROM Users")
+    ->orderBy(['lname', 'fname'])
+    ->query()->getAll();
 
-// select first and last name columns where user_id is equal to 5
-$rows = $userTable->select(['fname', 'lname'], ['user_id' => 5]);
-
-// select all columns for an array of user IDs
-$ids = [57, 239, 31, 54, 28];
-$rows = $userTable->select([], ['user_id' => $ids]);
+// select from multiple tables with conditions and pagination
+$rows = $peachySql->selectFrom("SELECT * FROM Users u INNER JOIN Customers c ON c.CustomerID = u.CustomerID")
+    ->where(['c.CustomerName' => 'Amazing Customer'])
+    ->orderBy(['u.fname' => 'desc', 'u.lname' => 'asc'])
+    ->paginate(1, 50) // page 1 with 50 rows per page
+    ->query()->getIterator();
 ```
 
-#### insertOne
+#### insertRow
 
-The `insertOne` method allows a single row to be inserted from an associative array.
+The `insertRow` method allows a single row to be inserted from an associative array.
 It returns an `InsertResult` object with `getId` and `getAffected` methods.
 
 ```php
@@ -138,12 +114,12 @@ $userData = [
     'lname' => 'Chamberlin'
 ];
 
-$id = $userTable->insertOne($userData)->getId();
+$id = $peachySql->insertRow('Users', $userData)->getId();
 ```
 
-#### insertBulk
+#### insertRows
 
-The `insertBulk` method makes it possible to bulk-insert multiple rows from an array.
+The `insertRows` method makes it possible to bulk-insert multiple rows from an array.
 It returns a `BulkInsertResult` object with `getIds`, `getAffected`, and `getQueryCount` methods.
 
 ```php
@@ -162,37 +138,43 @@ $userData = [
     ]
 ];
 
-$result = $userTable->insertBulk($userData);
+$result = $peachySql->insertRows('Users', $userData);
 $ids = $result->getIds(); // e.g. [64, 65, 66]
 $affected = $result->getAffected(); // 3
 $queries = $result->getQueryCount(); // 1
 ```
 
-SQL Server allows a maximum of 1,000 rows to be inserted at a time, and limits
-individual queries to 2,099 or fewer bound parameters. MySQL supports a maximum
-of 65,536 bound parameters per query. These limits can be easily reached when
-attempting to bulk-insert hundreds or thousands of rows at a time. To avoid
-these limits, the `insertBulk` method automatically splits large bulk insert
-queries into batches to efficiently handle any number of rows (`getQueryCount`
-returns the number of required batches). The default limits (listed above) can
-be customized via the `setMaxBoundParams` and `setMaxInsertRows` option setters.
+An optional third parameter can be passed to `insertRows` to override the default
+identity increment value:
 
-#### update and delete
+```php
+$result = $peachySql->insertRows('Users', $userData, 2);
+$ids = $result->getIds(); // e.g. [64, 66, 68]
+```
 
-The `update` method takes two arguments: an associative array of columns/values
-to update, and a WHERE array to filter which rows are updated.
+Note: SQL Server allows a maximum of 1,000 rows to be inserted at a time, and limits
+individual queries to 2,099 or fewer bound parameters. MySQL supports a maximum of
+65,536 bound parameters per query. These limits can be easily reached when attempting
+to bulk-insert hundreds or thousands of rows at a time. To avoid these limits, the
+`insertRows` method automatically splits large queries into batches to efficiently
+handle any number of rows (`getQueryCount` returns the number of required batches).
 
-The `delete` method takes a single WHERE array argument to filter the rows to delete.
+#### updateRows and deleteFrom
+
+The `updateRows` method takes three arguments: a table name, an associative array of
+columns/values to update, and a WHERE array to filter which rows are updated.
+
+The `deleteFrom` method takes a table name and a WHERE array to filter the rows to delete.
 
 Both methods return the number of affected rows.
 
 ```php
 // update the user with user_id 4
 $newData = ['fname' => 'Raymond', 'lname' => 'Boyce'];
-$userTable->update($newData, ['user_id' => 4]);
+$peachySql->updateRows('Users', $newData, ['user_id' => 4]);
 
 // delete users with IDs 1, 2, and 3
-$userTable->delete(['user_id' => [1, 2, 3]]);
+$userTable->deleteFrom('Users', ['user_id' => [1, 2, 3]]);
 ```
 
 ### Transactions
@@ -200,21 +182,6 @@ $userTable->delete(['user_id' => [1, 2, 3]]);
 Call the `begin` method to start a transaction. `prepare`, `execute`, `query`
 and any of the shorthand methods can then be called as needed, before committing
 or rolling back the transaction with `commit` or `rollback`.
-
-### Other methods and options
-
-The settings object passed to PeachySQL can be retrieved at any time using the
-`getOptions` method.
-
-There is a MySQL-specific option to override the interval between successive
-auto-incremented IDs in the table (defaults to 1). PeachySQL uses this value to
-determine the array of insert IDs for bulk-inserts, since MySQL only provides
-the first insert ID.
-
-```php
-$userTable->getOptions()->setAutoIncrementValue(2);
-$userTable->insertBulk($userData)->getIds(); // e.g. [67, 69, 71]
-```
 
 ## Author
 

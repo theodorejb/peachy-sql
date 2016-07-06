@@ -62,9 +62,7 @@ class InsertTest extends \PHPUnit_Framework_TestCase
             'col3' => 'val3',
         ];
 
-        $options = new \PeachySQL\Mysql\Options();
-        $options->setTable('TestTable');
-        $actual = (new Insert($options))->buildQuery([$colVals]);
+        $actual = (new Insert(new \PeachySQL\Mysql\Options()))->buildQuery('TestTable', [$colVals]);
         $expected = 'INSERT INTO TestTable (`col1`, `col2`, `col3`) VALUES (?,?,?)';
         $this->assertSame($expected, $actual->getSql());
         $this->assertSame(['val1', 'val2', 'val3'], $actual->getParams());
@@ -87,10 +85,9 @@ class InsertTest extends \PHPUnit_Framework_TestCase
         ];
 
         $options = new \PeachySQL\SqlServer\Options();
-        $options->setTable('TestTable');
         $options->setIdColumn('pkColumn');
 
-        $actual = (new Insert($options))->buildQuery($colVals);
+        $actual = (new Insert($options))->buildQuery('TestTable', $colVals, true);
         $expected = 'DECLARE @ids TABLE(RowID int);'
             . ' INSERT INTO TestTable ([col1], [col2])'
             . ' OUTPUT inserted.[pkColumn] INTO @ids(RowID)'

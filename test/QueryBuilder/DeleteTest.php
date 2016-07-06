@@ -10,11 +10,9 @@ class DeleteTest extends \PHPUnit_Framework_TestCase
 {
     public function testBuildQuery()
     {
-        $options = new \PeachySQL\Mysql\Options();
-        $options->setTable('TestTable');
-
+        $delete = new Delete(new \PeachySQL\Mysql\Options());
         $where = ['id' => 5, 'username' => ['tester', 'tester2']];
-        $actual = (new Delete($options))->buildQuery($where);
+        $actual = $delete->buildQuery('TestTable', $where);
         $expected = 'DELETE FROM TestTable WHERE `id` = ? AND `username` IN(?,?)';
 
         $this->assertSame($expected, $actual->getSql());

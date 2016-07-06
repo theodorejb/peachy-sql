@@ -17,9 +17,8 @@ class UpdateTest extends \PHPUnit_Framework_TestCase
 
         $where = ['id' => 21];
 
-        $options = new \PeachySQL\SqlServer\Options();
-        $options->setTable('TestTable');
-        $actual = (new Update($options))->buildQuery($set, $where);
+        $update = new Update(new \PeachySQL\SqlServer\Options());
+        $actual = $update->buildQuery('TestTable', $set, $where);
         $expected = 'UPDATE TestTable SET [username] = ?, [othercol] = ? WHERE [id] = ?';
 
         $this->assertSame($expected, $actual->getSql());

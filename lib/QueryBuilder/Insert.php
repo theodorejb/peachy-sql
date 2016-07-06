@@ -36,26 +36,29 @@ class Insert extends Query
 
     /**
      * Generates an INSERT query with placeholders for values and optional OUTPUT clause
-     *
+     * @param string $table
      * @param array $colVals An associative array of columns/values to insert
+     * @param bool $useOutputClause
      * @return SqlParams
      */
-    public function buildQuery(array $colVals)
+    public function buildQuery($table, array $colVals, $useOutputClause = false)
     {
         self::validateColValsStructure($colVals);
 
         $columns = $this->escapeColumns(array_keys($colVals[0]));
-        $tableName = $this->options->getTable();
-        $insert = "INSERT INTO $tableName (" . implode(', ', $columns) . ')';
+        $insert = "INSERT INTO {$table} (" . implode(', ', $columns) . ')';
 
         $valSetStr = ' (' . str_repeat('?,', count($columns) - 1) . '?),';
         $valStr = ' VALUES' . substr_replace(str_repeat($valSetStr, count($colVals)), '', -1); // remove trailing comma
         $params = call_user_func_array('array_merge', array_map('array_values', $colVals));
+        $idCol = $decStr = $outStr = $selStr = '';;
 
         if ($this->options instanceof \PeachySQL\SqlServer\Options) {
-            $idCol = $this->options->getIdColumn();
-        } else {
-            $idCol = '';
+            if ($useOutputClause) {
+                $idCol = $this->options->getIdColumn();
+            } else {
+                $selStr = '; SELECT SCOPE_IDENTITY() AS RowID;';
+            }
         }
 
         // Insert IDs must be output into a table variable so that the query will work on tables
@@ -64,8 +67,6 @@ class Insert extends Query
             $decStr = 'DECLARE @ids TABLE(RowID int); ';
             $outStr = " OUTPUT inserted.$idCol INTO @ids(RowID)";
             $selStr = '; SELECT * FROM @ids;';
-        } else {
-            $decStr = $outStr = $selStr = '';
         }
 
         return new SqlParams($decStr . $insert . $outStr . $valStr . $selStr, $params);

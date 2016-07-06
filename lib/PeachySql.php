@@ -4,7 +4,6 @@ namespace PeachySQL;
 
 use PeachySQL\QueryBuilder\Delete;
 use PeachySQL\QueryBuilder\Insert;
-use PeachySQL\QueryBuilder\Select;
 use PeachySQL\QueryBuilder\Update;
 
 /**
@@ -47,10 +46,12 @@ abstract class PeachySql
     abstract public function query($sql, array $params = []);
 
     /**
+     * @param string $table
      * @param array $colVals E.g. [["Username => "user1", "Password" => "pass1"], ...]
+     * @param int $identityIncrement
      * @return BulkInsertResult
      */
-    abstract protected function insertBatch(array $colVals);
+    abstract protected function insertBatch($table, array $colVals, $identityIncrement = 1);
 
     /**
      * Returns the current PeachySQL options
@@ -62,27 +63,36 @@ abstract class PeachySql
     }
 
     /**
-     * Selects the specified columns following the given where clause array
-     *
-     * @param string[] $columns An array of columns to select (empty to select all columns)
-     * @param array    $where   An associative array of columns and values to filter selected rows.
-     *                          E.g. ["id" => 3] to only return rows where the id column is equal to 3.
-     * @param string[] $orderBy A list of column names to sort by (ascending only)
-     * @return array
+     * @param string $query
+     * @return QueryableSelector
      */
-    public function select(array $columns = [], array $where = [], array $orderBy = [])
+    public function selectFrom($query)
     {
-        $sqlParams = (new Select($this->options))->buildQuery($columns, $where, $orderBy);
-        return $this->query($sqlParams->getSql(), $sqlParams->getParams())->getAll();
+        return new QueryableSelector($query, $this);
     }
 
     /**
-     * Inserts one or more rows into the table
-     *
-     * @param array $colVals E.g. [["Username => "user1", "Password" => "pass1"], ...]
+     * Inserts one row
+     * @param string $table
+     * @param array $colVals
+     * @return InsertResult
+     */
+    public function insertRow($table, array $colVals)
+    {
+        $result = $this->insertBatch($table, [$colVals]);
+        $ids = $result->getIds();
+        $id = empty($ids) ? 0 : $ids[0];
+        return new InsertResult($id, $result->getAffected());
+    }
+
+    /**
+     * Insert multiple rows
+     * @param string $table
+     * @param array $colVals
+     * @param int $identityIncrement
      * @return BulkInsertResult
      */
-    public function insertBulk(array $colVals)
+    public function insertRows($table, array $colVals, $identityIncrement = 1)
     {
         // check whether the query needs to be split into multiple batches
         $batches = Insert::batchRows($colVals, $this->options->getMaxBoundParams(), $this->options->getMaxInsertRows());
@@ -90,7 +100,7 @@ abstract class PeachySql
         $affected = 0;
 
         foreach ($batches as $batch) {
-            $result = $this->insertBatch($batch);
+            $result = $this->insertBatch($table, $batch, $identityIncrement);
             $ids = array_merge($ids, $result->getIds());
             $affected += $result->getAffected();
         }
@@ -99,17 +109,84 @@ abstract class PeachySql
     }
 
     /**
+     * Updates the specified columns and values in rows matching the where clause
+     * @param string $table
+     * @param array $set
+     * @param array $where
+     * @return int the number of affected rows
+     */
+    public function updateRows($table, array $set, array $where)
+    {
+        $update = new Update($this->options);
+        $sqlParams = $update->buildQuery($table, $set, $where);
+        return $this->query($sqlParams->getSql(), $sqlParams->getParams())->getAffected();
+    }
+
+    /**
+     * Deletes rows from the table matching the where clause
+     * @param string $table
+     * @param array $where
+     * @return int the number of affected rows
+     */
+    public function deleteFrom($table, array $where)
+    {
+        $delete = new Delete($this->options);
+        $sqlParams = $delete->buildQuery($table, $where);
+        return $this->query($sqlParams->getSql(), $sqlParams->getParams())->getAffected();
+    }
+
+    /**
+     * Selects the specified columns following the given where clause array
+     *
+     * @param string[] $columns An array of columns to select (empty to select all columns)
+     * @param array    $where   An associative array of columns and values to filter selected rows.
+     *                          E.g. ["id" => 3] to only return rows where the id column is equal to 3.
+     * @param string[] $orderBy A list of column names to sort by (ascending only)
+     * @return array
+     * @deprecated Use selectFrom instead
+     */
+    public function select(array $columns = [], array $where = [], array $orderBy = [])
+    {
+        if (count($columns) !== 0) {
+            $selectCols = implode(', ', array_map([$this->options, 'escapeIdentifier'], $columns));
+        } else {
+            $selectCols = '*';
+        }
+
+        return $this->selectFrom("SELECT {$selectCols} FROM " . $this->options->getTable())
+            ->where($where, true)
+            ->orderBy($orderBy, true)
+            ->query()->getAll();
+    }
+
+    /**
+     * Inserts one or more rows into the table
+     *
+     * @param array $colVals E.g. [["Username => "user1", "Password" => "pass1"], ...]
+     * @return BulkInsertResult
+     * @deprecated Use insertRows instead
+     */
+    public function insertBulk(array $colVals)
+    {
+        if (method_exists($this->options, 'getAutoIncrementValue')) {
+            $identityIncrement = $this->options->getAutoIncrementValue();
+        } else {
+            $identityIncrement = 0;
+        }
+
+        return $this->insertRows($this->options->getTable(), $colVals, $identityIncrement);
+    }
+
+    /**
      * Inserts a single row from an associative array of columns/values.
      *
      * @param array $colVals E.g. ["Username => "user1", "Password" => "pass1"]
      * @return InsertResult
+     * @deprecated Use insertRow instead
      */
     public function insertOne(array $colVals)
     {
-        $result = $this->insertBatch([$colVals]);
-        $ids = $result->getIds();
-        $id = empty($ids) ? 0 : $ids[0];
-        return new InsertResult($id, $result->getAffected());
+        return $this->insertRow($this->options->getTable(), $colVals);
     }
 
     /**
@@ -118,22 +195,22 @@ abstract class PeachySql
      * @param array $set   E.g. ["Username" => "newName", "Password" => "newPass"]
      * @param array $where E.g. ["id" => 3] to update the row where id is equal to 3
      * @return int The number of affected rows
+     * @deprecated Use updateRows instead
      */
     public function update(array $set, array $where)
     {
-        $sqlParams = (new Update($this->options))->buildQuery($set, $where);
-        return $this->query($sqlParams->getSql(), $sqlParams->getParams())->getAffected();
+        return $this->updateRows($this->options->getTable(), $set, $where);
     }
 
     /**
-     * Deletes columns from the table where the where clause matches
+     * Deletes rows from the table matching the where clause
      *
      * @param array $where E.g. ["id" => 3]
      * @return int The number of affected rows
+     * @deprecated Use deleteFrom instead
      */
     public function delete(array $where)
     {
-        $sqlParams = (new Delete($this->options))->buildQuery($where);
-        return $this->query($sqlParams->getSql(), $sqlParams->getParams())->getAffected();
+        return $this->deleteFrom($this->options->getTable(), $where);
     }
 }
