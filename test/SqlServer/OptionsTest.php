@@ -17,8 +17,8 @@ class OptionsTest extends \PHPUnit_Framework_TestCase
     public function testEscapeIdentifier()
     {
         $options = new Options();
-        $actual = $options->escapeIdentifier('Test]Identifier');
-        $this->assertSame('[Test]]Identifier]', $actual);
+        $actual = $options->escapeIdentifier('Test"Identifier');
+        $this->assertSame('"Test""Identifier"', $actual);
 
         try {
             $options->escapeIdentifier(''); // should throw exception
@@ -33,6 +33,6 @@ class OptionsTest extends \PHPUnit_Framework_TestCase
     {
         $options = new Options();
         $options->setIdColumn('MyColumn');
-        $this->assertSame('[MyColumn]', $options->getIdColumn());
+        $this->assertSame('"MyColumn"', $options->getIdColumn());
     }
 }

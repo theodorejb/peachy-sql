@@ -12,6 +12,7 @@ class Options extends BaseOptions
     protected $maxBoundParams = 65536; // 2^16
     private $autoIncrementVal = 1;
 
+    // use backticks to delimit identifiers since not everyone uses ANSI mode
     public function escapeIdentifier($identifier)
     {
         if (gettype($identifier) !== 'string') {
@@ -20,8 +21,9 @@ class Options extends BaseOptions
             throw new \InvalidArgumentException('Identifier cannot be blank');
         }
 
-        // identifiers are escaped with backticks
-        return '`' . str_replace('`', '``', $identifier) . '`';
+        $escaper = function ($identifier) { return '`' . str_replace('`', '``', $identifier) . '`'; };
+        $qualifiedIdentifiers = array_map($escaper, explode('.', $identifier));
+        return implode('.', $qualifiedIdentifiers);
     }
 
     /**

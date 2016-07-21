@@ -10,11 +10,10 @@ class Select extends Query
 {
     /**
      * @param array $orderBy
-     * @param bool $escapeColumns
      * @return string
      * @throws \Exception if there is an invalid sort direction
      */
-    public function buildOrderByClause(array $orderBy, $escapeColumns = true)
+    public function buildOrderByClause(array $orderBy)
     {
         if (empty($orderBy)) {
             return '';
@@ -24,19 +23,13 @@ class Select extends Query
 
         // [column1, column2, ...]
         if (isset($orderBy[0])) {
-            if ($escapeColumns) {
-                $orderBy = $this->escapeColumns($orderBy);
-            }
-
+            $orderBy = $this->escapeColumns($orderBy);
             return $sql . implode(', ', $orderBy);
         }
 
         // [column1 => direction, column2 => direction, ...]
         foreach ($orderBy as $column => $direction) {
-            if ($escapeColumns) {
-                $column = $this->options->escapeIdentifier($column);
-            }
-
+            $column = $this->options->escapeIdentifier($column);
             $sql .= $column;
 
             if ($direction === 'asc') {

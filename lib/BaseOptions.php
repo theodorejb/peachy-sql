@@ -16,12 +16,24 @@ abstract class BaseOptions
      * @param string $identifier
      * @return string
      */
-    abstract public function escapeIdentifier($identifier);
+    public function escapeIdentifier($identifier)
+    {
+        if (gettype($identifier) !== 'string') {
+            throw new \InvalidArgumentException('Identifier must be a string');
+        } elseif ($identifier === '') {
+            throw new \InvalidArgumentException('Identifier cannot be blank');
+        }
+
+        // use standard double quotes to delimit identifiers
+        $escaper = function ($identifier) { return '"' . str_replace('"', '""', $identifier) . '"'; };
+        $qualifiedIdentifiers = array_map($escaper, explode('.', $identifier));
+        return implode('.', $qualifiedIdentifiers);
+    }
 
     /**
      * Specify the table to select, insert, update, and delete from.
      * Table names are not automatically escaped since this would prevent
-     * using multi-part table identifiers.
+     * using table names that contain a period.
      * @param string $table
      */
     public function setTable($table)

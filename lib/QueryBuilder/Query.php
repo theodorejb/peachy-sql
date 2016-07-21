@@ -38,11 +38,10 @@ class Query
 
     /**
      * @param array $columnVals
-     * @param bool $escapeColumns
      * @return SqlParams
      * @throws \Exception if a column filter is empty
      */
-    public function buildWhereClause(array $columnVals, $escapeColumns = true)
+    public function buildWhereClause(array $columnVals)
     {
         if (empty($columnVals)) {
             return new SqlParams('', []);
@@ -51,9 +50,7 @@ class Query
         $conditions = $params = [];
 
         foreach ($columnVals as $column => $value) {
-            if ($escapeColumns) {
-                $column = $this->options->escapeIdentifier($column);
-            }
+            $column = $this->options->escapeIdentifier($column);
 
             if ($value === null) {
                 $conditions[] =  "{$column} IS NULL";

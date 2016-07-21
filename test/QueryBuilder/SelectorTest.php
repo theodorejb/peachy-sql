@@ -10,8 +10,8 @@ class SelectorTest extends \PHPUnit_Framework_TestCase
 {
     public function testWhere()
     {
-        $query = "SELECT `username`, `password` FROM TestTable";
-        $selector = new Selector($query, new \PeachySQL\Mysql\Options());
+        $query = 'SELECT "username", "password" FROM TestTable';
+        $selector = new Selector($query, new \PeachySQL\SqlServer\Options());
 
         $where = [
             'username' => 'TestUser',
@@ -21,11 +21,11 @@ class SelectorTest extends \PHPUnit_Framework_TestCase
             'firstname' => ['nl' => ['%dore', '%rah']],
         ];
 
-        $actual = $selector->where($where, true)->getSqlParams();
-        $expected = 'SELECT `username`, `password` FROM TestTable WHERE '
-            . '`username` = ? AND `password` IN(?,?) AND `othercol` IS NULL'
-            . ' AND `datecol` >= ? AND `datecol` < ?'
-            . ' AND `firstname` NOT LIKE ? AND `firstname` NOT LIKE ?';
+        $actual = $selector->where($where)->getSqlParams();
+        $expected = 'SELECT "username", "password" FROM TestTable WHERE '
+            . '"username" = ? AND "password" IN(?,?) AND "othercol" IS NULL'
+            . ' AND "datecol" >= ? AND "datecol" < ?'
+            . ' AND "firstname" NOT LIKE ? AND "firstname" NOT LIKE ?';
         $this->assertSame($expected, $actual->getSql());
         $params = ['TestUser', 'TestPassword', 'Password123', '2016-05-01', '2016-06-01', '%dore', '%rah'];
         $this->assertSame($params, $actual->getParams());
@@ -40,7 +40,7 @@ class SelectorTest extends \PHPUnit_Framework_TestCase
             $query->buildWhereClause($where);
             $this->fail('Failed to throw exception for empty filter conditions');
         } catch (\Exception $e) {
-            $this->assertSame('Filter conditions cannot be empty for [testcol] column', $e->getMessage());
+            $this->assertSame('Filter conditions cannot be empty for "testcol" column', $e->getMessage());
         }
 
         try {
@@ -62,26 +62,26 @@ class SelectorTest extends \PHPUnit_Framework_TestCase
 
     public function testOrderBy()
     {
-        $query = "SELECT [username], [lastname] FROM TestTable";
+        $query = 'SELECT "username", "lastname" FROM TestTable';
         $select = new Selector($query, new \PeachySQL\SqlServer\Options());
-        $actual = $select->orderBy(['lastname', 'firstname'], true)->getSqlParams();
+        $actual = $select->orderBy(['lastname', 'firstname'])->getSqlParams();
 
-        $expected = "{$query} ORDER BY [lastname], [firstname]";
+        $expected = $query . ' ORDER BY "lastname", "firstname"';
         $this->assertSame($expected, $actual->getSql());
         $this->assertSame([], $actual->getParams());
 
         $orderBy = ['lastname' => 'asc', 'firstname' => 'asc', 'age' => 'desc'];
         $actual = (new Selector($query, new \PeachySQL\SqlServer\Options()))->orderBy($orderBy)->getSqlParams();
-        $this->assertSame("{$query} ORDER BY lastname ASC, firstname ASC, age DESC", $actual->getSql());
+        $this->assertSame($query . ' ORDER BY "lastname" ASC, "firstname" ASC, "age" DESC', $actual->getSql());
     }
 
     /**
      * @expectedException \Exception
-     * @expectedExceptionMessage nonsense is not a valid sort direction for column `testcol`. Use asc or desc.
+     * @expectedExceptionMessage nonsense is not a valid sort direction for column "testcol". Use asc or desc.
      */
     public function testInvalidOrderBy()
     {
-        $select = new Select(new \PeachySQL\Mysql\Options());
+        $select = new Select(new \PeachySQL\SqlServer\Options());
         $select->buildOrderByClause(['testcol' => 'nonsense']);
     }
 
@@ -103,22 +103,7 @@ class SelectorTest extends \PHPUnit_Framework_TestCase
         $this->assertSame('OFFSET 200 ROWS FETCH NEXT 100 ROWS ONLY', $sqlsrvPage3);
     }
 
-    public function testEscapedQuery()
-    {
-        $query = "SELECT * FROM MyTable";
-        $selector = new Selector($query, new \PeachySQL\Mysql\Options());
-        $result = $selector
-            ->where(['MyCol' => 'test'], true)
-            ->orderBy(['MyCol' => 'desc'], true)
-            ->paginate(1, 25)
-            ->getSqlParams();
-
-        $expected = "{$query} WHERE `MyCol` = ? ORDER BY `MyCol` DESC LIMIT 25 OFFSET 0";
-        $this->assertSame($expected, $result->getSql());
-        $this->assertSame(['test'], $result->getParams());
-    }
-
-    public function testUnescapedQuery()
+    public function testGetSqlParams()
     {
         $query = "SELECT * FROM MyTable a INNER JOIN AnotherTable b ON b.id = a.id";
         $selector = new Selector($query, new \PeachySQL\SqlServer\Options());
@@ -128,7 +113,7 @@ class SelectorTest extends \PHPUnit_Framework_TestCase
             ->paginate(2, 25)
             ->getSqlParams();
 
-        $expected = "{$query} WHERE a.id = ? ORDER BY a.username OFFSET 25 ROWS FETCH NEXT 25 ROWS ONLY";
+        $expected = $query . ' WHERE "a"."id" = ? ORDER BY "a"."username" OFFSET 25 ROWS FETCH NEXT 25 ROWS ONLY';
         $this->assertSame($expected, $result->getSql());
         $this->assertSame([1], $result->getParams());
     }

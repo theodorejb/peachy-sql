@@ -10,9 +10,7 @@ class Selector
     private $options;
 
     private $where = [];
-    private $escapeWhere = true;
     private $orderBy = [];
-    private $escapeOrderBy = true;
     private $limit;
     private $offset;
 
@@ -28,35 +26,31 @@ class Selector
 
     /**
      * @param array $filter
-     * @param bool $escapeColumns
      * @return self
      * @throws \Exception if called more than once
      */
-    public function where(array $filter, $escapeColumns = false)
+    public function where(array $filter)
     {
         if ($this->where !== []) {
             throw new \Exception('where method can only be called once');
         }
 
         $this->where = $filter;
-        $this->escapeWhere = $escapeColumns;
         return $this;
     }
 
     /**
      * @param array $sort
-     * @param bool $escapeColumns
      * @return self
      * @throws \Exception if called more than once
      */
-    public function orderBy(array $sort, $escapeColumns = false)
+    public function orderBy(array $sort)
     {
         if ($this->orderBy !== []) {
             throw new \Exception('orderBy method can only be called once');
         }
 
         $this->orderBy = $sort;
-        $this->escapeOrderBy = $escapeColumns;
         return $this;
     }
 
@@ -86,8 +80,8 @@ class Selector
     public function getSqlParams()
     {
         $select = new Select($this->options);
-        $where = $select->buildWhereClause($this->where, $this->escapeWhere);
-        $orderBy = $select->buildOrderByClause($this->orderBy, $this->escapeOrderBy);
+        $where = $select->buildWhereClause($this->where);
+        $orderBy = $select->buildOrderByClause($this->orderBy);
         $sql = $this->query . $where->getSql() . $orderBy;
 
         if ($this->limit !== null && $this->offset !== null) {

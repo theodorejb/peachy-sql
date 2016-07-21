@@ -13,18 +13,6 @@ class Options extends BaseOptions
     protected $maxInsertRows = 1000;
     private $identityColumn = '';
 
-    public function escapeIdentifier($identifier)
-    {
-        if (gettype($identifier) !== 'string') {
-            throw new \InvalidArgumentException('Identifier must be a string');
-        } elseif ($identifier === '') {
-            throw new \InvalidArgumentException('Identifier cannot be blank');
-        }
-
-        // identifiers are escaped with brackets
-        return '[' . str_replace(']', ']]', $identifier) . ']';
-    }
-
     /**
      * Specify the table's identity column (used to retrieve insert IDs)
      * @param string $column

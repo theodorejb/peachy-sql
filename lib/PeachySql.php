@@ -154,8 +154,8 @@ abstract class PeachySql
         }
 
         return $this->selectFrom("SELECT {$selectCols} FROM " . $this->options->getTable())
-            ->where($where, true)
-            ->orderBy($orderBy, true)
+            ->where($where)
+            ->orderBy($orderBy)
             ->query()->getAll();
     }
 

@@ -69,9 +69,33 @@ class InsertTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
+     * Tests building an insert query with SCOPE_IDENTITY to retrieve the insert ID
+     */
+    public function testBuildQueryWithScopeIdentity()
+    {
+        $colVals = [
+            [
+                'col1' => 'foo1',
+                'col2' => 'foo2',
+            ],
+            [
+                'col1' => 'bar1',
+                'col2' => 'bar2',
+            ],
+        ];
+
+        $actual = (new Insert(new \PeachySQL\SqlServer\Options()))->buildQuery('TestTable', $colVals);
+        $expected = 'INSERT INTO TestTable ("col1", "col2")'
+            . ' VALUES (?,?), (?,?);'
+            . ' SELECT SCOPE_IDENTITY() AS RowID;';
+        $this->assertSame($expected, $actual->getSql());
+        $this->assertSame(['foo1', 'foo2', 'bar1', 'bar2'], $actual->getParams());
+    }
+
+    /**
      * Tests building an insert query with OUTPUT clause for SQL Server
      */
-    public function testBuildQueryWithIdColumn()
+    public function testBuildQueryWithOutputClause()
     {
         $colVals = [
             [
@@ -89,8 +113,8 @@ class InsertTest extends \PHPUnit_Framework_TestCase
 
         $actual = (new Insert($options))->buildQuery('TestTable', $colVals, true);
         $expected = 'DECLARE @ids TABLE(RowID int);'
-            . ' INSERT INTO TestTable ([col1], [col2])'
-            . ' OUTPUT inserted.[pkColumn] INTO @ids(RowID)'
+            . ' INSERT INTO TestTable ("col1", "col2")'
+            . ' OUTPUT inserted."pkColumn" INTO @ids(RowID)'
             . ' VALUES (?,?), (?,?);'
             . ' SELECT * FROM @ids;';
         $this->assertSame($expected, $actual->getSql());

@@ -13,12 +13,11 @@ class Delete extends Query
      *
      * @param string $table
      * @param array $where An array of columns/values to restrict the delete to
-     * @param bool $escapeColumns
      * @return SqlParams
      */
-    public function buildQuery($table, array $where, $escapeColumns = true)
+    public function buildQuery($table, array $where)
     {
-        $whereClause = $this->buildWhereClause($where, $escapeColumns);
+        $whereClause = $this->buildWhereClause($where);
         $sql = "DELETE FROM {$table}" . $whereClause->getSql();
         return new SqlParams($sql, $whereClause->getParams());
     }
