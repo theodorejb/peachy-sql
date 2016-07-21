@@ -76,6 +76,7 @@ class Selector
 
     /**
      * @return SqlParams
+     * @throws \Exception if attempting to paginate unordered rows
      */
     public function getSqlParams()
     {
@@ -85,6 +86,10 @@ class Selector
         $sql = $this->query . $where->getSql() . $orderBy;
 
         if ($this->limit !== null && $this->offset !== null) {
+            if ($this->orderBy === []) {
+                throw new \Exception('Results must be sorted to use pagination');
+            }
+
             $sql .= ' ' . $select->buildPagination($this->limit, $this->offset);
         }
 

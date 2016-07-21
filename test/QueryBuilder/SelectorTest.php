@@ -117,4 +117,15 @@ class SelectorTest extends \PHPUnit_Framework_TestCase
         $this->assertSame($expected, $result->getSql());
         $this->assertSame([1], $result->getParams());
     }
+
+    /**
+     * @expectedException \Exception
+     * @expectedExceptionMessage Results must be sorted to use pagination
+     */
+    public function testInvalidPagination()
+    {
+        $query = "SELECT * FROM MyTable";
+        $selector = new Selector($query, new \PeachySQL\SqlServer\Options());
+        $selector->paginate(1, 50)->getSqlParams();
+    }
 }
