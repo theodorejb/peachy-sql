@@ -4,7 +4,11 @@
 
 PeachySQL is a speedy database abstraction layer which makes it easy to execute
 prepared statements and work with large amounts of data. It supports both MySQL
-and SQL Server, and runs on PHP 5.5+ as well as HHVM.
+and SQL Server, and runs on PHP 5.6+ as well as HHVM.
+
+Note: [ANSI_QUOTES](https://dev.mysql.com/doc/refman/5.7/en/sql-mode.html#sqlmode_ansi_quotes)
+must be enabled to use generated queries with MySQL. For SQL Server
+[QUOTED_IDENTIFIER](https://msdn.microsoft.com/en-us/library/ms174393.aspx) must be set to ON.
 
 ## Install via Composer
 

@@ -47,8 +47,11 @@ class OptionsTest extends \PHPUnit_Framework_TestCase
     public function testEscapeIdentifier()
     {
         $options = new Options();
-        $actual = $options->escapeIdentifier('My`Identifier');
-        $this->assertSame('`My``Identifier`', $actual);
+        $actual = $options->escapeIdentifier('My"Identifier');
+        $this->assertSame('"My""Identifier"', $actual);
+
+        $qualified = $options->escapeIdentifier('t.testCol');
+        $this->assertSame('"t"."testCol"', $qualified);
 
         try {
             $options->escapeIdentifier(''); // should throw exception

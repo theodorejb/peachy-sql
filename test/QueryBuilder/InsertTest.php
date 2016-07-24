@@ -63,7 +63,7 @@ class InsertTest extends \PHPUnit_Framework_TestCase
         ];
 
         $actual = (new Insert(new \PeachySQL\Mysql\Options()))->buildQuery('TestTable', [$colVals]);
-        $expected = 'INSERT INTO TestTable (`col1`, `col2`, `col3`) VALUES (?,?,?)';
+        $expected = 'INSERT INTO TestTable ("col1", "col2", "col3") VALUES (?,?,?)';
         $this->assertSame($expected, $actual->getSql());
         $this->assertSame(['val1', 'val2', 'val3'], $actual->getParams());
     }
