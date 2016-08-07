@@ -100,35 +100,4 @@ class Query
 
         return new SqlParams(' WHERE ' . implode(' AND ', $conditions), $params);
     }
-
-    /**
-     * Uses a map array to convert nested properties to an array of columns and values
-     * @param array $map
-     * @param array $properties
-     * @return array
-     * @throws \Exception if a property isn't in the map
-     */
-    public static function propertiesToColumns(array $map, array $properties)
-    {
-        $columns = [];
-
-        foreach ($properties as $property => $value) {
-            if (!isset($map[$property])) {
-                throw new \Exception("Invalid property {$property}");
-            }
-
-            $newMap = $map[$property]; // might be value
-
-            if (is_string($newMap)) {
-                // where clause generator will validate value
-                $columns[$newMap] = $value;
-            } elseif (is_array($newMap)) {
-                $columns = array_merge($columns, self::propertiesToColumns($newMap, $value));
-            } else {
-                throw new \Exception('Map values must be arrays or strings, found ' . gettype($newMap) . " for {$property} property");
-            }
-        }
-
-        return $columns;
-    }
 }
