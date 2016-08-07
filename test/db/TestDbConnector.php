@@ -71,6 +71,7 @@ class TestDbConnector
                     name VARCHAR(50) NOT NULL,
                     dob DATE NOT NULL,
                     weight FLOAT NOT NULL,
+                    isDisabled BIT NOT NULL,
                     uuid BINARY(16) NOT NULL
                 );';
 
@@ -86,6 +87,7 @@ class TestDbConnector
                     name VARCHAR(50) NOT NULL,
                     dob DATE NOT NULL,
                     weight FLOAT NOT NULL,
+                    isDisabled BOOLEAN NOT NULL,
                     uuid BINARY(16) NOT NULL
                 );';
 

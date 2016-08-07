@@ -10,6 +10,8 @@ use Ramsey\Uuid\Uuid;
  */
 class DbTest extends \PHPUnit_Framework_TestCase
 {
+    CONST TABLE_NAME = 'Users';
+
     public static function tearDownAfterClass()
     {
         TestDbConnector::deleteTestTables();
@@ -22,17 +24,16 @@ class DbTest extends \PHPUnit_Framework_TestCase
     {
         $config = TestDbConnector::getConfig();
         $implementations = [];
-        $table = 'Users';
 
         if ($config['testWith']['mysql']) {
             $mysqlOptions = new Mysql\Options();
-            $mysqlOptions->setTable($table);
+            $mysqlOptions->setTable(self::TABLE_NAME);
             $implementations[] = [new Mysql(TestDbConnector::getMysqlConn(), $mysqlOptions)];
         }
 
         if ($config['testWith']['sqlsrv']) {
             $sqlServerOptions = new SqlServer\Options();
-            $sqlServerOptions->setTable($table);
+            $sqlServerOptions->setTable(self::TABLE_NAME);
             $sqlServerOptions->setIdColumn('user_id');
             $implementations[] = [new SqlServer(TestDbConnector::getSqlsrvConn(), $sqlServerOptions)];
         }
@@ -84,6 +85,7 @@ class DbTest extends \PHPUnit_Framework_TestCase
             'name' => 'George McFly',
             'dob' => '1938-04-01',
             'weight' => 133.8,
+            'isDisabled' => true,
             'uuid' => Uuid::uuid4()->getBytes()
         ];
 
@@ -94,9 +96,9 @@ class DbTest extends \PHPUnit_Framework_TestCase
         $id = $peachySql->insertOne($colVals)->getId();
         $this->assertInternalType('int', $id);
 
-        $sql = 'SELECT user_id FROM Users WHERE user_id = ?';
+        $sql = 'SELECT user_id, isDisabled FROM Users WHERE user_id = ?';
         $row = $peachySql->query($sql, [$id])->getFirst();
-        $this->assertSame(['user_id' => $id], $row); // the row should be selectable
+        $this->assertSame(['user_id' => $id, 'isDisabled' => 1], $row); // the row should be selectable
 
         $peachySql->rollback(); // cancel the transaction
         $sameRow = $peachySql->query($sql, [$id])->getFirst();
@@ -145,8 +147,8 @@ class DbTest extends \PHPUnit_Framework_TestCase
     public function testIteratorQuery(PeachySql $peachySql)
     {
         $colVals = [
-            ['name' => 'Martin S. McFly', 'dob' => '1968-06-20', 'weight' => 140.7, 'uuid' => Uuid::uuid4()->getBytes()],
-            ['name' => 'Emmett L. Brown', 'dob' => '1920-01-01', 'weight' => 155.4, 'uuid' => Uuid::uuid4()->getBytes()],
+            ['name' => 'Martin S. McFly', 'dob' => '1968-06-20', 'weight' => 140.7, 'isDisabled' => true, 'uuid' => Uuid::uuid4()->getBytes()],
+            ['name' => 'Emmett L. Brown', 'dob' => '1920-01-01', 'weight' => 155.4, 'isDisabled' => false, 'uuid' => Uuid::uuid4()->getBytes()],
         ];
 
         if ($peachySql instanceof SqlServer) {
@@ -160,17 +162,17 @@ class DbTest extends \PHPUnit_Framework_TestCase
             $insertColVals = $colVals;
         }
 
-        $ids = $peachySql->insertBulk($insertColVals)->getIds();
-        $placeholders = str_repeat('?,', count($ids) - 1) . '?';
-        $sql = "SELECT * FROM Users WHERE user_id IN ($placeholders)";
+        $ids = $peachySql->insertRows(self::TABLE_NAME, $insertColVals)->getIds();
+        $iterator = $peachySql->selectFrom("SELECT * FROM Users")
+            ->where(['user_id' => $ids])->query()->getIterator();
 
-        $iterator = $peachySql->query($sql, $ids)->getIterator();
         $this->assertInstanceOf('Generator', $iterator);
         $colValsCompare = [];
 
         foreach ($iterator as $row) {
             unset($row['user_id']);
             $row['weight'] = round($row['weight'], 1); // so that float comparison will work in HHVM
+            $row['isDisabled'] = (bool)$row['isDisabled'];
             $colValsCompare[] = $row;
         }
 
@@ -213,6 +215,7 @@ class DbTest extends \PHPUnit_Framework_TestCase
                 'name' => 'name' . $i,
                 'dob' => (1900 + $i) . '-01-01',
                 'weight' => round(rand(1001, 2899) / 10, 1),
+                'isDisabled' => 0,
                 'uuid' => Uuid::uuid4()->getBytes(),
             ];
         }
