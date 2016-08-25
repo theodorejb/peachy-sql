@@ -26,7 +26,7 @@ class Selector
 
     /**
      * @param array $filter
-     * @return self
+     * @return $this
      * @throws \Exception if called more than once
      */
     public function where(array $filter)
@@ -41,7 +41,7 @@ class Selector
 
     /**
      * @param array $sort
-     * @return self
+     * @return $this
      * @throws \Exception if called more than once
      */
     public function orderBy(array $sort)
@@ -58,7 +58,7 @@ class Selector
      * @param int $page
      * @param int $pageSize
      * @param int $maxPageSize
-     * @return self
+     * @return $this
      * @throws \Exception if page or pageSize are invalid
      */
     public function paginate($page, $pageSize, $maxPageSize = 1000)
