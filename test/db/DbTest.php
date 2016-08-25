@@ -2,7 +2,7 @@
 
 namespace PeachySQL;
 
-use Rhumsaa\Uuid\Uuid;
+use Ramsey\Uuid\Uuid;
 
 /**
  * Database tests for the PeachySQL library.
