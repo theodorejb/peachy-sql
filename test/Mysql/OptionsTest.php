@@ -37,13 +37,6 @@ class OptionsTest extends \PHPUnit_Framework_TestCase
         $this->fail('setMaxInsertRows failed to throw expected exception');
     }
 
-    public function testTable()
-    {
-        $options = new Options();
-        $options->setTable('MyTable');
-        $this->assertSame('MyTable', $options->getTable());
-    }
-
     public function testEscapeIdentifier()
     {
         $options = new Options();
@@ -57,20 +50,5 @@ class OptionsTest extends \PHPUnit_Framework_TestCase
         }
 
         $this->fail('escapeIdentifier failed to throw expected exception');
-    }
-
-    public function testAutoIncrementValue()
-    {
-        $options = new Options();
-        $options->setAutoIncrementValue(2);
-        $this->assertSame(2, $options->getAutoIncrementValue());
-
-        try {
-            $options->setAutoIncrementValue(0); // should throw exception
-        } catch (\InvalidArgumentException $expected) {
-            return;
-        }
-
-        $this->fail('setAutoIncrementValue failed to throw expected exception');
     }
 }

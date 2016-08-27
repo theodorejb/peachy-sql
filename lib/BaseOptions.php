@@ -7,7 +7,6 @@ namespace PeachySQL;
  */
 abstract class BaseOptions
 {
-    private $table = '';
     protected $maxBoundParams = 0;
     protected $maxInsertRows = 0;
 
@@ -28,35 +27,6 @@ abstract class BaseOptions
         $escaper = function ($identifier) { return '"' . str_replace('"', '""', $identifier) . '"'; };
         $qualifiedIdentifiers = array_map($escaper, explode('.', $identifier));
         return implode('.', $qualifiedIdentifiers);
-    }
-
-    /**
-     * Specify the table to select, insert, update, and delete from.
-     * Table names are not automatically escaped since this would prevent
-     * using table names that contain a period.
-     * @param string $table
-     * @deprecated Pass a table name to the shorthand methods instead
-     */
-    public function setTable($table)
-    {
-        if (gettype($table) !== 'string') {
-            throw new \InvalidArgumentException('Table name must be a string');
-        }
-
-        $this->table = $table;
-    }
-
-    /**
-     * @return string
-     * @deprecated This method isn't useful if no table is set
-     */
-    public function getTable()
-    {
-        if ($this->table === '') {
-            throw new \RuntimeException('Table has not been set');
-        }
-
-        return $this->table;
     }
 
     /**

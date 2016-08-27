@@ -91,33 +91,4 @@ class InsertTest extends \PHPUnit_Framework_TestCase
         $this->assertSame($expected, $actual->getSql());
         $this->assertSame(['foo1', 'foo2', 'bar1', 'bar2'], $actual->getParams());
     }
-
-    /**
-     * Tests building an insert query with OUTPUT clause for SQL Server
-     */
-    public function testBuildQueryWithOutputClause()
-    {
-        $colVals = [
-            [
-                'col1' => 'foo1',
-                'col2' => 'foo2',
-            ],
-            [
-                'col1' => 'bar1',
-                'col2' => 'bar2',
-            ],
-        ];
-
-        $options = new \PeachySQL\SqlServer\Options();
-        $options->setIdColumn('pkColumn');
-
-        $actual = (new Insert($options))->buildQuery('TestTable', $colVals, true);
-        $expected = 'DECLARE @ids TABLE(RowID int);'
-            . ' INSERT INTO TestTable ("col1", "col2")'
-            . ' OUTPUT inserted."pkColumn" INTO @ids(RowID)'
-            . ' VALUES (?,?), (?,?);'
-            . ' SELECT * FROM @ids;';
-        $this->assertSame($expected, $actual->getSql());
-        $this->assertSame(['foo1', 'foo2', 'bar1', 'bar2'], $actual->getParams());
-    }
 }

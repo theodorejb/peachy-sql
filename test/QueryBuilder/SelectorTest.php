@@ -138,21 +138,6 @@ class SelectorTest extends \PHPUnit_Framework_TestCase
         $this->assertSame([1], $result->getParams());
     }
 
-    public function testPagination()
-    {
-        $query = "SELECT * FROM MyTable a INNER JOIN AnotherTable b ON b.id = a.id";
-        $selector = new Selector($query, new \PeachySQL\SqlServer\Options());
-        $result = $selector
-            ->where(['a.id' => 1])
-            ->orderBy(['a.username'])
-            ->paginate(2, 25)
-            ->getSqlParams();
-
-        $expected = $query . ' WHERE "a"."id" = ? ORDER BY "a"."username" OFFSET 25 ROWS FETCH NEXT 25 ROWS ONLY';
-        $this->assertSame($expected, $result->getSql());
-        $this->assertSame([1], $result->getParams());
-    }
-
     /**
      * @expectedException \Exception
      * @expectedExceptionMessage Results must be sorted to use an offset

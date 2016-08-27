@@ -124,26 +124,16 @@ class SqlServer extends PeachySql
      */
     protected function insertBatch($table, array $colVals, $identityIncrement = 1)
     {
-        $useOutputClause = ($identityIncrement === 0);
-        $sqlParams = (new Insert($this->options))->buildQuery($table, $colVals, $useOutputClause);
+        $sqlParams = (new Insert($this->options))->buildQuery($table, $colVals);
         $result = $this->query($sqlParams->getSql(), $sqlParams->getParams());
+        $row = $result->getFirst();
 
-        if ($useOutputClause) {
-            // deprecated
-            $ids = [];
-            foreach ($result->getIterator() as $row) {
-                $ids[] = $row['RowID'];
-            }
+        if (isset($row['RowID'])) {
+            $lastId = $row['RowID'];
+            $firstId = $lastId - $identityIncrement * (count($colVals) -1);
+            $ids = range($firstId, $lastId, $identityIncrement);
         } else {
-            $row = $result->getFirst();
-
-            if (isset($row['RowID'])) {
-                $lastId = $row['RowID'];
-                $firstId = $lastId - $identityIncrement * (count($colVals) -1);
-                $ids = range($firstId, $lastId, $identityIncrement);
-            } else {
-                $ids = [];
-            }
+            $ids = [];
         }
 
         return new BulkInsertResult($ids, $result->getAffected());

@@ -26,16 +26,11 @@ class DbTest extends \PHPUnit_Framework_TestCase
         $implementations = [];
 
         if ($config['testWith']['mysql']) {
-            $mysqlOptions = new Mysql\Options();
-            $mysqlOptions->setTable(self::TABLE_NAME);
-            $implementations[] = [new Mysql(TestDbConnector::getMysqlConn(), $mysqlOptions)];
+            $implementations[] = [new Mysql(TestDbConnector::getMysqlConn())];
         }
 
         if ($config['testWith']['sqlsrv']) {
-            $sqlServerOptions = new SqlServer\Options();
-            $sqlServerOptions->setTable(self::TABLE_NAME);
-            $sqlServerOptions->setIdColumn('user_id');
-            $implementations[] = [new SqlServer(TestDbConnector::getSqlsrvConn(), $sqlServerOptions)];
+            $implementations[] = [new SqlServer(TestDbConnector::getSqlsrvConn())];
         }
 
         return $implementations;
@@ -78,7 +73,7 @@ class DbTest extends \PHPUnit_Framework_TestCase
             'uuid' => $peachySql->makeBinaryParam(Uuid::uuid4()->getBytes(), 16),
         ];
 
-        $id = $peachySql->insertOne($colVals)->getId();
+        $id = $peachySql->insertRow(self::TABLE_NAME, $colVals)->getId();
         $this->assertInternalType('int', $id);
 
         $sql = 'SELECT user_id, isDisabled FROM Users WHERE user_id = ?';
@@ -92,10 +87,12 @@ class DbTest extends \PHPUnit_Framework_TestCase
         $this->assertSame(null, $sameRow); // the row should no longer exist
 
         $peachySql->begin(); // start another transaction
-        $newId = $peachySql->insertOne($colVals)->getId();
+        $newId = $peachySql->insertRow(self::TABLE_NAME, $colVals)->getId();
         $peachySql->commit(); // complete the transaction
-        $newRows = $peachySql->select(['user_id'], ['user_id' => $newId]);
-        $this->assertSame([['user_id' => $newId]], $newRows); // the row should exist
+        $newRow = $peachySql->selectFrom("SELECT user_id FROM " . self::TABLE_NAME)
+            ->where(['user_id' => $newId])->query()->getFirst();
+
+        $this->assertSame(['user_id' => $newId], $newRow); // the row should exist
     }
 
     /**
@@ -176,7 +173,10 @@ class DbTest extends \PHPUnit_Framework_TestCase
         }
 
         $stmt->close();
-        $updatedNames = $peachySql->select(['name'], ['user_id' => $ids]);
+
+        $updatedNames = $peachySql->selectFrom("SELECT name FROM " . self::TABLE_NAME)
+            ->where(['user_id' => $ids])->query()->getAll();
+
         $expected = [
             ['name' => $realNames[$ids[0]]],
             ['name' => $realNames[$ids[1]]],
@@ -211,13 +211,16 @@ class DbTest extends \PHPUnit_Framework_TestCase
             $insertColVals[] = $row;
         }
 
-        $result = $peachySql->insertBulk($insertColVals);
+        $result = $peachySql->insertRows(self::TABLE_NAME, $insertColVals);
         $this->assertSame($expectedQueries, $result->getQueryCount());
         $this->assertSame($rowCount, $result->getAffected());
         $ids = $result->getIds();
         $this->assertSame($rowCount, count($ids));
+        $columns = implode(', ', array_keys($colVals[0]));
 
-        $rows = $peachySql->select(array_keys($colVals[0]), ['user_id' => $ids]);
+        $rows = $peachySql->selectFrom("SELECT {$columns} FROM " . self::TABLE_NAME)
+            ->where(['user_id' => $ids])->query()->getAll();
+
         array_walk($rows, function (&$row) {
             $row['weight'] = round($row['weight'], 1); // so that float comparison will work in HHVM
         });
@@ -225,11 +228,11 @@ class DbTest extends \PHPUnit_Framework_TestCase
         $this->assertSame($colVals, $rows);
 
         // update the inserted rows
-        $numUpdated = $peachySql->update(['name' => 'updated'], ['user_id' => $ids]);
+        $numUpdated = $peachySql->updateRows(self::TABLE_NAME, ['name' => 'updated'], ['user_id' => $ids]);
         $this->assertSame($rowCount, $numUpdated);
 
         // delete the inserted rows
-        $numDeleted = $peachySql->delete(['user_id' => $ids]);
+        $numDeleted = $peachySql->deleteFrom(self::TABLE_NAME, ['user_id' => $ids]);
         $this->assertSame($rowCount, $numDeleted);
     }
 }

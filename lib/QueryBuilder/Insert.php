@@ -38,10 +38,9 @@ class Insert extends Query
      * Generates an INSERT query with placeholders for values and optional OUTPUT clause
      * @param string $table
      * @param array $colVals An associative array of columns/values to insert
-     * @param bool $useOutputClause
      * @return SqlParams
      */
-    public function buildQuery($table, array $colVals, $useOutputClause = false)
+    public function buildQuery($table, array $colVals)
     {
         self::validateColValsStructure($colVals);
 
@@ -51,25 +50,14 @@ class Insert extends Query
         $valSetStr = ' (' . str_repeat('?,', count($columns) - 1) . '?),';
         $valStr = ' VALUES' . substr_replace(str_repeat($valSetStr, count($colVals)), '', -1); // remove trailing comma
         $params = call_user_func_array('array_merge', array_map('array_values', $colVals));
-        $idCol = $decStr = $outStr = $selStr = '';;
 
         if ($this->options instanceof \PeachySQL\SqlServer\Options) {
-            if ($useOutputClause) {
-                $idCol = $this->options->getIdColumn();
-            } else {
-                $selStr = '; SELECT SCOPE_IDENTITY() AS RowID;';
-            }
+            $selStr = '; SELECT SCOPE_IDENTITY() AS RowID;';
+        } else {
+            $selStr = '';
         }
 
-        // Insert IDs must be output into a table variable so that the query will work on tables
-        // with insert triggers (see http://technet.microsoft.com/en-us/library/ms177564.aspx).
-        if ($idCol !== '') {
-            $decStr = 'DECLARE @ids TABLE(RowID int); ';
-            $outStr = " OUTPUT inserted.$idCol INTO @ids(RowID)";
-            $selStr = '; SELECT * FROM @ids;';
-        }
-
-        return new SqlParams($decStr . $insert . $outStr . $valStr . $selStr, $params);
+        return new SqlParams($insert . $valStr . $selStr, $params);
     }
 
     /**

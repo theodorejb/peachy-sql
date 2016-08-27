@@ -79,18 +79,6 @@ class Selector
     }
 
     /**
-     * @param int $page
-     * @param int $pageSize
-     * @param int $maximum
-     * @return $this
-     * @deprecated
-     */
-    public function paginate($page, $pageSize, $maximum = 1000)
-    {
-        return $this->offset(($page - 1) * $pageSize, $pageSize, $maximum);
-    }
-
-    /**
      * @return SqlParams
      * @throws \Exception if attempting to paginate unordered rows
      */
