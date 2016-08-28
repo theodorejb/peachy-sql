@@ -22,6 +22,7 @@ class SelectorTest extends \PHPUnit_Framework_TestCase
             'type' => ['lk' => 'Admin%', 'nl' => 'Low%'],
             'firstname' => ['lk' => ['%nnet%', '%zabet%'], 'nl' => ['%dore', '%rah']],
             'datecol' => ['ge' => '2016-05-01', 'lt' => '2016-06-01'],
+            'numcol' => ['gt' => 10, 'le' => 20],
         ];
 
         $actual = $selector->where($where)->getSqlParams();
@@ -33,11 +34,12 @@ class SelectorTest extends \PHPUnit_Framework_TestCase
             . ' AND "type" LIKE ? AND "type" NOT LIKE ?'
             . ' AND "firstname" LIKE ? AND "firstname" LIKE ?'
             . ' AND "firstname" NOT LIKE ? AND "firstname" NOT LIKE ?'
-            . ' AND "datecol" >= ? AND "datecol" < ?';
+            . ' AND "datecol" >= ? AND "datecol" < ?'
+            . ' AND "numcol" > ? AND "numcol" <= ?';
         $this->assertSame($expected, $actual->getSql());
 
         $params = ['TestUser', 'Brown', 'TestPassword', 'Password123', 'Password123', 'Admin%',
-            'Low%', '%nnet%', '%zabet%', '%dore', '%rah', '2016-05-01', '2016-06-01'];
+            'Low%', '%nnet%', '%zabet%', '%dore', '%rah', '2016-05-01', '2016-06-01', 10, 20];
         $this->assertSame($params, $actual->getParams());
     }
 

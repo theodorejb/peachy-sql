@@ -86,8 +86,8 @@ It returns an object with three chainable methods:
 2. `orderBy`
 3. `paginate`
 
-Additionally the object has a `getSqlParams` method which builds the select query, and a `query` method
-which executes the query and returns a `Statement` object.
+Additionally the object has a `getSqlParams` method which builds the select query,
+and a `query` method which executes the query and returns a `Statement` object.
 
 ```php
 // select all columns and rows in a table, ordered by last name and then first name
@@ -102,6 +102,25 @@ $rows = $peachySql->selectFrom("SELECT * FROM Users u INNER JOIN Customers c ON 
     ->paginate(1, 50) // page 1 with 50 rows per page
     ->query()->getIterator();
 ```
+
+##### Where clause generation
+
+In addition to passing basic column => value arrays to the `where` method, you can
+specify more complex conditions by using arrays as values. For example, passing
+`['col' => ['lt' => 15, 'gt' => 5]]` would generate the condition `WHERE col < 15 AND col > 5`.
+
+Full list of recognized operators:
+
+Operator | SQL condition
+-------- | -------------
+eq       | =
+ne       | <>
+lt       | <
+le       | <=
+gt       | >
+ge       | >=
+lk       | LIKE
+nl       | NOT LIKE
 
 #### insertRow
 
