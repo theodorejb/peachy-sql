@@ -15,19 +15,29 @@ class SelectorTest extends \PHPUnit_Framework_TestCase
 
         $where = [
             'username' => 'TestUser',
-            'password' => ['eq' => ['TestPassword', 'Password123']],
+            'lastname' => ['ne' => 'Brown'],
+            'password' => ['eq' => ['TestPassword', 'Password123'], 'ne' => ['Password123']],
             'othercol' => null,
+            'escape"col' => ['ne' => null],
+            'type' => ['lk' => 'Admin%', 'nl' => 'Low%'],
+            'firstname' => ['lk' => ['%nnet%', '%zabet%'], 'nl' => ['%dore', '%rah']],
             'datecol' => ['ge' => '2016-05-01', 'lt' => '2016-06-01'],
-            'firstname' => ['nl' => ['%dore', '%rah']],
         ];
 
         $actual = $selector->where($where)->getSqlParams();
         $expected = 'SELECT "username", "password" FROM TestTable WHERE '
-            . '"username" = ? AND "password" IN(?,?) AND "othercol" IS NULL'
-            . ' AND "datecol" >= ? AND "datecol" < ?'
-            . ' AND "firstname" NOT LIKE ? AND "firstname" NOT LIKE ?';
+            . '"username" = ? AND "lastname" <> ?'
+            . ' AND "password" IN(?,?) AND "password" NOT IN(?)'
+            . ' AND "othercol" IS NULL'
+            . ' AND "escape""col" IS NOT NULL'
+            . ' AND "type" LIKE ? AND "type" NOT LIKE ?'
+            . ' AND "firstname" LIKE ? AND "firstname" LIKE ?'
+            . ' AND "firstname" NOT LIKE ? AND "firstname" NOT LIKE ?'
+            . ' AND "datecol" >= ? AND "datecol" < ?';
         $this->assertSame($expected, $actual->getSql());
-        $params = ['TestUser', 'TestPassword', 'Password123', '2016-05-01', '2016-06-01', '%dore', '%rah'];
+
+        $params = ['TestUser', 'Brown', 'TestPassword', 'Password123', 'Password123', 'Admin%',
+            'Low%', '%nnet%', '%zabet%', '%dore', '%rah', '2016-05-01', '2016-06-01'];
         $this->assertSame($params, $actual->getParams());
     }
 
@@ -52,9 +62,17 @@ class SelectorTest extends \PHPUnit_Framework_TestCase
         }
 
         try {
+            $where = [ 'testcol' => ['lk' => null] ];
+            $query->buildWhereClause($where);
+            $this->fail('Failed to throw exception when using null with an incompatible comparison operator');
+        } catch (\Exception $e) {
+            $this->assertSame('lk operator cannot be used with a null value', $e->getMessage());
+        }
+
+        try {
             $where = [ 'testcol' => ['gt' => [3, 4]] ];
             $query->buildWhereClause($where);
-            $this->fail('Failed to throw exception for invalid comparison value');
+            $this->fail('Failed to throw exception when using array with an incompatible comparison operator');
         } catch (\Exception $e) {
             $this->assertSame('gt operator cannot be used with an array', $e->getMessage());
         }

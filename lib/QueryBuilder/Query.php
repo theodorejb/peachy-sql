@@ -52,21 +52,10 @@ class Query
         foreach ($columnVals as $column => $value) {
             $column = $this->options->escapeIdentifier($column);
 
-            if ($value === null) {
-                $conditions[] =  "{$column} IS NULL";
-                continue;
-            }
-
-            if (!is_array($value)) {
-                $conditions[] = "{$column} = ?";
-                $params[] = $value;
-                continue;
-            }
-
-            if (count($value) === 0) {
+            if (is_array($value) && count($value) === 0) {
                 throw new \Exception("Filter conditions cannot be empty for {$column} column");
-            } elseif (isset($value[0])) {
-                // same as eq operator with array - handle below
+            } elseif (!is_array($value) || isset($value[0])) {
+                // same as eq operator - handle below
                 $value = ['eq' => $value];
             }
 
@@ -75,24 +64,30 @@ class Query
                     throw new \Exception("{$shorthand} is not a valid operator");
                 }
 
-                if (!is_array($val)) {
+                if ($val === null) {
+                    if ($shorthand === 'eq') {
+                        $conditions[] =  "{$column} IS NULL";
+                    } elseif ($shorthand === 'ne') {
+                        $conditions[] =  "{$column} IS NOT NULL";
+                    } else {
+                        throw new \Exception("{$shorthand} operator cannot be used with a null value");
+                    }
+                } elseif (!is_array($val)) {
                     $comparison = self::$operatorMap[$shorthand];
                     $conditions[] = "{$column} {$comparison} ?";
                     $params[] = $val;
-                    continue;
-                }
-
-                if ($shorthand === 'eq' || $shorthand === 'ne') {
+                } elseif ($shorthand === 'eq' || $shorthand === 'ne') {
                     // use IN(...) syntax
                     $conditions[] = $column . ($shorthand === 'ne' ? ' NOT IN(' : ' IN(')
                         . str_repeat('?,', count($val) - 1) . '?)';
                     $params = array_merge($params, $val);
-                } elseif ($shorthand === 'nl') {
-                    foreach ($val as $notLike) {
-                        $conditions[] = $column . ' NOT LIKE ?';
-                        $params[] = $notLike;
+                } elseif ($shorthand === 'lk' || $shorthand === 'nl') {
+                    foreach ($val as $condition) {
+                        $conditions[] = $column . ' ' . self::$operatorMap[$shorthand] . ' ?';
+                        $params[] = $condition;
                     }
                 } else {
+                    // it doesn't make sense to use greater than or less than operators with multiple values
                     throw new \Exception("{$shorthand} operator cannot be used with an array");
                 }
             }
