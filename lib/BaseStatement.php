@@ -48,13 +48,7 @@ abstract class BaseStatement
      */
     public function getAll()
     {
-        $rows = [];
-
-        foreach ($this->getIterator() as $row) {
-            $rows[] = $row;
-        }
-
-        return $rows;
+        return iterator_to_array($this->getIterator());
     }
 
     /**
