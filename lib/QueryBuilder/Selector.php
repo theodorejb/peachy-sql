@@ -55,23 +55,39 @@ class Selector
     }
 
     /**
-     * @param int $page
-     * @param int $pageSize
-     * @param int $maxPageSize
+     * @param int $offset
+     * @param int $limit
+     * @param int $maximum
      * @return $this
-     * @throws \Exception if page or pageSize are invalid
+     * @throws \Exception if a parameter is invalid
      */
-    public function paginate($page, $pageSize, $maxPageSize = 1000)
+    public function offset($offset, $limit, $maximum = 1000)
     {
-        if ($page < 1 || $pageSize < 1) {
-            throw new \Exception('Page and page size must be positive');
-        } elseif ($pageSize > $maxPageSize) {
-            throw new \Exception("Page size cannot be greater than {$maxPageSize}");
+        if ($maximum < 1) {
+            throw new \Exception('Maximum must be greater than zero');
+        } elseif ($limit < 1) {
+            throw new \Exception('Limit must be greater than zero');
+        } elseif ($limit > $maximum) {
+            throw new \Exception("Limit cannot exceed {$maximum}");
+        } elseif ($offset < 0) {
+            throw new \Exception('Offset cannot be negative');
         }
 
-        $this->limit = $pageSize;
-        $this->offset = ($page - 1) * $pageSize;
+        $this->limit = $limit;
+        $this->offset = $offset;
         return $this;
+    }
+
+    /**
+     * @param int $page
+     * @param int $pageSize
+     * @param int $maximum
+     * @return $this
+     * @deprecated
+     */
+    public function paginate($page, $pageSize, $maximum = 1000)
+    {
+        return $this->offset(($page - 1) * $pageSize, $pageSize, $maximum);
     }
 
     /**
@@ -87,7 +103,7 @@ class Selector
 
         if ($this->limit !== null && $this->offset !== null) {
             if ($this->orderBy === []) {
-                throw new \Exception('Results must be sorted to use pagination');
+                throw new \Exception('Results must be sorted to use an offset');
             }
 
             $sql .= ' ' . $select->buildPagination($this->limit, $this->offset);
