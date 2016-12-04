@@ -84,7 +84,7 @@ It returns an object with three chainable methods:
 
 1. `where`
 2. `orderBy`
-3. `paginate`
+3. `offset`
 
 Additionally the object has a `getSqlParams` method which builds the select query,
 and a `query` method which executes the query and returns a `Statement` object.
@@ -99,7 +99,7 @@ $rows = $peachySql->selectFrom("SELECT * FROM Users")
 $rows = $peachySql->selectFrom("SELECT * FROM Users u INNER JOIN Customers c ON c.CustomerID = u.CustomerID")
     ->where(['c.CustomerName' => 'Amazing Customer'])
     ->orderBy(['u.fname' => 'desc', 'u.lname' => 'asc'])
-    ->paginate(1, 50) // page 1 with 50 rows per page
+    ->offset(0, 50) // page 1 with 50 rows per page
     ->query()->getIterator();
 ```
 
