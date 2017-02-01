@@ -30,6 +30,7 @@ class Options extends BaseOptions
      * Specify the interval between successive auto-incremented IDs in
      * the table (used to retrieve array of insert IDs for bulk inserts).
      * @param int $increment
+     * @deprecated Pass the identity increment value to the insert method instead
      */
     public function setAutoIncrementValue($increment)
     {
@@ -42,6 +43,7 @@ class Options extends BaseOptions
 
     /**
      * @return int
+     * @deprecated This method isn't useful if no increment value is set
      */
     public function getAutoIncrementValue()
     {

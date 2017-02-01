@@ -35,6 +35,7 @@ abstract class BaseOptions
      * Table names are not automatically escaped since this would prevent
      * using table names that contain a period.
      * @param string $table
+     * @deprecated Pass a table name to the shorthand methods instead
      */
     public function setTable($table)
     {
@@ -47,6 +48,7 @@ abstract class BaseOptions
 
     /**
      * @return string
+     * @deprecated This method isn't useful if no table is set
      */
     public function getTable()
     {

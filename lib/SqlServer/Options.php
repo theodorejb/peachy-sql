@@ -16,6 +16,7 @@ class Options extends BaseOptions
     /**
      * Specify the table's identity column (used to retrieve insert IDs)
      * @param string $column
+     * @deprecated Isn't needed since new insert methods use SCOPE_IDENTITY() to retrieve IDs
      */
     public function setIdColumn($column)
     {
@@ -30,6 +31,7 @@ class Options extends BaseOptions
     /**
      * Returns the table's identity column
      * @return string
+     * @deprecated Isn't useful if no ID column is set
      */
     public function getIdColumn()
     {
