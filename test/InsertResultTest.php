@@ -2,11 +2,13 @@
 
 namespace PeachySQL;
 
+use PHPUnit\Framework\TestCase;
+
 /**
  * Tests for the InsertResult object
  * @author Theodore Brown <https://github.com/theodorejb>
  */
-class InsertResultTest extends \PHPUnit_Framework_TestCase
+class InsertResultTest extends TestCase
 {
     public function testCreateRetrieve()
     {

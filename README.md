@@ -4,7 +4,7 @@
 
 PeachySQL is a speedy database abstraction layer which makes it easy to execute
 prepared statements and work with large amounts of data. It supports both MySQL
-and SQL Server, and runs on PHP 5.5+ as well as HHVM.
+and SQL Server, and runs on PHP 7.1+.
 
 ## Install via Composer
 

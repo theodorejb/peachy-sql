@@ -2,11 +2,13 @@
 
 namespace PeachySQL;
 
+use PHPUnit\Framework\TestCase;
+
 /**
  * Tests for the BulkInsertResult object
  * @author Theodore Brown <https://github.com/theodorejb>
  */
-class BulkInsertResultTest extends \PHPUnit_Framework_TestCase
+class BulkInsertResultTest extends TestCase
 {
     public function testCreateRetrieve()
     {

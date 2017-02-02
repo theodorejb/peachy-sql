@@ -2,10 +2,12 @@
 
 namespace PeachySQL\SqlServer;
 
+use PHPUnit\Framework\TestCase;
+
 /**
  * Tests SQL Server options
  */
-class OptionsTest extends \PHPUnit_Framework_TestCase
+class OptionsTest extends TestCase
 {
     public function testEscapeIdentifier()
     {

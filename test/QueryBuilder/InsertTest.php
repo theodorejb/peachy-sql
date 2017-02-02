@@ -2,11 +2,13 @@
 
 namespace PeachySQL\QueryBuilder;
 
+use PHPUnit\Framework\TestCase;
+
 /**
  * Tests for the Insert query builder
  * @author Theodore Brown <https://github.com/theodorejb>
  */
-class InsertTest extends \PHPUnit_Framework_TestCase
+class InsertTest extends TestCase
 {
     public function batchRowsTestCases()
     {

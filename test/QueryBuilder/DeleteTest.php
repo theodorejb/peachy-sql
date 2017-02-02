@@ -2,11 +2,13 @@
 
 namespace PeachySQL\QueryBuilder;
 
+use PHPUnit\Framework\TestCase;
+
 /**
  * Tests for the Delete query builder
  * @author Theodore Brown <https://github.com/theodorejb>
  */
-class DeleteTest extends \PHPUnit_Framework_TestCase
+class DeleteTest extends TestCase
 {
     public function testBuildQuery()
     {

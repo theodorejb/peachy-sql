@@ -2,11 +2,13 @@
 
 namespace PeachySQL;
 
+use PHPUnit\Framework\TestCase;
+
 /**
  * Tests for the SqlException object
  * @author Theodore Brown <https://github.com/theodorejb>
  */
-class SqlExceptionTest extends \PHPUnit_Framework_TestCase
+class SqlExceptionTest extends TestCase
 {
     public function exceptionProvider()
     {

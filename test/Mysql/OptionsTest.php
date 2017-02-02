@@ -2,10 +2,12 @@
 
 namespace PeachySQL\Mysql;
 
+use PHPUnit\Framework\TestCase;
+
 /**
  * Tests base as well as MySQL-specific configuration settings
  */
-class OptionsTest extends \PHPUnit_Framework_TestCase
+class OptionsTest extends TestCase
 {
     public function testMaxBoundParams()
     {

@@ -2,11 +2,13 @@
 
 namespace PeachySQL\QueryBuilder;
 
+use PHPUnit\Framework\TestCase;
+
 /**
  * Tests for the Update query builder
  * @author Theodore Brown <https://github.com/theodorejb>
  */
-class UpdateTest extends \PHPUnit_Framework_TestCase
+class UpdateTest extends TestCase
 {
     public function testBuildQuery()
     {

@@ -2,13 +2,14 @@
 
 namespace PeachySQL;
 
+use PHPUnit\Framework\TestCase;
 use Ramsey\Uuid\Uuid;
 
 /**
  * Database tests for the PeachySQL library.
  * @author Theodore Brown <https://github.com/theodorejb>
  */
-class DbTest extends \PHPUnit_Framework_TestCase
+class DbTest extends TestCase
 {
     CONST TABLE_NAME = 'Users';
 

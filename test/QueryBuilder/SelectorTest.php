@@ -2,11 +2,13 @@
 
 namespace PeachySQL\QueryBuilder;
 
+use PHPUnit\Framework\TestCase;
+
 /**
  * Tests for the Select query builder
  * @author Theodore Brown <https://github.com/theodorejb>
  */
-class SelectorTest extends \PHPUnit_Framework_TestCase
+class SelectorTest extends TestCase
 {
     public function testWhere()
     {
