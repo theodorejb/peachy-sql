@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace PeachySQL;
 
 /**
@@ -12,12 +14,8 @@ abstract class BaseStatement
     protected $query;
     protected $params;
 
-    /**
-     * @param bool $usedPrepare True if the statement was created using `prepare`
-     * @param string $query
-     * @param array $params
-     */
-    public function __construct($usedPrepare, $query, array $params)
+    // $usedPrepare should be true if the statement was created using `prepare`
+    public function __construct(bool $usedPrepare, string $query, array $params)
     {
         $this->usedPrepare = $usedPrepare;
         $this->query = $query;
@@ -26,27 +24,23 @@ abstract class BaseStatement
 
     /**
      * Executes the prepared statement
-     * @return void
      */
-    abstract public function execute();
+    abstract public function execute(): void;
 
     /**
      * Returns an iterator which can be used to loop through each row in the result
-     * @return \Generator
      */
-    abstract public function getIterator();
+    abstract public function getIterator(): \Generator;
 
     /**
      * Closes the statement
-     * @return void
      */
-    abstract public function close();
+    abstract public function close(): void;
 
     /**
      * Returns all rows selected by the query
-     * @return array
      */
-    public function getAll()
+    public function getAll(): array
     {
         return iterator_to_array($this->getIterator());
     }
@@ -68,9 +62,8 @@ abstract class BaseStatement
 
     /**
      * Returns the number of rows affected by the query
-     * @return int
      */
-    public function getAffected()
+    public function getAffected(): int
     {
         return $this->affected;
     }

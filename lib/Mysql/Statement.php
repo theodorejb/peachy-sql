@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace PeachySQL\Mysql;
 
 use mysqli_stmt;
@@ -10,15 +12,17 @@ class Statement extends BaseStatement
 {
     private $insertId;
     private $stmt;
+
+    /** @var \mysqli_result */
     private $meta;
 
-    public function __construct(mysqli_stmt $stmt, $usedPrepare, $query, array $params)
+    public function __construct(mysqli_stmt $stmt, bool $usedPrepare, string $query, array $params)
     {
         parent::__construct($usedPrepare, $query, $params);
         $this->stmt = $stmt;
     }
 
-    public function execute()
+    public function execute(): void
     {
         if (!$this->stmt->execute()) {
             throw new SqlException('Failed to execute prepared statement',
@@ -36,14 +40,13 @@ class Statement extends BaseStatement
 
     /**
      * Returns the first insert ID for the query, from mysqli_stmt::$insert_id
-     * @return int
      */
-    public function getInsertId()
+    public function getInsertId(): int
     {
         return $this->insertId;
     }
 
-    public function getIterator()
+    public function getIterator(): \Generator
     {
         if ($this->stmt !== null) {
             // retrieve selected rows without depending on mysqlnd-only methods such as get_result
@@ -84,7 +87,7 @@ class Statement extends BaseStatement
      * Closes the prepared statement and deallocates the statement handle.
      * @throws SqlException if failure closing the statement
      */
-    public function close()
+    public function close(): void
     {
         if ($this->stmt === null) {
             throw new \Exception('Statement has already been closed');

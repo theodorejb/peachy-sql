@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace PeachySQL\QueryBuilder;
 
 /**
@@ -9,20 +11,14 @@ namespace PeachySQL\QueryBuilder;
 class Insert extends Query
 {
     /**
-     * Returns the array of columns/values, split into groups containing the largest
-     * number of rows possible.
-     *
-     * @param array $colVals
-     * @param int   $maxParams The maximum number of bound parameters allowed per query
-     * @param int   $maxRows   The maximum number of rows which can be inserted at once
-     * @return array
+     * Returns the array of columns/values, split into groups containing the largest number of rows possible.
      */
-    public static function batchRows(array $colVals, $maxParams, $maxRows)
+    public static function batchRows(array $colVals, int $maxBoundParams, int $maxRows): array
     {
         self::validateColValsStructure($colVals);
 
-        if ($maxParams > 0) {
-            $maxRowsPerQuery = floor($maxParams / count($colVals[0])); // max bound params divided by params per row
+        if ($maxBoundParams > 0) {
+            $maxRowsPerQuery = (int)floor($maxBoundParams / count($colVals[0])); // max bound params divided by params per row
         } else {
             $maxRowsPerQuery = count($colVals);
         }
@@ -35,12 +31,9 @@ class Insert extends Query
     }
 
     /**
-     * Generates an INSERT query with placeholders for values and optional OUTPUT clause
-     * @param string $table
-     * @param array $colVals An associative array of columns/values to insert
-     * @return SqlParams
+     * Generates an INSERT query with placeholders for values
      */
-    public function buildQuery($table, array $colVals)
+    public function buildQuery(string $table, array $colVals): SqlParams
     {
         self::validateColValsStructure($colVals);
 
@@ -61,7 +54,6 @@ class Insert extends Query
     }
 
     /**
-     * @param array $colVals
      * @throws \Exception if the column/values array does not have a valid structure
      */
     private static function validateColValsStructure(array $colVals)

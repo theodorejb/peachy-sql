@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace PeachySQL\QueryBuilder;
 
 /**
@@ -9,13 +11,9 @@ namespace PeachySQL\QueryBuilder;
 class Delete extends Query
 {
     /**
-     * Generates a delete query using the specified where clause
-     *
-     * @param string $table
-     * @param array $where An array of columns/values to restrict the delete to
-     * @return SqlParams
+     * Generates a delete query with where clause for the specified table.
      */
-    public function buildQuery($table, array $where)
+    public function buildQuery(string $table, array $where): SqlParams
     {
         $whereClause = $this->buildWhereClause($where);
         $sql = "DELETE FROM {$table}" . $whereClause->getSql();

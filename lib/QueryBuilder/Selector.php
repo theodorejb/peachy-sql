@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace PeachySQL\QueryBuilder;
 
 use PeachySQL\BaseOptions;
@@ -14,11 +16,7 @@ class Selector
     private $limit;
     private $offset;
 
-    /**
-     * @param string $query
-     * @param BaseOptions $options
-     */
-    public function __construct($query, BaseOptions $options)
+    public function __construct(string $query, BaseOptions $options)
     {
         $this->query = $query;
         $this->options = $options;
@@ -61,7 +59,7 @@ class Selector
      * @return $this
      * @throws \Exception if a parameter is invalid
      */
-    public function offset($offset, $limit, $maximum = 1000)
+    public function offset(int $offset, int $limit, int $maximum = 1000)
     {
         if ($maximum < 1) {
             throw new \Exception('Maximum must be greater than zero');
@@ -79,10 +77,9 @@ class Selector
     }
 
     /**
-     * @return SqlParams
      * @throws \Exception if attempting to paginate unordered rows
      */
-    public function getSqlParams()
+    public function getSqlParams(): SqlParams
     {
         $select = new Select($this->options);
         $where = $select->buildWhereClause($this->where);

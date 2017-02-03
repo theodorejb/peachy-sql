@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace PeachySQL;
 
 /**
@@ -11,11 +13,7 @@ class InsertResult
     private $id;
     private $affected;
 
-    /**
-     * @param int $id
-     * @param int $affected
-     */
-    public function __construct($id, $affected)
+    public function __construct(int $id, int $affected)
     {
         $this->id = $id;
         $this->affected = $affected;
@@ -23,9 +21,9 @@ class InsertResult
 
     /**
      * Returns the ID of the inserted row
-     * @return int
+     * @throws \Exception if the row doesn't have an auto-incremented ID
      */
-    public function getId()
+    public function getId(): int
     {
         if ($this->id === 0) {
             throw new \Exception('Inserted row does not have an auto-incremented ID');
@@ -36,9 +34,8 @@ class InsertResult
 
     /**
      * Returns the number of affected rows
-     * @return int
      */
-    public function getAffected()
+    public function getAffected(): int
     {
         return $this->affected;
     }

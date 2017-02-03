@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace PeachySQL;
 
 /**
@@ -12,14 +14,10 @@ abstract class BaseOptions
 
     /**
      * Escapes a table or column name, and validates that it isn't blank
-     * @param string $identifier
-     * @return string
      */
-    public function escapeIdentifier($identifier)
+    public function escapeIdentifier(string $identifier): string
     {
-        if (gettype($identifier) !== 'string') {
-            throw new \InvalidArgumentException('Identifier must be a string');
-        } elseif ($identifier === '') {
+        if ($identifier === '') {
             throw new \InvalidArgumentException('Identifier cannot be blank');
         }
 
@@ -32,22 +30,17 @@ abstract class BaseOptions
     /**
      * Specify the maximum number of parameters which can be bound in a single query.
      * If greater than zero, PeachySQL will batch insert queries to avoid the limit.
-     * @param int $maxParams
      */
-    public function setMaxBoundParams($maxParams)
+    public function setMaxBoundParams(int $maxParams)
     {
-        if (gettype($maxParams) !== 'integer' || $maxParams < 0) {
-            throw new \InvalidArgumentException('The maximum number of bound '
-                . 'parameters must be an integer greater than or equal to zero');
+        if ($maxParams < 0) {
+            throw new \InvalidArgumentException('The maximum number of bound parameters must be greater than or equal to zero');
         }
 
         $this->maxBoundParams = $maxParams;
     }
 
-    /**
-     * @return int
-     */
-    public function getMaxBoundParams()
+    public function getMaxBoundParams(): int
     {
         return $this->maxBoundParams;
     }
@@ -55,22 +48,17 @@ abstract class BaseOptions
     /**
      * Specify the maximum number of rows which can be inserted via a single query.
      * If greater than zero, PeachySQL will batch insert queries to remove the limit.
-     * @param int $maxRows
      */
-    public function setMaxInsertRows($maxRows)
+    public function setMaxInsertRows(int $maxRows)
     {
-        if (gettype($maxRows) !== 'integer' || $maxRows < 0) {
-            throw new \InvalidArgumentException('The maximum number of insert '
-                . 'rows must be an integer greater than or equal to zero');
+        if ($maxRows < 0) {
+            throw new \InvalidArgumentException('The maximum number of insert rows must be greater than or equal to zero');
         }
 
         $this->maxInsertRows = $maxRows;
     }
 
-    /**
-     * @return int
-     */
-    public function getMaxInsertRows()
+    public function getMaxInsertRows(): int
     {
         return $this->maxInsertRows;
     }

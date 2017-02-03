@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace PeachySQL;
 
 use PeachySQL\QueryBuilder\Insert;
@@ -19,7 +21,7 @@ class SqlServer extends PeachySql
      */
     private $connection;
 
-    public function __construct($connection, Options $options = null)
+    public function __construct($connection, ?Options $options = null)
     {
         if (!is_resource($connection) || get_resource_type($connection) !== 'SQL Server Connection') {
             throw new \InvalidArgumentException('Connection must be a SQL Server Connection resource');
@@ -67,7 +69,7 @@ class SqlServer extends PeachySql
         }
     }
 
-    public function makeBinaryParam($binaryStr, $length = null)
+    public function makeBinaryParam(?string $binaryStr, ?int $length = null)
     {
         if ($length === null) {
             $length = ($binaryStr === null) ? 1 : strlen($binaryStr);
@@ -83,12 +85,9 @@ class SqlServer extends PeachySql
 
     /**
      * Returns a prepared statement which can be executed multiple times
-     * @param string $sql
-     * @param array  $params Values to bind to placeholders in the query string
-     * @return Statement
      * @throws SqlException if an error occurs
      */
-    public function prepare($sql, array $params = [])
+    public function prepare(string $sql, array $params = []): Statement
     {
         if (!$stmt = sqlsrv_prepare($this->connection, $sql, $params)) {
             throw new SqlException('Query failed', sqlsrv_errors(), $sql, $params);
@@ -98,13 +97,10 @@ class SqlServer extends PeachySql
     }
 
     /**
-     * Prepares and executes a single SQL Server query
-     * @param string $sql
-     * @param array  $params Values to bind to placeholders in the query string
-     * @return Statement
+     * Prepares and executes a single SQL Server query with bound parameters
      * @throws SqlException if an error occurs
      */
-    public function query($sql, array $params = [])
+    public function query(string $sql, array $params = []): Statement
     {
         if (!$stmt = sqlsrv_query($this->connection, $sql, $params)) {
             throw new SqlException('Query failed', sqlsrv_errors(), $sql, $params);
@@ -117,12 +113,8 @@ class SqlServer extends PeachySql
 
     /**
      * Performs a single bulk insert query
-     * @param string $table
-     * @param array $colVals
-     * @param int $identityIncrement
-     * @return BulkInsertResult
      */
-    protected function insertBatch($table, array $colVals, $identityIncrement = 1)
+    protected function insertBatch(string $table, array $colVals, int $identityIncrement = 1): BulkInsertResult
     {
         $sqlParams = (new Insert($this->options))->buildQuery($table, $colVals);
         $result = $this->query($sqlParams->getSql(), $sqlParams->getParams());

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace PeachySQL\QueryBuilder;
 
 /**
@@ -10,22 +12,18 @@ class SqlParams
     private $sql;
     private $params;
 
-    /**
-     * @param string $sql
-     * @param array $params
-     */
-    public function __construct($sql, array $params)
+    public function __construct(string $sql, array $params)
     {
         $this->sql = $sql;
         $this->params = $params;
     }
 
-    public function getSql()
+    public function getSql(): string
     {
         return $this->sql;
     }
 
-    public function getParams()
+    public function getParams(): array
     {
         return $this->params;
     }

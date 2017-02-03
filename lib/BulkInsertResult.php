@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace PeachySQL;
 
 /**
@@ -12,12 +14,7 @@ class BulkInsertResult
     private $affected;
     private $queryCount;
 
-    /**
-     * @param int[] $ids
-     * @param int   $affected
-     * @param int   $queryCount
-     */
-    public function __construct(array $ids, $affected, $queryCount = 1)
+    public function __construct(array $ids, int $affected, int $queryCount = 1)
     {
         $this->ids = $ids;
         $this->affected = $affected;
@@ -28,25 +25,23 @@ class BulkInsertResult
      * Returns the IDs of the inserted rows
      * @return int[]
      */
-    public function getIds()
+    public function getIds(): array
     {
         return $this->ids;
     }
 
     /**
      * Returns the number of affected rows
-     * @return int
      */
-    public function getAffected()
+    public function getAffected(): int
     {
         return $this->affected;
     }
 
     /**
      * Returns the number of individual queries used to perform the bulk insert
-     * @return int
      */
-    public function getQueryCount()
+    public function getQueryCount(): int
     {
         return $this->queryCount;
     }

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace PeachySQL\SqlServer;
 
 use PeachySQL\BaseStatement;
@@ -7,15 +9,16 @@ use PeachySQL\SqlException;
 
 class Statement extends BaseStatement
 {
+    /** @var resource */
     private $stmt;
 
-    public function __construct($stmt, $usedPrepare, $query, array $params)
+    public function __construct($stmt, bool $usedPrepare, string $query, array $params)
     {
         parent::__construct($usedPrepare, $query, $params);
         $this->stmt = $stmt;
     }
 
-    public function execute()
+    public function execute(): void
     {
         if ($this->usedPrepare) {
             if (!sqlsrv_execute($this->stmt)) {
@@ -55,7 +58,7 @@ class Statement extends BaseStatement
         }
     }
 
-    public function getIterator()
+    public function getIterator(): \Generator
     {
         // only fetch rows if the statement is open
         if (is_resource($this->stmt)) {
@@ -73,7 +76,7 @@ class Statement extends BaseStatement
      * Frees all resources associated with the result statement.
      * @throws SqlException if failure closing the statement
      */
-    public function close()
+    public function close(): void
     {
         if (!sqlsrv_free_stmt($this->stmt)) {
             throw new SqlException('Failed to close statement', sqlsrv_errors(), $this->query, $this->params);

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace PeachySQL;
 
 use PHPUnit\Framework\TestCase;
@@ -10,7 +12,7 @@ use PHPUnit\Framework\TestCase;
  */
 class SqlExceptionTest extends TestCase
 {
-    public function exceptionProvider()
+    public function exceptionProvider(): array
     {
         $errCode = 1193;
         $sqlState = 'HY000';
@@ -42,7 +44,7 @@ class SqlExceptionTest extends TestCase
     /**
      * @dataProvider exceptionProvider
      */
-    public function testDataAccess(SqlException $e, $expectedMsg, $sqlState, $errCode)
+    public function testDataAccess(SqlException $e, string $expectedMsg, string $sqlState, int $errCode)
     {
         $this->assertSame($expectedMsg, $e->getMessage());
         $this->assertSame($sqlState, $e->getSqlState());

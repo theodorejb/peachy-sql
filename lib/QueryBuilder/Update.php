@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace PeachySQL\QueryBuilder;
 
 /**
@@ -10,14 +12,9 @@ class Update extends Query
 {
     /**
      * Generates an update query using the specified set/where arrays
-     *
-     * @param string $table
-     * @param array    $set       An array of columns/values to update
-     * @param array    $where     An array of columns/values to restrict the update to
-     * @return SqlParams
      * @throws \Exception if the $set or $where arrays are empty
      */
-    public function buildQuery($table, array $set, array $where)
+    public function buildQuery(string $table, array $set, array $where): SqlParams
     {
         if (empty($set) || empty($where)) {
             throw new \Exception('Set and where arrays cannot be empty');

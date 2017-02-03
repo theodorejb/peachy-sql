@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace PeachySQL;
 
 /**
@@ -18,7 +20,7 @@ class SqlException extends \RuntimeException
      * @param string $query The failed query
      * @param array $params Any parameters bound to the failed query
      */
-    public function __construct($msg, array $errors, $query = null, array $params = null)
+    public function __construct(string $msg, array $errors, string $query = '', array $params = [])
     {
         if (isset($errors[0]['error'])) {
             $msg .= ': ' . $errors[0]['error']; // MySQL
@@ -42,42 +44,39 @@ class SqlException extends \RuntimeException
     }
 
     /**
-     * @return string The SQLSTATE error for the exception
+     * Returns the SQLSTATE error for the exception
      */
-    public function getSqlState()
+    public function getSqlState(): string
     {
         if (isset($this->errors[0]['sqlstate'])) {
             return $this->errors[0]['sqlstate']; // MySQL
         } elseif (isset($this->errors[0]['SQLSTATE'])) {
             return $this->errors[0]['SQLSTATE']; // SQL Server
         } else {
-            return null;
+            return '';
         }
     }
 
     /**
      * Returns the list of errors from sqlsrv_errors() or mysqli::$error_list
-     * @return array
      */
-    public function getErrors()
+    public function getErrors(): array
     {
         return $this->errors;
     }
 
     /**
      * Returns the failed SQL query
-     * @return string
      */
-    public function getQuery()
+    public function getQuery(): string
     {
         return $this->query;
     }
 
     /**
      * Returns the array of bound parameters
-     * @return array
      */
-    public function getParams()
+    public function getParams(): array
     {
         return $this->params;
     }

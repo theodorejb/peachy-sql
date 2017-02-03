@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace PeachySQL\QueryBuilder;
 
 /**
@@ -9,11 +11,9 @@ namespace PeachySQL\QueryBuilder;
 class Select extends Query
 {
     /**
-     * @param array $orderBy
-     * @return string
      * @throws \Exception if there is an invalid sort direction
      */
-    public function buildOrderByClause(array $orderBy)
+    public function buildOrderByClause(array $orderBy): string
     {
         if (empty($orderBy)) {
             return '';
@@ -44,12 +44,7 @@ class Select extends Query
         return substr_replace($sql, '', -2); // remove trailing comma and space
     }
 
-    /**
-     * @param int $limit
-     * @param int $offset
-     * @return string
-     */
-    public function buildPagination($limit, $offset)
+    public function buildPagination(int $limit, int $offset): string
     {
         if ($this->options instanceof \PeachySQL\SqlServer\Options) {
             return "OFFSET {$offset} ROWS FETCH NEXT {$limit} ROWS ONLY";

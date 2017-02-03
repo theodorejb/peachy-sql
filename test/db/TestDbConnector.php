@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace PeachySQL;
 
 use Exception;
@@ -28,12 +30,12 @@ class TestDbConnector
         self::$config = $config;
     }
 
-    public static function getConfig()
+    public static function getConfig(): array
     {
         return self::$config;
     }
 
-    public static function getMysqlConn()
+    public static function getMysqlConn(): mysqli
     {
         if (!self::$mysqlConn) {
             $mysql = self::$config['db']['mysql'];

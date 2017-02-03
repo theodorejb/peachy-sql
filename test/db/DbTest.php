@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace PeachySQL;
 
 use PHPUnit\Framework\TestCase;
@@ -21,7 +23,7 @@ class DbTest extends TestCase
     /**
      * Returns an array of PeachySQL implementation instances.
      */
-    public function dbTypeProvider()
+    public function dbTypeProvider(): array
     {
         $config = TestDbConnector::getConfig();
         $implementations = [];

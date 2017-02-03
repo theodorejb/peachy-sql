@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace PeachySQL\QueryBuilder;
 
 use PHPUnit\Framework\TestCase;
@@ -50,7 +52,7 @@ class InsertTest extends TestCase
     /**
      * @dataProvider batchRowsTestCases
      */
-    public function testBatchRows(array $colVals, $maxParams, $maxRows, $expected)
+    public function testBatchRows(array $colVals, int $maxParams, int $maxRows, array $expected)
     {
         $result = Insert::batchRows($colVals, $maxParams, $maxRows);
         $this->assertSame($expected, $result);

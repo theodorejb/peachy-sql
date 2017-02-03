@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace PeachySQL;
 
 use PeachySQL\QueryBuilder\Delete;
@@ -29,37 +31,23 @@ abstract class PeachySql
 
     /**
      * Takes a binary string and returns a value that can be bound to an insert/update statement
-     * @param string | null $binaryStr
-     * @param int | null $length
      * @return mixed
      */
-    abstract public function makeBinaryParam($binaryStr, $length = null);
+    abstract public function makeBinaryParam(?string $binaryStr, ?int $length = null);
 
     /**
      * Prepares a SQL query for later execution
-     *
-     * @param string $sql
-     * @param array $params
      * @return BaseStatement
      */
-    abstract public function prepare($sql, array $params = []);
+    abstract public function prepare(string $sql, array $params = []);
 
     /**
      * Executes a single SQL query
-     *
-     * @param string $sql
-     * @param array  $params
      * @return BaseStatement
      */
-    abstract public function query($sql, array $params = []);
+    abstract public function query(string $sql, array $params = []);
 
-    /**
-     * @param string $table
-     * @param array $colVals E.g. [["Username => "user1", "Password" => "pass1"], ...]
-     * @param int $identityIncrement
-     * @return BulkInsertResult
-     */
-    abstract protected function insertBatch($table, array $colVals, $identityIncrement = 1);
+    abstract protected function insertBatch(string $table, array $colVals, int $identityIncrement = 1): BulkInsertResult;
 
     /**
      * Returns the current PeachySQL options
@@ -70,22 +58,15 @@ abstract class PeachySql
         return $this->options;
     }
 
-    /**
-     * @param string $query
-     * @return QueryableSelector
-     */
-    public function selectFrom($query)
+    public function selectFrom(string $query): QueryableSelector
     {
         return new QueryableSelector($query, $this);
     }
 
     /**
      * Inserts one row
-     * @param string $table
-     * @param array $colVals
-     * @return InsertResult
      */
-    public function insertRow($table, array $colVals)
+    public function insertRow(string $table, array $colVals): InsertResult
     {
         $result = $this->insertBatch($table, [$colVals]);
         $ids = $result->getIds();
@@ -95,12 +76,8 @@ abstract class PeachySql
 
     /**
      * Insert multiple rows
-     * @param string $table
-     * @param array $colVals
-     * @param int $identityIncrement
-     * @return BulkInsertResult
      */
-    public function insertRows($table, array $colVals, $identityIncrement = 1)
+    public function insertRows(string $table, array $colVals, int $identityIncrement = 1): BulkInsertResult
     {
         // check whether the query needs to be split into multiple batches
         $batches = Insert::batchRows($colVals, $this->options->getMaxBoundParams(), $this->options->getMaxInsertRows());
@@ -118,12 +95,9 @@ abstract class PeachySql
 
     /**
      * Updates the specified columns and values in rows matching the where clause
-     * @param string $table
-     * @param array $set
-     * @param array $where
-     * @return int the number of affected rows
+     * Returns the number of affected rows
      */
-    public function updateRows($table, array $set, array $where)
+    public function updateRows(string $table, array $set, array $where): int
     {
         $update = new Update($this->options);
         $sqlParams = $update->buildQuery($table, $set, $where);
@@ -132,11 +106,9 @@ abstract class PeachySql
 
     /**
      * Deletes rows from the table matching the where clause
-     * @param string $table
-     * @param array $where
-     * @return int the number of affected rows
+     * Returns the number of affected rows
      */
-    public function deleteFrom($table, array $where)
+    public function deleteFrom(string $table, array $where): int
     {
         $delete = new Delete($this->options);
         $sqlParams = $delete->buildQuery($table, $where);

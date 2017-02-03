@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace PeachySQL\QueryBuilder;
 
 use PeachySQL\BaseOptions;
@@ -33,17 +35,15 @@ class Query
      * @param string[] $columns
      * @return string[]
      */
-    protected function escapeColumns(array $columns)
+    protected function escapeColumns(array $columns): array
     {
         return array_map([$this->options, 'escapeIdentifier'], $columns);
     }
 
     /**
-     * @param array $columnVals
-     * @return SqlParams
      * @throws \Exception if a column filter is empty
      */
-    public function buildWhereClause(array $columnVals)
+    public function buildWhereClause(array $columnVals): SqlParams
     {
         if (empty($columnVals)) {
             return new SqlParams('', []);

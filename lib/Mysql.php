@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace PeachySQL;
 
 use mysqli;
@@ -21,7 +23,7 @@ class Mysql extends PeachySql
     private $connection;
     private $usedPrepare;
 
-    public function __construct(mysqli $connection, Options $options = null)
+    public function __construct(mysqli $connection, ?Options $options = null)
     {
         $this->connection = $connection;
         $this->usedPrepare = true;
@@ -66,7 +68,7 @@ class Mysql extends PeachySql
         }
     }
 
-    public function makeBinaryParam($binaryStr, $length = null)
+    public function makeBinaryParam(?string $binaryStr, ?int $length = null)
     {
         // binary values can be inserted directly when using MySQL
         return $binaryStr;
@@ -74,12 +76,9 @@ class Mysql extends PeachySql
 
     /**
      * Returns a prepared statement which can be executed multiple times
-     * @param string $sql
-     * @param array $params
-     * @return Statement
      * @throws SqlException if an error occurs
      */
-    public function prepare($sql, array $params = [])
+    public function prepare(string $sql, array $params = []): Statement
     {
         if (!$stmt = $this->connection->prepare($sql)) {
             $error = [
@@ -109,12 +108,9 @@ class Mysql extends PeachySql
     }
 
     /**
-     * Prepares and executes a single MySQL query
-     * @param string $sql
-     * @param array  $params Values to bind to placeholders in the query string
-     * @return Statement
+     * Prepares and executes a single MySQL query with bound parameters
      */
-    public function query($sql, array $params = [])
+    public function query(string $sql, array $params = []): Statement
     {
         $this->usedPrepare = false;
         $stmt = $this->prepare($sql, $params);
@@ -125,12 +121,8 @@ class Mysql extends PeachySql
 
     /**
      * Performs a single bulk insert query
-     * @param string $table
-     * @param array $colVals
-     * @param int $identityIncrement
-     * @return BulkInsertResult
      */
-    protected function insertBatch($table, array $colVals, $identityIncrement = 1)
+    protected function insertBatch(string $table, array $colVals, int $identityIncrement = 1): BulkInsertResult
     {
         $sqlParams = (new Insert($this->options))->buildQuery($table, $colVals);
         $result = $this->query($sqlParams->getSql(), $sqlParams->getParams());
@@ -149,11 +141,9 @@ class Mysql extends PeachySql
     /**
      * To bind parameters in mysqli, the type of each parameter must be specified.
      * See http://php.net/manual/en/mysqli-stmt.bind-param.php.
-     * 
-     * @param array $params
-     * @return string A string containing the type character for each parameter
+     * Returns a string containing the type character for each parameter.
      */
-    private static function getMysqlParamTypes(array $params)
+    private static function getMysqlParamTypes(array $params): string
     {
         $types = '';
 
