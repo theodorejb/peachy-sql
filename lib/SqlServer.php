@@ -67,6 +67,20 @@ class SqlServer extends PeachySql
         }
     }
 
+    public function makeBinaryParam($binaryStr, $length = null)
+    {
+        if ($length === null) {
+            $length = strlen($binaryStr);
+        }
+
+        return [
+            $binaryStr,
+            SQLSRV_PARAM_IN,
+            SQLSRV_PHPTYPE_STRING(SQLSRV_ENC_BINARY),
+            SQLSRV_SQLTYPE_BINARY((string)$length),
+        ];
+    }
+
     /**
      * Returns a prepared statement which can be executed multiple times
      * @param string $sql

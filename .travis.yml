@@ -24,6 +24,9 @@ install:
 before_script:
   - mysql -u root -e 'create database PeachySQL;'
 
+script:
+  - vendor/bin/phpunit
+
 matrix:
   allow_failures:
     - php: hhvm-nightly

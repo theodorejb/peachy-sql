@@ -86,12 +86,8 @@ class DbTest extends \PHPUnit_Framework_TestCase
             'dob' => '1938-04-01',
             'weight' => 133.8,
             'isDisabled' => true,
-            'uuid' => Uuid::uuid4()->getBytes()
+            'uuid' => $peachySql->makeBinaryParam(Uuid::uuid4()->getBytes(), 16),
         ];
-
-        if ($peachySql instanceof SqlServer) {
-            $colVals['uuid'] = self::getSqlServerBinaryParam($colVals['uuid']);
-        }
 
         $id = $peachySql->insertOne($colVals)->getId();
         $this->assertInternalType('int', $id);
@@ -155,7 +151,7 @@ class DbTest extends \PHPUnit_Framework_TestCase
             $insertColVals = [];
 
             foreach ($colVals as $row) {
-                $row['uuid'] = self::getSqlServerBinaryParam($row['uuid']);
+                $row['uuid'] = $peachySql->makeBinaryParam($row['uuid']);
                 $insertColVals[] = $row;
             }
         } else {
@@ -225,7 +221,7 @@ class DbTest extends \PHPUnit_Framework_TestCase
             $insertColVals = [];
 
             foreach ($colVals as $row) {
-                $row['uuid'] = self::getSqlServerBinaryParam($row['uuid']);
+                $row['uuid'] = $peachySql->makeBinaryParam($row['uuid']);
                 $insertColVals[] = $row;
             }
         } else {
@@ -253,15 +249,5 @@ class DbTest extends \PHPUnit_Framework_TestCase
         // delete the inserted rows
         $numDeleted = $peachySql->delete(['user_id' => $ids]);
         $this->assertSame($rowCount, $numDeleted);
-    }
-
-    private static function getSqlServerBinaryParam($binaryStr, $length = 16)
-    {
-        return [
-            $binaryStr,
-            SQLSRV_PARAM_IN,
-            SQLSRV_PHPTYPE_STRING(SQLSRV_ENC_BINARY),
-            SQLSRV_SQLTYPE_BINARY($length)
-        ];
     }
 }

@@ -28,6 +28,14 @@ abstract class PeachySql
     abstract public function rollback();
 
     /**
+     * Takes a binary string and returns a value that can be bound to an insert/update statement
+     * @param string $binaryStr
+     * @param int | null $length
+     * @return mixed
+     */
+    abstract public function makeBinaryParam($binaryStr, $length = null);
+
+    /**
      * Prepares a SQL query for later execution
      *
      * @param string $sql

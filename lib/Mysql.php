@@ -66,6 +66,12 @@ class Mysql extends PeachySql
         }
     }
 
+    public function makeBinaryParam($binaryStr, $length = null)
+    {
+        // binary values can be inserted directly when using MySQL
+        return $binaryStr;
+    }
+
     /**
      * Returns a prepared statement which can be executed multiple times
      * @param string $sql
