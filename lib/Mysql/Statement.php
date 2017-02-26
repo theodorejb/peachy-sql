@@ -60,7 +60,7 @@ class Statement extends BaseStatement
 
             $this->meta->free();
 
-            if (!call_user_func_array([$this->stmt, 'bind_result'], $fields)) {
+            if (!$this->stmt->bind_result(...$fields)) {
                 throw new SqlException('Failed to bind results', $this->stmt->error_list, $this->query, $this->params);
             }
 

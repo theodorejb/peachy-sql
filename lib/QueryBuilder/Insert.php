@@ -42,7 +42,7 @@ class Insert extends Query
 
         $valSetStr = ' (' . str_repeat('?,', count($columns) - 1) . '?),';
         $valStr = ' VALUES' . substr_replace(str_repeat($valSetStr, count($colVals)), '', -1); // remove trailing comma
-        $params = call_user_func_array('array_merge', array_map('array_values', $colVals));
+        $params = array_merge(...array_map('array_values', $colVals));
 
         if ($this->options instanceof \PeachySQL\SqlServer\Options) {
             $selStr = '; SELECT SCOPE_IDENTITY() AS RowID;';

@@ -91,15 +91,7 @@ class Mysql extends PeachySql
         }
 
         if (!empty($params)) {
-            $typesValues = [self::getMysqlParamTypes($params)];
-
-            // so that call_user_func_array will pass by reference
-            // argument unpacking can't be used due to https://github.com/facebook/hhvm/issues/6229
-            foreach ($params as &$param) {
-                $typesValues[] = &$param;
-            }
-
-            if (!call_user_func_array([$stmt, 'bind_param'], $typesValues)) {
+            if (!$stmt->bind_param(self::getMysqlParamTypes($params), ...$params)) {
                 throw new SqlException('Failed to bind params', $stmt->error_list, $sql, $params);
             }
         }
