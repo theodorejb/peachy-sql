@@ -46,32 +46,21 @@ class DbTest extends \PHPUnit_Framework_TestCase
      */
     public function testNoIdentityInsert(PeachySql $peachySql)
     {
-        $sql = "CREATE TABLE Test ( name VARCHAR(50) NOT NULL )";
-        $peachySql->query($sql);
+        $peachySql->query("CREATE TABLE Test ( name VARCHAR(50) NOT NULL )");
 
-        $options = $peachySql->getOptions();
-        $oldTable = $options->getTable();
-        $options->setTable('Test');
-
-        if ($peachySql instanceof SqlServer) {
-            $oldIdColumn = $options->getIdColumn();
-            $options->setIdColumn('');
-        }
+        // affected count should be zero if no rows are updated
+        $this->assertSame(0, $peachySql->updateRows('Test', ['name' => 'test'], ['name' => 'non existent']));
 
         $colVals = [
             ['name' => 'name1'],
             ['name' => 'name2'],
         ];
 
-        $result = $peachySql->insertBulk($colVals);
+        $result = $peachySql->insertRows('Test', $colVals);
+        $this->assertSame(2, $result->getAffected());
         $this->assertEmpty($result->getIds());
-        $this->assertSame($colVals, $peachySql->select());
+        $this->assertSame($colVals, $peachySql->selectFrom("SELECT * FROM Test")->query()->getAll());
         $peachySql->query("DROP TABLE Test");
-        $options->setTable($oldTable);
-
-        if (isset($oldIdColumn)) {
-            $options->setIdColumn($oldIdColumn);
-        }
     }
 
     /**
@@ -93,8 +82,10 @@ class DbTest extends \PHPUnit_Framework_TestCase
         $this->assertInternalType('int', $id);
 
         $sql = 'SELECT user_id, isDisabled FROM Users WHERE user_id = ?';
-        $row = $peachySql->query($sql, [$id])->getFirst();
-        $this->assertSame(['user_id' => $id, 'isDisabled' => 1], $row); // the row should be selectable
+        $result = $peachySql->query($sql, [$id]);
+
+        $this->assertSame(-1, $result->getAffected());
+        $this->assertSame(['user_id' => $id, 'isDisabled' => 1], $result->getFirst()); // the row should be selectable
 
         $peachySql->rollback(); // cancel the transaction
         $sameRow = $peachySql->query($sql, [$id])->getFirst();

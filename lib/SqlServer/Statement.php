@@ -24,8 +24,7 @@ class Statement extends BaseStatement
         }
 
         $next = null;
-        $selectedRows = false;
-        $this->affected = 0;
+        $this->affected = -1;
 
         // get affected row count from each result (triggers could cause multiple inserts)
         do {
@@ -33,19 +32,25 @@ class Statement extends BaseStatement
 
             if ($affectedRows === false) {
                 throw new SqlException('Failed to get affected row count', sqlsrv_errors(), $this->query, $this->params);
-            } elseif ($affectedRows === -1) {
-                $selectedRows = true; // reached SELECT result
-                break; // so that getIterator will be able to select the rows
-            } else {
-                $this->affected += $affectedRows;
             }
+
+            if ($affectedRows === -1) {
+                // reached SELECT result
+                break; // so that getIterator will be able to select the rows
+            }
+
+            if ($this->affected === -1) {
+                $this->affected = 0;
+            }
+
+            $this->affected += $affectedRows;
         } while ($next = sqlsrv_next_result($this->stmt));
 
         if ($next === false) {
             throw new SqlException('Failed to get next result', sqlsrv_errors(), $this->query, $this->params);
         }
 
-        if ($selectedRows === false && !$this->usedPrepare) {
+        if ($affectedRows !== -1 && !$this->usedPrepare) {
             $this->close(); // no results, so statement can be closed
         }
     }
