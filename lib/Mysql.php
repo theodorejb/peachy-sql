@@ -155,10 +155,20 @@ class Mysql extends PeachySql
      */
     private static function getMysqlParamTypes(array $params)
     {
-        // just treat all the parameters as strings since mysql "automatically 
-        // converts strings to the column's actual datatype when processing 
-        // queries" (see http://stackoverflow.com/a/14370546/1170489).
+        $types = '';
 
-        return str_repeat('s', count($params));
+        foreach ($params as $param) {
+            if (is_int($param) || is_bool($param)) {
+                // if boolean values are treated as strings, `false` will be cast to a blank string
+                // which can cause an "Incorrect integer value: ''" error in recent MySQL versions.
+                $types .= 'i';
+            } elseif (is_float($param)) {
+                $types .= 'd';
+            } else {
+                $types .= 's';
+            }
+        }
+
+        return $types;
     }
 }
