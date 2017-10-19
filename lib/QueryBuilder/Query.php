@@ -67,15 +67,7 @@ class Query
                 }
 
                 if ($val === null) {
-                    if ($shorthand === 'eq') {
-                        trigger_error('Use the "nu" operator to filter by null values', E_USER_DEPRECATED);
-                        $conditions[] =  "{$column} IS NULL";
-                    } elseif ($shorthand === 'ne') {
-                        trigger_error('Use the "nn" operator to filter out null values', E_USER_DEPRECATED);
-                        $conditions[] =  "{$column} IS NOT NULL";
-                    } else {
-                        throw new \Exception("{$shorthand} operator cannot be used with a null value");
-                    }
+                    throw new \Exception('Filter values cannot be null');
                 } elseif ($shorthand === 'nu' || $shorthand === 'nn') {
                     if ($val !== '') {
                         throw new \Exception("{$shorthand} operator can only be used with a blank value");

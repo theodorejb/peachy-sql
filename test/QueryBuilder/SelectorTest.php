@@ -68,11 +68,10 @@ class SelectorTest extends TestCase
         }
 
         try {
-            $where = [ 'testcol' => ['lk' => null] ];
-            $query->buildWhereClause($where);
-            $this->fail('Failed to throw exception when using null with an incompatible comparison operator');
+            $query->buildWhereClause(['testcol' => null]);
+            $this->fail('Failed to throw exception when using null value in where clause');
         } catch (\Exception $e) {
-            $this->assertSame('lk operator cannot be used with a null value', $e->getMessage());
+            $this->assertSame('Filter values cannot be null', $e->getMessage());
         }
 
         try {
