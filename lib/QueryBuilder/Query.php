@@ -20,6 +20,8 @@ class Query
         'ge' => '>=',
         'lk' => 'LIKE',
         'nl' => 'NOT LIKE',
+        'nu' => 'IS NULL',
+        'nn' => 'IS NOT NULL',
     ];
 
     public function __construct(BaseOptions $options)
@@ -66,12 +68,20 @@ class Query
 
                 if ($val === null) {
                     if ($shorthand === 'eq') {
+                        trigger_error('Use the "nu" operator to filter by null values', E_USER_DEPRECATED);
                         $conditions[] =  "{$column} IS NULL";
                     } elseif ($shorthand === 'ne') {
+                        trigger_error('Use the "nn" operator to filter out null values', E_USER_DEPRECATED);
                         $conditions[] =  "{$column} IS NOT NULL";
                     } else {
                         throw new \Exception("{$shorthand} operator cannot be used with a null value");
                     }
+                } elseif ($shorthand === 'nu' || $shorthand === 'nn') {
+                    if ($val !== '') {
+                        throw new \Exception("{$shorthand} operator can only be used with a blank value");
+                    }
+
+                    $conditions[] = $column . ' ' . self::$operatorMap[$shorthand];
                 } elseif (!is_array($val)) {
                     $comparison = self::$operatorMap[$shorthand];
                     $conditions[] = "{$column} {$comparison} ?";

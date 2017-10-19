@@ -121,6 +121,8 @@ gt       | >
 ge       | >=
 lk       | LIKE
 nl       | NOT LIKE
+nu       | IS NULL
+nn       | IS NOT NULL
 
 #### insertRow
 
