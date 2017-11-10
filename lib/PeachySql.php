@@ -29,7 +29,7 @@ abstract class PeachySql
 
     /**
      * Takes a binary string and returns a value that can be bound to an insert/update statement
-     * @param string $binaryStr
+     * @param string | null $binaryStr
      * @param int | null $length
      * @return mixed
      */

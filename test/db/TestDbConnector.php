@@ -72,7 +72,7 @@ class TestDbConnector
                     dob DATE NOT NULL,
                     weight FLOAT NOT NULL,
                     isDisabled BIT NOT NULL,
-                    uuid BINARY(16) NOT NULL
+                    uuid BINARY(16) NULL
                 );';
 
         if (!sqlsrv_query($conn, $sql)) {
@@ -88,7 +88,7 @@ class TestDbConnector
                     dob DATE NOT NULL,
                     weight FLOAT NOT NULL,
                     isDisabled BOOLEAN NOT NULL,
-                    uuid BINARY(16) NOT NULL
+                    uuid BINARY(16) NULL
                 );';
 
         if (!$conn->query($sql)) {

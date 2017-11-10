@@ -135,18 +135,14 @@ class DbTest extends \PHPUnit_Framework_TestCase
     {
         $colVals = [
             ['name' => 'Martin S. McFly', 'dob' => '1968-06-20', 'weight' => 140.7, 'isDisabled' => true, 'uuid' => Uuid::uuid4()->getBytes()],
-            ['name' => 'Emmett L. Brown', 'dob' => '1920-01-01', 'weight' => 155.4, 'isDisabled' => false, 'uuid' => Uuid::uuid4()->getBytes()],
+            ['name' => 'Emmett L. Brown', 'dob' => '1920-01-01', 'weight' => 155.4, 'isDisabled' => false, 'uuid' => null],
         ];
 
-        if ($peachySql instanceof SqlServer) {
-            $insertColVals = [];
+        $insertColVals = [];
 
-            foreach ($colVals as $row) {
-                $row['uuid'] = $peachySql->makeBinaryParam($row['uuid']);
-                $insertColVals[] = $row;
-            }
-        } else {
-            $insertColVals = $colVals;
+        foreach ($colVals as $row) {
+            $row['uuid'] = $peachySql->makeBinaryParam($row['uuid']);
+            $insertColVals[] = $row;
         }
 
         $ids = $peachySql->insertRows(self::TABLE_NAME, $insertColVals)->getIds();
@@ -207,17 +203,12 @@ class DbTest extends \PHPUnit_Framework_TestCase
             ];
         }
 
-        if ($peachySql instanceof SqlServer) {
-            $expectedQueries = 2;
-            $insertColVals = [];
+        $insertColVals = [];
+        $expectedQueries = ($peachySql instanceof SqlServer) ? 2 : 1;
 
-            foreach ($colVals as $row) {
-                $row['uuid'] = $peachySql->makeBinaryParam($row['uuid']);
-                $insertColVals[] = $row;
-            }
-        } else {
-            $expectedQueries = 1;
-            $insertColVals = $colVals;
+        foreach ($colVals as $row) {
+            $row['uuid'] = $peachySql->makeBinaryParam($row['uuid']);
+            $insertColVals[] = $row;
         }
 
         $result = $peachySql->insertBulk($insertColVals);

@@ -70,7 +70,7 @@ class SqlServer extends PeachySql
     public function makeBinaryParam($binaryStr, $length = null)
     {
         if ($length === null) {
-            $length = strlen($binaryStr);
+            $length = ($binaryStr === null) ? 1 : strlen($binaryStr);
         }
 
         return [
