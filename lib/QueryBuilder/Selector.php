@@ -55,18 +55,13 @@ class Selector
     /**
      * @param int $offset
      * @param int $limit
-     * @param int $maximum
      * @return $this
      * @throws \Exception if a parameter is invalid
      */
-    public function offset(int $offset, int $limit, int $maximum = 1000)
+    public function offset(int $offset, int $limit)
     {
-        if ($maximum < 1) {
-            throw new \Exception('Maximum must be greater than zero');
-        } elseif ($limit < 1) {
+        if ($limit < 1) {
             throw new \Exception('Limit must be greater than zero');
-        } elseif ($limit > $maximum) {
-            throw new \Exception("Limit cannot exceed {$maximum}");
         } elseif ($offset < 0) {
             throw new \Exception('Offset cannot be negative');
         }
