@@ -11,8 +11,6 @@ use PeachySQL\QueryBuilder\Insert;
 
 /**
  * Implements the standard PeachySQL features for MySQL (using mysqli)
- * 
- * @author Theodore Brown <https://github.com/theodorejb>
  */
 class Mysql extends PeachySql
 {
@@ -39,7 +37,7 @@ class Mysql extends PeachySql
      * Begins a mysqli transaction
      * @throws SqlException if an error occurs
      */
-    public function begin()
+    public function begin(): void
     {
         if (!$this->connection->begin_transaction()) {
             throw new SqlException('Failed to begin transaction', $this->connection->error_list);
@@ -50,7 +48,7 @@ class Mysql extends PeachySql
      * Commits a transaction begun with begin()
      * @throws SqlException if an error occurs
      */
-    public function commit()
+    public function commit(): void
     {
         if (!$this->connection->commit()) {
             throw new SqlException('Failed to commit transaction', $this->connection->error_list);
@@ -61,7 +59,7 @@ class Mysql extends PeachySql
      * Rolls back a transaction begun with begin()
      * @throws SqlException if an error occurs
      */
-    public function rollback()
+    public function rollback(): void
     {
         if (!$this->connection->rollback()) {
             throw new SqlException('Failed to roll back transaction', $this->connection->error_list);

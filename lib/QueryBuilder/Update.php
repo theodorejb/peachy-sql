@@ -6,7 +6,6 @@ namespace PeachySQL\QueryBuilder;
 
 /**
  * Class used for update query generation
- * @author Theodore Brown <https://github.com/theodorejb>
  */
 class Update extends Query
 {

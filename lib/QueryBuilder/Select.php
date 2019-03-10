@@ -6,7 +6,6 @@ namespace PeachySQL\QueryBuilder;
 
 /**
  * Class used for select query generation
- * @author Theodore Brown <https://github.com/theodorejb>
  */
 class Select extends Query
 {

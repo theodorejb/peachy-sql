@@ -10,8 +10,6 @@ use PeachySQL\SqlServer\Statement;
 
 /**
  * Implements the standard PeachySQL features for SQL Server (using SQLSRV extension)
- * 
- * @author Theodore Brown <https://github.com/theodorejb>
  */
 class SqlServer extends PeachySql
 {
@@ -40,7 +38,7 @@ class SqlServer extends PeachySql
      * Begins a SQLSRV transaction
      * @throws SqlException if an error occurs
      */
-    public function begin()
+    public function begin(): void
     {
         if (!sqlsrv_begin_transaction($this->connection)) {
             throw new SqlException('Failed to begin transaction', sqlsrv_errors());
@@ -51,7 +49,7 @@ class SqlServer extends PeachySql
      * Commits a transaction begun with begin()
      * @throws SqlException if an error occurs
      */
-    public function commit()
+    public function commit(): void
     {
         if (!sqlsrv_commit($this->connection)) {
             throw new SqlException('Failed to commit transaction', sqlsrv_errors());
@@ -62,7 +60,7 @@ class SqlServer extends PeachySql
      * Rolls back a transaction begun with begin()
      * @throws SqlException if an error occurs
      */
-    public function rollback()
+    public function rollback(): void
     {
         if (!sqlsrv_rollback($this->connection)) {
             throw new SqlException('Failed to roll back transaction', sqlsrv_errors());

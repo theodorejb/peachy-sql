@@ -6,7 +6,6 @@ namespace PeachySQL;
 
 /**
  * Object returned when performing bulk insert queries
- * @author Theodore Brown <https://github.com/theodorejb>
  */
 class BulkInsertResult
 {

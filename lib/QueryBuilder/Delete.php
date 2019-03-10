@@ -6,7 +6,6 @@ namespace PeachySQL\QueryBuilder;
 
 /**
  * Class used for delete query generation
- * @author Theodore Brown <https://github.com/theodorejb>
  */
 class Delete extends Query
 {

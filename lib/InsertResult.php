@@ -6,7 +6,6 @@ namespace PeachySQL;
 
 /**
  * Object returned when inserting a single row
- * @author Theodore Brown <https://github.com/theodorejb>
  */
 class InsertResult
 {

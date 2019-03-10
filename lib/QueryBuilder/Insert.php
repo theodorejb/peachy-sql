@@ -6,7 +6,6 @@ namespace PeachySQL\QueryBuilder;
 
 /**
  * Class used for insert query generation
- * @author Theodore Brown <https://github.com/theodorejb>
  */
 class Insert extends Query
 {

@@ -31,7 +31,7 @@ abstract class BaseOptions
      * Specify the maximum number of parameters which can be bound in a single query.
      * If greater than zero, PeachySQL will batch insert queries to avoid the limit.
      */
-    public function setMaxBoundParams(int $maxParams)
+    public function setMaxBoundParams(int $maxParams): void
     {
         if ($maxParams < 0) {
             throw new \InvalidArgumentException('The maximum number of bound parameters must be greater than or equal to zero');
@@ -49,7 +49,7 @@ abstract class BaseOptions
      * Specify the maximum number of rows which can be inserted via a single query.
      * If greater than zero, PeachySQL will batch insert queries to remove the limit.
      */
-    public function setMaxInsertRows(int $maxRows)
+    public function setMaxInsertRows(int $maxRows): void
     {
         if ($maxRows < 0) {
             throw new \InvalidArgumentException('The maximum number of insert rows must be greater than or equal to zero');

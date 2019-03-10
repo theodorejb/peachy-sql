@@ -10,8 +10,6 @@ use PeachySQL\QueryBuilder\Update;
 
 /**
  * Provides reusable functionality and can be extended by database-specific classes
- *
- * @author Theodore Brown <https://github.com/theodorejb>
  */
 abstract class PeachySql
 {
@@ -21,17 +19,17 @@ abstract class PeachySql
     protected $options;
 
     /** Begins a transaction */
-    abstract public function begin();
+    abstract public function begin(): void;
 
     /** Commits a transaction begun with begin() */
-    abstract public function commit();
+    abstract public function commit(): void;
 
     /** Rolls back a transaction begun with begin() */
-    abstract public function rollback();
+    abstract public function rollback(): void;
 
     /**
      * Takes a binary string and returns a value that can be bound to an insert/update statement
-     * @return mixed
+     * @return string|null|array
      */
     abstract public function makeBinaryParam(?string $binaryStr, ?int $length = null);
 
@@ -51,9 +49,8 @@ abstract class PeachySql
 
     /**
      * Returns the current PeachySQL options
-     * @return BaseOptions
      */
-    public function getOptions()
+    public function getOptions(): BaseOptions
     {
         return $this->options;
     }
