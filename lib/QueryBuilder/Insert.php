@@ -11,6 +11,8 @@ class Insert extends Query
 {
     /**
      * Returns the array of columns/values, split into groups containing the largest number of rows possible.
+     * @param list<array<string, mixed>> $colVals
+     * @return list<non-empty-list<array<string, mixed>>>
      */
     public static function batchRows(array $colVals, int $maxBoundParams, int $maxRows): array
     {
@@ -31,6 +33,7 @@ class Insert extends Query
 
     /**
      * Generates an INSERT query with placeholders for values
+     * @param list<array<string, mixed>> $colVals
      */
     public function buildQuery(string $table, array $colVals): SqlParams
     {

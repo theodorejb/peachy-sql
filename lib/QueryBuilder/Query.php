@@ -51,6 +51,10 @@ class Query
 
         $conditions = $params = [];
 
+        /**
+         * @var array<string, int|float|bool|string | list<int|float|bool|string> | array<string, int|float|bool|string|null | list<int|float|bool|string>>> $columnVals
+         */
+
         foreach ($columnVals as $column => $value) {
             $column = $this->options->escapeIdentifier($column);
 

@@ -57,10 +57,12 @@ class Statement extends BaseStatement
         if ($this->stmt !== null && $this->meta) {
             // retrieve selected rows without depending on mysqlnd-only methods such as get_result
             $fields = [];
+            /** @var array<string, int|float|bool|string> $rowData */
             $rowData = [];
 
             // bind_result() must be passed an argument by reference for each field
             while ($field = $this->meta->fetch_field()) {
+                /** @var string $field->name */
                 $fields[] = &$rowData[$field->name];
             }
 

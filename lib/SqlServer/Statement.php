@@ -25,10 +25,11 @@ class Statement extends BaseStatement
     {
         if ($this->usedPrepare) {
             if (!sqlsrv_execute($this->stmt)) {
-                throw new SqlException('Failed to execute prepared statement', sqlsrv_errors(), $this->query, $this->params);
+                throw new SqlException('Failed to execute prepared statement', sqlsrv_errors() ?? [], $this->query, $this->params);
             }
         }
 
+        /** @var bool|null $next */
         $next = null;
         $this->affected = -1;
 
@@ -37,7 +38,7 @@ class Statement extends BaseStatement
             $affectedRows = sqlsrv_rows_affected($this->stmt);
 
             if ($affectedRows === false) {
-                throw new SqlException('Failed to get affected row count', sqlsrv_errors(), $this->query, $this->params);
+                throw new SqlException('Failed to get affected row count', sqlsrv_errors() ?? [], $this->query, $this->params);
             }
 
             if ($affectedRows === -1) {
@@ -53,7 +54,7 @@ class Statement extends BaseStatement
         } while ($next = sqlsrv_next_result($this->stmt));
 
         if ($next === false) {
-            throw new SqlException('Failed to get next result', sqlsrv_errors(), $this->query, $this->params);
+            throw new SqlException('Failed to get next result', sqlsrv_errors() ?? [], $this->query, $this->params);
         }
 
         if ($affectedRows !== -1 && !$this->usedPrepare) {
@@ -64,6 +65,7 @@ class Statement extends BaseStatement
     public function getIterator(): \Generator
     {
         // only fetch rows if the statement is open
+        /** @var mixed $this->stmt */
         if (is_resource($this->stmt)) {
             while ($row = sqlsrv_fetch_array($this->stmt, SQLSRV_FETCH_ASSOC)) {
                 yield $row;
@@ -82,7 +84,7 @@ class Statement extends BaseStatement
     public function close(): void
     {
         if (!sqlsrv_free_stmt($this->stmt)) {
-            throw new SqlException('Failed to close statement', sqlsrv_errors(), $this->query, $this->params);
+            throw new SqlException('Failed to close statement', sqlsrv_errors() ?? [], $this->query, $this->params);
         }
     }
 }

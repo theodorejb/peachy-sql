@@ -22,10 +22,11 @@ class Select extends Query
 
         // [column1, column2, ...]
         if (isset($orderBy[0])) {
-            $orderBy = $this->escapeColumns($orderBy);
-            return $sql . implode(', ', $orderBy);
+            /** @var array<int, string> $orderBy */
+            return $sql . implode(', ', $this->escapeColumns($orderBy));
         }
 
+        /** @var array<string, string> $orderBy */
         // [column1 => direction, column2 => direction, ...]
         foreach ($orderBy as $column => $direction) {
             $column = $this->options->escapeIdentifier($column);

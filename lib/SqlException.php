@@ -25,6 +25,7 @@ class SqlException extends \RuntimeException
      */
     public function __construct(string $msg, array $errors, string $query = '', array $params = [])
     {
+        /** @var array<int, array{error: string, message: string, errno: int, code: int}> $errors */
 
         //                     MySQL               SQL Server
         $message = $errors[0]['error'] ?? $errors[0]['message'] ?? '';
@@ -47,6 +48,8 @@ class SqlException extends \RuntimeException
      */
     public function getSqlState(): string
     {
+        /** @var array<int, array{sqlstate: string, SQLSTATE: string}> $this->errors */
+
         //                       MySQL                        SQL Server
         return $this->errors[0]['sqlstate'] ?? $this->errors[0]['SQLSTATE'] ?? '';
     }

@@ -9,7 +9,9 @@ namespace PeachySQL;
  */
 abstract class BaseStatement
 {
-    protected $affected;
+    /** @var int */
+    protected $affected = 0;
+    /** @var bool */
     protected $usedPrepare;
     protected $query;
     protected $params;
@@ -50,6 +52,7 @@ abstract class BaseStatement
      */
     public function getFirst(): ?array
     {
+        /** @var null|array<string, mixed> $row */
         $row = $this->getIterator()->current();
 
         if ($row !== null) {

@@ -15,6 +15,8 @@ class Update extends Query
      */
     public function buildQuery(string $table, array $set, array $where): SqlParams
     {
+        /** @var array<string, int|float|bool|string> $set */
+
         if (empty($set) || empty($where)) {
             throw new \Exception('Set and where arrays cannot be empty');
         }

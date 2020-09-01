@@ -91,10 +91,12 @@ class Mysql extends PeachySql
 
         if (!empty($params)) {
             if (!$stmt->bind_param(self::getMysqlParamTypes($params), ...$params)) {
+                /** @var array $params */
                 throw new SqlException('Failed to bind params', $stmt->error_list, $sql, $params);
             }
         }
 
+        /** @var array $params */
         return new Statement($stmt, $this->usedPrepare, $sql, $params);
     }
 
@@ -137,6 +139,7 @@ class Mysql extends PeachySql
     private static function getMysqlParamTypes(array $params): string
     {
         $types = '';
+        /** @var int|float|bool|string $param */
 
         foreach ($params as $param) {
             if (is_int($param) || is_bool($param)) {

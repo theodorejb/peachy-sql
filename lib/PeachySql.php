@@ -45,6 +45,9 @@ abstract class PeachySql
      */
     abstract public function query(string $sql, array $params = []);
 
+    /**
+     * @param list<array<string, mixed>> $colVals
+     */
     abstract protected function insertBatch(string $table, array $colVals, int $identityIncrement = 1): BulkInsertResult;
 
     /**
@@ -62,6 +65,7 @@ abstract class PeachySql
 
     /**
      * Inserts one row
+     * @param array<string, mixed> $colVals
      */
     public function insertRow(string $table, array $colVals): InsertResult
     {
@@ -73,6 +77,7 @@ abstract class PeachySql
 
     /**
      * Insert multiple rows
+     * @param list<array<string, mixed>> $colVals
      */
     public function insertRows(string $table, array $colVals, int $identityIncrement = 1): BulkInsertResult
     {

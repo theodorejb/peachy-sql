@@ -24,7 +24,7 @@ class SqlServer extends PeachySql
      */
     public function __construct($connection, ?Options $options = null)
     {
-        if (!is_resource($connection) || get_resource_type($connection) !== 'SQL Server Connection') {
+        if (get_resource_type($connection) !== 'SQL Server Connection') {
             throw new \InvalidArgumentException('Connection must be a SQL Server Connection resource');
         }
 
@@ -44,7 +44,7 @@ class SqlServer extends PeachySql
     public function begin(): void
     {
         if (!sqlsrv_begin_transaction($this->connection)) {
-            throw new SqlException('Failed to begin transaction', sqlsrv_errors());
+            throw new SqlException('Failed to begin transaction', sqlsrv_errors() ?? []);
         }
     }
 
@@ -55,7 +55,7 @@ class SqlServer extends PeachySql
     public function commit(): void
     {
         if (!sqlsrv_commit($this->connection)) {
-            throw new SqlException('Failed to commit transaction', sqlsrv_errors());
+            throw new SqlException('Failed to commit transaction', sqlsrv_errors() ?? []);
         }
     }
 
@@ -66,7 +66,7 @@ class SqlServer extends PeachySql
     public function rollback(): void
     {
         if (!sqlsrv_rollback($this->connection)) {
-            throw new SqlException('Failed to roll back transaction', sqlsrv_errors());
+            throw new SqlException('Failed to roll back transaction', sqlsrv_errors() ?? []);
         }
     }
 
@@ -91,7 +91,7 @@ class SqlServer extends PeachySql
     public function prepare(string $sql, array $params = []): Statement
     {
         if (!$stmt = sqlsrv_prepare($this->connection, $sql, $params)) {
-            throw new SqlException('Query failed', sqlsrv_errors(), $sql, $params);
+            throw new SqlException('Query failed', sqlsrv_errors() ?? [], $sql, $params);
         }
 
         return new Statement($stmt, true, $sql, $params);
@@ -104,7 +104,7 @@ class SqlServer extends PeachySql
     public function query(string $sql, array $params = []): Statement
     {
         if (!$stmt = sqlsrv_query($this->connection, $sql, $params)) {
-            throw new SqlException('Query failed', sqlsrv_errors(), $sql, $params);
+            throw new SqlException('Query failed', sqlsrv_errors() ?? [], $sql, $params);
         }
 
         $statement = new Statement($stmt, false, $sql, $params);
@@ -114,6 +114,7 @@ class SqlServer extends PeachySql
 
     /**
      * Performs a single bulk insert query
+     * @param list<array<string, mixed>> $colVals
      */
     protected function insertBatch(string $table, array $colVals, int $identityIncrement = 1): BulkInsertResult
     {
