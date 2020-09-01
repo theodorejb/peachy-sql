@@ -22,7 +22,10 @@ abstract class BaseOptions
         }
 
         // use standard double quotes to delimit identifiers
-        $escaper = function ($identifier) { return '"' . str_replace('"', '""', $identifier) . '"'; };
+        $escaper = function (string $identifier): string {
+            return '"' . str_replace('"', '""', $identifier) . '"';
+        };
+
         $qualifiedIdentifiers = array_map($escaper, explode('.', $identifier));
         return implode('.', $qualifiedIdentifiers);
     }

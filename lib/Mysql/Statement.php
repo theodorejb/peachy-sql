@@ -10,10 +10,12 @@ use PeachySQL\SqlException;
 
 class Statement extends BaseStatement
 {
-    private $insertId;
+    /** @var int */
+    private $insertId = 0;
+    /** @var mysqli_stmt|null */
     private $stmt;
 
-    /** @var \mysqli_result */
+    /** @var \mysqli_result|false|null */
     private $meta;
 
     public function __construct(mysqli_stmt $stmt, bool $usedPrepare, string $query, array $params)
@@ -24,6 +26,10 @@ class Statement extends BaseStatement
 
     public function execute(): void
     {
+        if ($this->stmt === null) {
+            throw new \Exception('Cannot execute closed statement');
+        }
+
         if (!$this->stmt->execute()) {
             throw new SqlException('Failed to execute prepared statement',
                 $this->stmt->error_list, $this->query, $this->params);
@@ -48,7 +54,7 @@ class Statement extends BaseStatement
 
     public function getIterator(): \Generator
     {
-        if ($this->stmt !== null) {
+        if ($this->stmt !== null && $this->meta) {
             // retrieve selected rows without depending on mysqlnd-only methods such as get_result
             $fields = [];
             $rowData = [];

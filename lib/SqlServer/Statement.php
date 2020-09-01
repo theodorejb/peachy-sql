@@ -12,6 +12,9 @@ class Statement extends BaseStatement
     /** @var resource */
     private $stmt;
 
+    /**
+     * @param resource $stmt
+     */
     public function __construct($stmt, bool $usedPrepare, string $query, array $params)
     {
         parent::__construct($usedPrepare, $query, $params);

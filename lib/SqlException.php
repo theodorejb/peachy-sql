@@ -10,8 +10,11 @@ namespace PeachySQL;
  */
 class SqlException extends \RuntimeException
 {
+    /** @var array */
     private $errors;
+    /** @var string */
     private $query;
+    /** @var array */
     private $params;
 
     /**
@@ -22,20 +25,16 @@ class SqlException extends \RuntimeException
      */
     public function __construct(string $msg, array $errors, string $query = '', array $params = [])
     {
-        if (isset($errors[0]['error'])) {
-            $msg .= ': ' . $errors[0]['error']; // MySQL
-        } elseif (isset($errors[0]['message'])) {
-            $msg .= ': ' . $errors[0]['message']; // SQL Server
+
+        //                     MySQL               SQL Server
+        $message = $errors[0]['error'] ?? $errors[0]['message'] ?? '';
+
+        if ($message !== '') {
+            $msg .= ": {$message}";
         }
 
-        if (isset($errors[0]['errno'])) {
-            $code = $errors[0]['errno']; // MySQL
-        } elseif (isset($errors[0]['code'])) {
-            $code = $errors[0]['code']; // SQL Server
-        } else {
-            $code = 0;
-        }
-
+        //                  MySQL            SQL Server
+        $code = $errors[0]['errno'] ?? $errors[0]['code'] ?? 0;
         parent::__construct($msg, $code);
 
         $this->errors = $errors;
@@ -48,13 +47,8 @@ class SqlException extends \RuntimeException
      */
     public function getSqlState(): string
     {
-        if (isset($this->errors[0]['sqlstate'])) {
-            return $this->errors[0]['sqlstate']; // MySQL
-        } elseif (isset($this->errors[0]['SQLSTATE'])) {
-            return $this->errors[0]['SQLSTATE']; // SQL Server
-        } else {
-            return '';
-        }
+        //                       MySQL                        SQL Server
+        return $this->errors[0]['sqlstate'] ?? $this->errors[0]['SQLSTATE'] ?? '';
     }
 
     /**

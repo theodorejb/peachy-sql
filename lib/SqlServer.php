@@ -19,6 +19,9 @@ class SqlServer extends PeachySql
      */
     private $connection;
 
+    /**
+     * @param resource $connection
+     */
     public function __construct($connection, ?Options $options = null)
     {
         if (!is_resource($connection) || get_resource_type($connection) !== 'SQL Server Connection') {
@@ -119,6 +122,7 @@ class SqlServer extends PeachySql
         $row = $result->getFirst();
 
         if (isset($row['RowID'])) {
+            /** @var int $lastId */
             $lastId = $row['RowID'];
             $firstId = $lastId - $identityIncrement * (count($colVals) -1);
             $ids = range($firstId, $lastId, $identityIncrement);

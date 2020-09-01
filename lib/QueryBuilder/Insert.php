@@ -55,7 +55,7 @@ class Insert extends Query
     /**
      * @throws \Exception if the column/values array does not have a valid structure
      */
-    private static function validateColValsStructure(array $colVals)
+    private static function validateColValsStructure(array $colVals): void
     {
         if (empty($colVals[0]) || !is_array($colVals[0])) {
             throw new \Exception('A valid array of columns/values to insert must be specified');

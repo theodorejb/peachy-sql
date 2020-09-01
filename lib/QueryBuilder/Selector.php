@@ -11,9 +11,13 @@ class Selector
     private $query;
     private $options;
 
+    /** @var array */
     private $where = [];
+    /** @var array */
     private $orderBy = [];
+    /** @var int|null */
     private $limit;
+    /** @var int|null */
     private $offset;
 
     public function __construct(string $query, BaseOptions $options)

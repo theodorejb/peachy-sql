@@ -47,9 +47,8 @@ abstract class BaseStatement
 
     /**
      * Returns the first selected row, or null if zero rows were returned
-     * @return array|null
      */
-    public function getFirst()
+    public function getFirst(): ?array
     {
         $row = $this->getIterator()->current();
 

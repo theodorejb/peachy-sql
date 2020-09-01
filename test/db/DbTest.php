@@ -77,7 +77,7 @@ class DbTest extends TestCase
         ];
 
         $id = $peachySql->insertRow(self::TABLE_NAME, $colVals)->getId();
-        $this->assertInternalType('int', $id);
+        $this->assertIsInt($id);
 
         $sql = 'SELECT user_id, isDisabled FROM Users WHERE user_id = ?';
         $result = $peachySql->query($sql, [$id]);

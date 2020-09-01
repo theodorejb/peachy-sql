@@ -9,10 +9,14 @@ namespace PeachySQL;
  */
 class BulkInsertResult
 {
+    /** @var int[] */
     private $ids;
     private $affected;
     private $queryCount;
 
+    /**
+     * @param int[] $ids
+     */
     public function __construct(array $ids, int $affected, int $queryCount = 1)
     {
         $this->ids = $ids;

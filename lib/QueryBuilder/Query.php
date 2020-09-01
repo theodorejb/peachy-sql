@@ -13,7 +13,7 @@ class Query
 {
     protected $options;
 
-    private static $operatorMap = [
+    private const OPERATOR_MAP = [
         'eq' => '=',
         'ne' => '<>',
         'lt' => '<',
@@ -62,7 +62,7 @@ class Query
             }
 
             foreach ($value as $shorthand => $val) {
-                if (!isset(self::$operatorMap[$shorthand])) {
+                if (!isset(self::OPERATOR_MAP[$shorthand])) {
                     throw new \Exception("{$shorthand} is not a valid operator");
                 }
 
@@ -73,9 +73,9 @@ class Query
                         throw new \Exception("{$shorthand} operator can only be used with a blank value");
                     }
 
-                    $conditions[] = $column . ' ' . self::$operatorMap[$shorthand];
+                    $conditions[] = $column . ' ' . self::OPERATOR_MAP[$shorthand];
                 } elseif (!is_array($val)) {
-                    $comparison = self::$operatorMap[$shorthand];
+                    $comparison = self::OPERATOR_MAP[$shorthand];
                     $conditions[] = "{$column} {$comparison} ?";
                     $params[] = $val;
                 } elseif ($shorthand === 'eq' || $shorthand === 'ne') {
@@ -85,7 +85,7 @@ class Query
                     $params = array_merge($params, $val);
                 } elseif ($shorthand === 'lk' || $shorthand === 'nl') {
                     foreach ($val as $condition) {
-                        $conditions[] = $column . ' ' . self::$operatorMap[$shorthand] . ' ?';
+                        $conditions[] = $column . ' ' . self::OPERATOR_MAP[$shorthand] . ' ?';
                         $params[] = $condition;
                     }
                 } else {
