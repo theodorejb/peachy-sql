@@ -9,8 +9,8 @@ namespace PeachySQL;
  */
 class InsertResult
 {
-    private $id;
-    private $affected;
+    private int $id;
+    private int $affected;
 
     public function __construct(int $id, int $affected)
     {

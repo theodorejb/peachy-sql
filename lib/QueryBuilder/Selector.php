@@ -6,19 +6,19 @@ namespace PeachySQL\QueryBuilder;
 
 use PeachySQL\BaseOptions;
 
+/**
+ * @psalm-import-type WhereClause from Query
+ */
 class Selector
 {
-    private $query;
-    private $options;
+    private string $query;
+    private BaseOptions $options;
 
-    /** @var array */
-    private $where = [];
-    /** @var array */
-    private $orderBy = [];
-    /** @var int|null */
-    private $limit;
-    /** @var int|null */
-    private $offset;
+    /** @var WhereClause */
+    private array $where = [];
+    private array $orderBy = [];
+    private ?int $limit = null;
+    private ?int $offset = null;
 
     public function __construct(string $query, BaseOptions $options)
     {
@@ -27,7 +27,7 @@ class Selector
     }
 
     /**
-     * @param array $filter
+     * @param WhereClause $filter
      * @return $this
      * @throws \Exception if called more than once
      */

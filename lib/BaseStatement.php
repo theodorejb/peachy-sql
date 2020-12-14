@@ -9,12 +9,10 @@ namespace PeachySQL;
  */
 abstract class BaseStatement
 {
-    /** @var int */
-    protected $affected = 0;
-    /** @var bool */
-    protected $usedPrepare;
-    protected $query;
-    protected $params;
+    protected int $affected = 0;
+    protected bool $usedPrepare;
+    protected string $query;
+    protected array $params;
 
     // $usedPrepare should be true if the statement was created using `prepare`
     public function __construct(bool $usedPrepare, string $query, array $params)

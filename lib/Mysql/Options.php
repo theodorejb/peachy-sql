@@ -11,8 +11,7 @@ use PeachySQL\BaseOptions;
  */
 class Options extends BaseOptions
 {
-    /** @var int */
-    protected $maxBoundParams = 65536; // 2^16
+    protected int $maxBoundParams = 65536; // 2^16
 
     // use backticks to delimit identifiers since not everyone uses ANSI mode
     public function escapeIdentifier(string $identifier): string

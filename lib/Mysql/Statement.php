@@ -10,10 +10,8 @@ use PeachySQL\SqlException;
 
 class Statement extends BaseStatement
 {
-    /** @var int */
-    private $insertId = 0;
-    /** @var mysqli_stmt|null */
-    private $stmt;
+    private int $insertId = 0;
+    private ?mysqli_stmt $stmt;
 
     /** @var \mysqli_result|false|null */
     private $meta;

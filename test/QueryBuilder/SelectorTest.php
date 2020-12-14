@@ -8,11 +8,10 @@ use PHPUnit\Framework\TestCase;
 
 /**
  * Tests for the Select query builder
- * @author Theodore Brown <https://github.com/theodorejb>
  */
 class SelectorTest extends TestCase
 {
-    public function testWhere()
+    public function testWhere(): void
     {
         $query = 'SELECT "username", "password" FROM TestTable';
         $selector = new Selector($query, new \PeachySQL\SqlServer\Options());
@@ -47,7 +46,7 @@ class SelectorTest extends TestCase
         $this->assertSame($params, $actual->getParams());
     }
 
-    public function testInvalidWhere()
+    public function testInvalidWhere(): void
     {
         $query = new Query(new \PeachySQL\SqlServer\Options());
 
@@ -83,7 +82,7 @@ class SelectorTest extends TestCase
         }
     }
 
-    public function testOrderBy()
+    public function testOrderBy(): void
     {
         $query = 'SELECT "username", "lastname" FROM TestTable';
         $select = new Selector($query, new \PeachySQL\SqlServer\Options());
@@ -98,17 +97,15 @@ class SelectorTest extends TestCase
         $this->assertSame($query . ' ORDER BY "lastname" ASC, "firstname" ASC, "age" DESC', $actual->getSql());
     }
 
-    /**
-     * @expectedException \Exception
-     * @expectedExceptionMessage nonsense is not a valid sort direction for column "testcol". Use asc or desc.
-     */
-    public function testInvalidOrderBy()
+    public function testInvalidOrderBy(): void
     {
+        $this->expectException(\Exception::class);
+        $this->expectExceptionMessage('nonsense is not a valid sort direction for column "testcol". Use asc or desc.');
         $select = new Select(new \PeachySQL\SqlServer\Options());
         $select->buildOrderByClause(['testcol' => 'nonsense']);
     }
 
-    public function testBuildPagination()
+    public function testBuildPagination(): void
     {
         $mySqlSelect = new Select(new \PeachySQL\Mysql\Options());
         $sqlsrvSelect = new Select(new \PeachySQL\SqlServer\Options());
@@ -126,7 +123,7 @@ class SelectorTest extends TestCase
         $this->assertSame('OFFSET 200 ROWS FETCH NEXT 100 ROWS ONLY', $sqlsrvPage3);
     }
 
-    public function testGetSqlParams()
+    public function testGetSqlParams(): void
     {
         $query = "SELECT * FROM MyTable a INNER JOIN AnotherTable b ON b.id = a.id";
         $selector = new Selector($query, new \PeachySQL\SqlServer\Options());
@@ -141,12 +138,10 @@ class SelectorTest extends TestCase
         $this->assertSame([1], $result->getParams());
     }
 
-    /**
-     * @expectedException \Exception
-     * @expectedExceptionMessage Results must be sorted to use an offset
-     */
-    public function testInvalidPagination()
+    public function testInvalidPagination(): void
     {
+        $this->expectException(\Exception::class);
+        $this->expectExceptionMessage('Results must be sorted to use an offset');
         $query = "SELECT * FROM MyTable";
         $selector = new Selector($query, new \PeachySQL\SqlServer\Options());
         $selector->offset(0, 50)->getSqlParams();

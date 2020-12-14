@@ -9,8 +9,8 @@ namespace PeachySQL\QueryBuilder;
  */
 class SqlParams
 {
-    private $sql;
-    private $params;
+    private string $sql;
+    private array $params;
 
     public function __construct(string $sql, array $params)
     {

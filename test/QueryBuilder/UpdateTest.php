@@ -8,11 +8,10 @@ use PHPUnit\Framework\TestCase;
 
 /**
  * Tests for the Update query builder
- * @author Theodore Brown <https://github.com/theodorejb>
  */
 class UpdateTest extends TestCase
 {
-    public function testBuildQuery()
+    public function testBuildQuery(): void
     {
         $set = [
             'username' => 'TestUser',

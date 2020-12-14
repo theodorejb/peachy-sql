@@ -10,12 +10,9 @@ namespace PeachySQL;
  */
 class SqlException extends \RuntimeException
 {
-    /** @var array */
-    private $errors;
-    /** @var string */
-    private $query;
-    /** @var array */
-    private $params;
+    private array $errors;
+    private string $query;
+    private array $params;
 
     /**
      * @param string $msg The error message

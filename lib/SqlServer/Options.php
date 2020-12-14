@@ -11,8 +11,6 @@ use PeachySQL\BaseOptions;
  */
 class Options extends BaseOptions
 {
-    /** @var int */
-    protected $maxBoundParams = 2099;
-    /** @var int */
-    protected $maxInsertRows = 1000;
+    protected int $maxBoundParams = 2099;
+    protected int $maxInsertRows = 1000;
 }

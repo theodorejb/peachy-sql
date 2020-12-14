@@ -16,11 +16,9 @@ class Mysql extends PeachySql
 {
     /**
      * The connection used to access the database
-     * @var mysqli
      */
-    private $connection;
-    /** @var bool */
-    private $usedPrepare;
+    private mysqli $connection;
+    private bool $usedPrepare;
 
     public function __construct(mysqli $connection, ?Options $options = null)
     {

@@ -8,11 +8,10 @@ use PHPUnit\Framework\TestCase;
 
 /**
  * Tests for the BulkInsertResult object
- * @author Theodore Brown <https://github.com/theodorejb>
  */
 class BulkInsertResultTest extends TestCase
 {
-    public function testCreateRetrieve()
+    public function testCreateRetrieve(): void
     {
         $result = new BulkInsertResult([48, 49, 50], 6, 2);
         $this->assertSame([48, 49, 50], $result->getIds());

@@ -9,10 +9,8 @@ namespace PeachySQL;
  */
 abstract class BaseOptions
 {
-    /** @var int */
-    protected $maxBoundParams = 0;
-    /** @var int */
-    protected $maxInsertRows = 0;
+    protected int $maxBoundParams = 0;
+    protected int $maxInsertRows = 0;
 
     /**
      * Escapes a table or column name, and validates that it isn't blank

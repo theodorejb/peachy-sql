@@ -6,7 +6,7 @@
 return [
     'testWith' => [
         'mysql'  => true,
-        'sqlsrv' => false, // don't test by default since it doesn't run on Travis
+        'sqlsrv' => false, // don't test by default since it isn't configured on CI
     ],
     'db' => [
         'mysql' => [

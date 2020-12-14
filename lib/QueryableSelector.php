@@ -8,8 +8,7 @@ use PeachySQL\QueryBuilder\Selector;
 
 class QueryableSelector extends Selector
 {
-    /** @var PeachySql */
-    private $peachySql;
+    private PeachySql $peachySql;
 
     public function __construct(string $query, PeachySql $peachySql)
     {

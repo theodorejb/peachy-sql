@@ -8,11 +8,13 @@ use PHPUnit\Framework\TestCase;
 
 /**
  * Tests for the Insert query builder
- * @author Theodore Brown <https://github.com/theodorejb>
  */
 class InsertTest extends TestCase
 {
-    public function batchRowsTestCases()
+    /**
+     * @return list<array{0: list<array<string, string>>, 1: int, 2: int, 3: list<mixed>}>
+     */
+    public function batchRowsTestCases(): array
     {
         $colVals = [
             [
@@ -51,14 +53,15 @@ class InsertTest extends TestCase
 
     /**
      * @dataProvider batchRowsTestCases
+     * @param list<array<string, string>> $colVals
      */
-    public function testBatchRows(array $colVals, int $maxParams, int $maxRows, array $expected)
+    public function testBatchRows(array $colVals, int $maxParams, int $maxRows, array $expected): void
     {
         $result = Insert::batchRows($colVals, $maxParams, $maxRows);
         $this->assertSame($expected, $result);
     }
 
-    public function testBuildQuery()
+    public function testBuildQuery(): void
     {
         $colVals = [
             'col1' => 'val1',
@@ -75,7 +78,7 @@ class InsertTest extends TestCase
     /**
      * Tests building an insert query with SCOPE_IDENTITY to retrieve the insert ID
      */
-    public function testBuildQueryWithScopeIdentity()
+    public function testBuildQueryWithScopeIdentity(): void
     {
         $colVals = [
             [

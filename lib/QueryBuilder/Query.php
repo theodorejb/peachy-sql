@@ -8,10 +8,12 @@ use PeachySQL\BaseOptions;
 
 /**
  * Base class used for query generation and validation
+ * @psalm-type WhereVal int|float|bool|string|null
+ * @psalm-type WhereClause array<string, WhereVal | list<WhereVal> | array<string, WhereVal | list<WhereVal>>>
  */
 class Query
 {
-    protected $options;
+    protected BaseOptions $options;
 
     private const OPERATOR_MAP = [
         'eq' => '=',
@@ -42,6 +44,7 @@ class Query
 
     /**
      * @throws \Exception if a column filter is empty
+     * @param WhereClause $columnVals
      */
     public function buildWhereClause(array $columnVals): SqlParams
     {
@@ -50,10 +53,6 @@ class Query
         }
 
         $conditions = $params = [];
-
-        /**
-         * @var array<string, int|float|bool|string | list<int|float|bool|string> | array<string, int|float|bool|string|null | list<int|float|bool|string>>> $columnVals
-         */
 
         foreach ($columnVals as $column => $value) {
             $column = $this->options->escapeIdentifier($column);

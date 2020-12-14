@@ -6,12 +6,14 @@ namespace PeachySQL\QueryBuilder;
 
 /**
  * Class used for update query generation
+ * @psalm-import-type WhereClause from Query
  */
 class Update extends Query
 {
     /**
      * Generates an update query using the specified set/where arrays
      * @throws \Exception if the $set or $where arrays are empty
+     * @psalm-param WhereClause $where
      */
     public function buildQuery(string $table, array $set, array $where): SqlParams
     {

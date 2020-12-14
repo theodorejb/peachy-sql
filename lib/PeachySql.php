@@ -10,13 +10,11 @@ use PeachySQL\QueryBuilder\Update;
 
 /**
  * Provides reusable functionality and can be extended by database-specific classes
+ * @psalm-import-type WhereClause from QueryBuilder\Query
  */
 abstract class PeachySql
 {
-    /**
-     * @var BaseOptions
-     */
-    protected $options;
+    protected BaseOptions $options;
 
     /** Begins a transaction */
     abstract public function begin(): void;
@@ -35,15 +33,13 @@ abstract class PeachySql
 
     /**
      * Prepares a SQL query for later execution
-     * @return BaseStatement
      */
-    abstract public function prepare(string $sql, array $params = []);
+    abstract public function prepare(string $sql, array $params = []): BaseStatement;
 
     /**
      * Executes a single SQL query
-     * @return BaseStatement
      */
-    abstract public function query(string $sql, array $params = []);
+    abstract public function query(string $sql, array $params = []): BaseStatement;
 
     /**
      * @param list<array<string, mixed>> $colVals
@@ -98,6 +94,7 @@ abstract class PeachySql
     /**
      * Updates the specified columns and values in rows matching the where clause
      * Returns the number of affected rows
+     * @psalm-param WhereClause $where
      */
     public function updateRows(string $table, array $set, array $where): int
     {
@@ -109,6 +106,7 @@ abstract class PeachySql
     /**
      * Deletes rows from the table matching the where clause
      * Returns the number of affected rows
+     * @psalm-param WhereClause $where
      */
     public function deleteFrom(string $table, array $where): int
     {

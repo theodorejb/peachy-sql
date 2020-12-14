@@ -10,9 +10,9 @@ namespace PeachySQL;
 class BulkInsertResult
 {
     /** @var int[] */
-    private $ids;
-    private $affected;
-    private $queryCount;
+    private array $ids;
+    private int $affected;
+    private int $queryCount;
 
     /**
      * @param int[] $ids

@@ -8,46 +8,38 @@ use PHPUnit\Framework\TestCase;
 
 /**
  * Tests for the SqlException object
- * @author Theodore Brown <https://github.com/theodorejb>
  */
 class SqlExceptionTest extends TestCase
 {
-    public function exceptionProvider(): array
+    public function testDataAccess(): void
     {
         $errCode = 1193;
         $sqlState = 'HY000';
         $message = "Unknown system variable 'a'";
         $expectedMsg = "Error: $message";
 
-        $mysql = [
+        $mysqlException = new SqlException('Error', [
             [
                 'errno' => $errCode,
                 'sqlstate' => $sqlState,
                 'error' => $message,
             ]
-        ];
+        ]);
 
-        $sqlServer = [
+        $this->assertSame($expectedMsg, $mysqlException->getMessage());
+        $this->assertSame($sqlState, $mysqlException->getSqlState());
+        $this->assertSame($errCode, $mysqlException->getCode());
+
+        $sqlsrvException = new SqlException('Error', [
             [
                 'code' => $errCode,
                 'SQLSTATE' => $sqlState,
                 'message' => $message,
             ]
-        ];
+        ]);
 
-        return [
-            [new SqlException('Error', $mysql), $expectedMsg, $sqlState, $errCode],
-            [new SqlException('Error', $sqlServer), $expectedMsg, $sqlState, $errCode],
-        ];
-    }
-
-    /**
-     * @dataProvider exceptionProvider
-     */
-    public function testDataAccess(SqlException $e, string $expectedMsg, string $sqlState, int $errCode)
-    {
-        $this->assertSame($expectedMsg, $e->getMessage());
-        $this->assertSame($sqlState, $e->getSqlState());
-        $this->assertSame($errCode, $e->getCode());
+        $this->assertSame($expectedMsg, $sqlsrvException->getMessage());
+        $this->assertSame($sqlState, $sqlsrvException->getSqlState());
+        $this->assertSame($errCode, $sqlsrvException->getCode());
     }
 }

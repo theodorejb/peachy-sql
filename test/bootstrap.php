@@ -2,14 +2,18 @@
 
 declare(strict_types=1);
 
+use PeachySQL\Test\DbConnector;
+
 require 'vendor/autoload.php';
-require 'test/db/TestDbConnector.php'; // not autoloaded by Composer
 
 $config = require 'test/config.php';
 
 if (is_readable('test/config.user.php')) {
+    /** @psalm-suppress MissingFile, MixedAssignment */
     $userConfig = require 'test/config.user.php';
+    /** @psalm-suppress MixedArgument */
     $config = array_replace_recursive($config, $userConfig);
 }
 
-PeachySQL\TestDbConnector::setConfig($config);
+/** @psalm-suppress MixedArgumentTypeCoercion */
+DbConnector::setConfig($config);

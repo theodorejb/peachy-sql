@@ -11,7 +11,7 @@ use PHPUnit\Framework\TestCase;
  */
 class OptionsTest extends TestCase
 {
-    public function testMaxBoundParams()
+    public function testMaxBoundParams(): void
     {
         $options = new Options();
         $options->setMaxBoundParams(2000);
@@ -26,7 +26,7 @@ class OptionsTest extends TestCase
         $this->fail('setMaxBoundParams failed to throw expected exception');
     }
 
-    public function testMaxInsertRows()
+    public function testMaxInsertRows(): void
     {
         $options = new Options();
         $options->setMaxInsertRows(1000);
@@ -41,7 +41,7 @@ class OptionsTest extends TestCase
         $this->fail('setMaxInsertRows failed to throw expected exception');
     }
 
-    public function testEscapeIdentifier()
+    public function testEscapeIdentifier(): void
     {
         $options = new Options();
         $actual = $options->escapeIdentifier('My`Identifier');

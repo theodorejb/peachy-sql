@@ -8,11 +8,10 @@ use PHPUnit\Framework\TestCase;
 
 /**
  * Tests for the Delete query builder
- * @author Theodore Brown <https://github.com/theodorejb>
  */
 class DeleteTest extends TestCase
 {
-    public function testBuildQuery()
+    public function testBuildQuery(): void
     {
         $delete = new Delete(new \PeachySQL\SqlServer\Options());
         $where = ['id' => 5, 'username' => ['tester', 'tester2']];

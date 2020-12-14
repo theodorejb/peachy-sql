@@ -11,7 +11,7 @@ use PHPUnit\Framework\TestCase;
  */
 class OptionsTest extends TestCase
 {
-    public function testEscapeIdentifier()
+    public function testEscapeIdentifier(): void
     {
         $options = new Options();
         $actual = $options->escapeIdentifier('Test"Identifier');

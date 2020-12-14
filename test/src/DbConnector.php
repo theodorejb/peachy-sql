@@ -2,34 +2,44 @@
 
 declare(strict_types=1);
 
-namespace PeachySQL;
+namespace PeachySQL\Test;
 
 use Exception;
 use mysqli;
+use Psalm\Config;
 
-class TestDbConnector
+/**
+ * @psalm-type MysqlConfig array{host: string, username: string, password: string, database: string}
+ * @psalm-type SqlsrvConfig array{serverName: string, connectionInfo: array}
+ * @psalm-type DbConfig array{mysql: MysqlConfig, sqlsrv: SqlsrvConfig}
+ * @psalm-type Config array{testWith: array<string, bool>, db: DbConfig}
+ */
+class DbConnector
 {
-    /**
-     * @var mysqli
-     */
-    private static $mysqlConn;
+    private static ?mysqli $mysqlConn = null;
 
     /**
-     * @var resource
+     * @var resource|null
      */
     private static $sqlsrvConn;
 
     /**
      * DB config settings
-     * @var array
+     * @var Config
      */
     private static $config;
 
-    public static function setConfig(array $config)
+    /**
+     * @param Config $config
+     */
+    public static function setConfig(array $config): void
     {
         self::$config = $config;
     }
 
+    /**
+     * @return Config
+     */
     public static function getConfig(): array
     {
         return self::$config;
@@ -39,7 +49,15 @@ class TestDbConnector
     {
         if (!self::$mysqlConn) {
             $mysql = self::$config['db']['mysql'];
-            self::$mysqlConn = new mysqli($mysql['host'], $mysql['username'], $mysql['password'], $mysql['database']);
+            $dbPort = getenv('DB_PORT');
+
+            if ($dbPort === false) {
+                $dbPort = 3306;
+            } else {
+                $dbPort = (int) $dbPort;
+            }
+
+            self::$mysqlConn = new mysqli($mysql['host'], $mysql['username'], $mysql['password'], $mysql['database'], $dbPort);
 
             if (self::$mysqlConn->connect_errno) {
                 throw new Exception('Failed to connect to MySQL: (' . self::$mysqlConn->connect_errno . ') ' . self::$mysqlConn->connect_error);
@@ -51,11 +69,15 @@ class TestDbConnector
         return self::$mysqlConn;
     }
 
+    /**
+     * @return resource
+     */
     public static function getSqlsrvConn()
     {
         if (!self::$sqlsrvConn) {
-            $connInfo = self::$config['db']['sqlsrv']['connectionInfo'];
-            self::$sqlsrvConn = sqlsrv_connect(self::$config['db']['sqlsrv']['serverName'], $connInfo);
+            $sqlsrv = self::$config['db']['sqlsrv'];
+            self::$sqlsrvConn = sqlsrv_connect($sqlsrv['serverName'], $sqlsrv['connectionInfo']);
+
             if (!self::$sqlsrvConn) {
                 throw new Exception('Failed to connect to SQL server: ' . print_r(sqlsrv_errors(), true));
             }
@@ -66,7 +88,10 @@ class TestDbConnector
         return self::$sqlsrvConn;
     }
 
-    private static function createSqlServerTestTable($conn)
+    /**
+     * @param resource $conn
+     */
+    private static function createSqlServerTestTable($conn): void
     {
         $sql = 'CREATE TABLE Users (
                     user_id INT PRIMARY KEY IDENTITY(1,1) NOT NULL,
@@ -82,7 +107,7 @@ class TestDbConnector
         }
     }
 
-    private static function createMysqlTestTable(mysqli $conn)
+    private static function createMysqlTestTable(mysqli $conn): void
     {
         $sql = 'CREATE TABLE Users (
                     user_id INT PRIMARY KEY AUTO_INCREMENT NOT NULL,
@@ -98,7 +123,7 @@ class TestDbConnector
         }
     }
 
-    public static function deleteTestTables()
+    public static function deleteTestTables(): void
     {
         $sql = 'DROP TABLE Users';
 

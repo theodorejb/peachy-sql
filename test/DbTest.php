@@ -4,36 +4,37 @@ declare(strict_types=1);
 
 namespace PeachySQL;
 
+use PeachySQL\Test\DbConnector;
 use PHPUnit\Framework\TestCase;
 use Ramsey\Uuid\Uuid;
 
 /**
  * Database tests for the PeachySQL library.
- * @author Theodore Brown <https://github.com/theodorejb>
  */
 class DbTest extends TestCase
 {
     CONST TABLE_NAME = 'Users';
 
-    public static function tearDownAfterClass()
+    public static function tearDownAfterClass(): void
     {
-        TestDbConnector::deleteTestTables();
+        DbConnector::deleteTestTables();
     }
 
     /**
      * Returns an array of PeachySQL implementation instances.
+     * @return list<array{0: PeachySql}>
      */
     public function dbTypeProvider(): array
     {
-        $config = TestDbConnector::getConfig();
+        $testWith = DbConnector::getConfig()['testWith'];
         $implementations = [];
 
-        if ($config['testWith']['mysql']) {
-            $implementations[] = [new Mysql(TestDbConnector::getMysqlConn())];
+        if ($testWith['mysql']) {
+            $implementations[] = [new Mysql(DbConnector::getMysqlConn())];
         }
 
-        if ($config['testWith']['sqlsrv']) {
-            $implementations[] = [new SqlServer(TestDbConnector::getSqlsrvConn())];
+        if ($testWith['sqlsrv']) {
+            $implementations[] = [new SqlServer(DbConnector::getSqlsrvConn())];
         }
 
         return $implementations;
@@ -42,7 +43,7 @@ class DbTest extends TestCase
     /**
      * @dataProvider dbTypeProvider
      */
-    public function testNoIdentityInsert(PeachySql $peachySql)
+    public function testNoIdentityInsert(PeachySql $peachySql): void
     {
         $peachySql->query("CREATE TABLE Test ( name VARCHAR(50) NOT NULL )");
 
@@ -64,7 +65,7 @@ class DbTest extends TestCase
     /**
      * @dataProvider dbTypeProvider
      */
-    public function testTransactions(PeachySql $peachySql)
+    public function testTransactions(PeachySql $peachySql): void
     {
         $peachySql->begin(); // start transaction
 
@@ -77,8 +78,6 @@ class DbTest extends TestCase
         ];
 
         $id = $peachySql->insertRow(self::TABLE_NAME, $colVals)->getId();
-        $this->assertIsInt($id);
-
         $sql = 'SELECT user_id, isDisabled FROM Users WHERE user_id = ?';
         $result = $peachySql->query($sql, [$id]);
 
@@ -101,7 +100,7 @@ class DbTest extends TestCase
     /**
      * @dataProvider dbTypeProvider
      */
-    public function testException(PeachySql $peachySql)
+    public function testException(PeachySql $peachySql): void
     {
         $badQuery = 'SELECT * FROM nonExistentTable WHERE';
 
@@ -131,7 +130,7 @@ class DbTest extends TestCase
     /**
      * @dataProvider dbTypeProvider
      */
-    public function testIteratorQuery(PeachySql $peachySql)
+    public function testIteratorQuery(PeachySql $peachySql): void
     {
         $colVals = [
             ['name' => 'Martin S. McFly', 'dob' => '1968-06-20', 'weight' => 140.7, 'isDisabled' => true, 'uuid' => Uuid::uuid4()->getBytes()],
@@ -149,12 +148,12 @@ class DbTest extends TestCase
         $iterator = $peachySql->selectFrom("SELECT * FROM Users")
             ->where(['user_id' => $ids])->query()->getIterator();
 
-        $this->assertInstanceOf('Generator', $iterator);
+        $this->assertInstanceOf(\Generator::class, $iterator);
         $colValsCompare = [];
 
+        /** @var array $row */
         foreach ($iterator as $row) {
             unset($row['user_id']);
-            $row['weight'] = round($row['weight'], 1); // so that float comparison will work in HHVM
             $row['isDisabled'] = (bool)$row['isDisabled'];
             $colValsCompare[] = $row;
         }
@@ -191,7 +190,7 @@ class DbTest extends TestCase
     /**
      * @dataProvider dbTypeProvider
      */
-    public function testInsertBulk(PeachySql $peachySql)
+    public function testInsertBulk(PeachySql $peachySql): void
     {
         $rowCount = 525; // the number of rows to insert/update/delete
         $colVals = [];
@@ -223,10 +222,6 @@ class DbTest extends TestCase
 
         $rows = $peachySql->selectFrom("SELECT {$columns} FROM " . self::TABLE_NAME)
             ->where(['user_id' => $ids])->query()->getAll();
-
-        array_walk($rows, function (&$row) {
-            $row['weight'] = round($row['weight'], 1); // so that float comparison will work in HHVM
-        });
 
         $this->assertSame($colVals, $rows);
 
