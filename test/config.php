@@ -16,7 +16,7 @@ return [
             'database' => 'PeachySQL',
         ],
         'sqlsrv' => [
-            'serverName'     => 'Computer-Name\SQLEXPRESS',
+            'serverName'     => '(local)\SQLEXPRESS',
             'connectionInfo' => [
                 'Database'             => 'PeachySQL',
                 'ReturnDatesAsStrings' => true,
