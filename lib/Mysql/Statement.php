@@ -60,8 +60,9 @@ class Statement extends BaseStatement
 
             // bind_result() must be passed an argument by reference for each field
             while ($field = $this->meta->fetch_field()) {
-                /** @var string $field->name */
-                $fields[] = &$rowData[$field->name];
+                /** @var string $name */
+                $name = $field->name;
+                $fields[] = &$rowData[$name];
             }
 
             $this->meta->free();

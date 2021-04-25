@@ -162,15 +162,15 @@ class DbTest extends TestCase
 
         // use a prepared statement to update both of the rows
         $sql = "UPDATE Users SET name = ? WHERE user_id = ?";
-        $id = $name = null;
-        $stmt = $peachySql->prepare($sql, [&$name, &$id]);
+        $_id = $_name = null;
+        $stmt = $peachySql->prepare($sql, [&$_name, &$_id]);
 
         $realNames = [
             $ids[0] => 'Michael J. Fox',
             $ids[1] => 'Christopher A. Lloyd',
         ];
 
-        foreach ($realNames as $id => $name) {
+        foreach ($realNames as $_id => $_name) {
             $stmt->execute();
         }
 

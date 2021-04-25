@@ -22,7 +22,7 @@
         "phpunit/phpunit": "^9.5",
         "psalm/plugin-phpunit": "^0.15.1",
         "ramsey/uuid": "^4.1.1",
-        "vimeo/psalm": "^4.5"
+        "vimeo/psalm": "^4.7.1"
     },
     "autoload": {
         "psr-4": {"PeachySQL\\": "lib/"}
