@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.0.3] - 2021-08-06
+### Changed
+- Improved type declarations for static analysis.
+
 ## [6.0.2] - 2021-02-11
 ### Changed
 - Specified additional types and enabled Psalm static analysis.
@@ -277,7 +281,8 @@ insert a single row.
 ## [1.0.0] - 2014-02-20
 - Initial release
 
-[Unreleased]: https://github.com/theodorejb/peachy-sql/compare/v6.0.2...HEAD
+[Unreleased]: https://github.com/theodorejb/peachy-sql/compare/v6.0.3...HEAD
+[6.0.3]: https://github.com/theodorejb/peachy-sql/compare/v6.0.2...v6.0.3
 [6.0.2]: https://github.com/theodorejb/peachy-sql/compare/v6.0.1...v6.0.2
 [6.0.1]: https://github.com/theodorejb/peachy-sql/compare/v6.0.0...v6.0.1
 [6.0.0]: https://github.com/theodorejb/peachy-sql/compare/v5.5.1...v6.0.0

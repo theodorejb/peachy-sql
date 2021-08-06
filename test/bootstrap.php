@@ -2,18 +2,14 @@
 
 declare(strict_types=1);
 
-use PeachySQL\Test\DbConnector;
+use PeachySQL\Test\{DbConnector, Config, LocalConfig};
 
 require 'vendor/autoload.php';
 
-$config = require 'test/config.php';
-
-if (is_readable('test/config.user.php')) {
-    /** @psalm-suppress MissingFile, MixedAssignment */
-    $userConfig = require 'test/config.user.php';
+if (class_exists(LocalConfig::class)) {
+    // suppress error when LocalConfig doesn't exist
     /** @psalm-suppress MixedArgument */
-    $config = array_replace_recursive($config, $userConfig);
+    DbConnector::setConfig(new LocalConfig());
+} else {
+    DbConnector::setConfig(new Config());
 }
-
-/** @psalm-suppress MixedArgumentTypeCoercion */
-DbConnector::setConfig($config);

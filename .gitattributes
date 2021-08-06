@@ -1,3 +1,4 @@
-/test/        export-ignore
 /.github/     export-ignore
+/test/        export-ignore
 /phpunit.xml  export-ignore
+/psalm.xml    export-ignore

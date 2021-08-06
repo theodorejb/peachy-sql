@@ -26,14 +26,14 @@ class DbTest extends TestCase
      */
     public function dbTypeProvider(): array
     {
-        $testWith = DbConnector::getConfig()['testWith'];
+        $config = DbConnector::getConfig();
         $implementations = [];
 
-        if ($testWith['mysql']) {
+        if ($config->testMysql()) {
             $implementations[] = [new Mysql(DbConnector::getMysqlConn())];
         }
 
-        if ($testWith['sqlsrv']) {
+        if ($config->testSqlsrv()) {
             $implementations[] = [new SqlServer(DbConnector::getSqlsrvConn())];
         }
 
