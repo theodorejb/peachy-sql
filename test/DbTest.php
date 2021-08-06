@@ -151,7 +151,6 @@ class DbTest extends TestCase
         $this->assertInstanceOf(\Generator::class, $iterator);
         $colValsCompare = [];
 
-        /** @var array $row */
         foreach ($iterator as $row) {
             unset($row['user_id']);
             $row['isDisabled'] = (bool)$row['isDisabled'];

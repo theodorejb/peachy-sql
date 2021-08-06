@@ -29,6 +29,7 @@ abstract class BaseStatement
 
     /**
      * Returns an iterator which can be used to loop through each row in the result
+     * @return \Generator<int, array>
      */
     abstract public function getIterator(): \Generator;
 
@@ -50,7 +51,6 @@ abstract class BaseStatement
      */
     public function getFirst(): ?array
     {
-        /** @var null|array<string, mixed> $row */
         $row = $this->getIterator()->current();
 
         if ($row !== null) {

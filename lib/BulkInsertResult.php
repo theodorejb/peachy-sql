@@ -9,13 +9,13 @@ namespace PeachySQL;
  */
 class BulkInsertResult
 {
-    /** @var int[] */
+    /** @var list<int> */
     private array $ids;
     private int $affected;
     private int $queryCount;
 
     /**
-     * @param int[] $ids
+     * @param list<int> $ids
      */
     public function __construct(array $ids, int $affected, int $queryCount = 1)
     {
@@ -26,7 +26,7 @@ class BulkInsertResult
 
     /**
      * Returns the IDs of the inserted rows
-     * @return int[]
+     * @return list<int>
      */
     public function getIds(): array
     {

@@ -8,8 +8,8 @@ use PeachySQL\BaseOptions;
 
 /**
  * Base class used for query generation and validation
- * @psalm-type WhereVal int|float|bool|string|null
- * @psalm-type WhereClause array<string, WhereVal | list<WhereVal> | array<string, WhereVal | list<WhereVal>>>
+ * @psalm-type WhereVal = int|float|bool|string|null
+ * @psalm-type WhereClause = array<string, WhereVal | list<WhereVal> | array<string, WhereVal | list<WhereVal>>>
  */
 class Query
 {
