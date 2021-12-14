@@ -71,20 +71,27 @@ class Mysql extends PeachySql
         return $binaryStr;
     }
 
+    private function getError(): array
+    {
+        return [
+            'error' => $this->connection->error,
+            'errno' => $this->connection->errno,
+            'sqlstate' => $this->connection->sqlstate
+        ];
+    }
+
     /**
      * Returns a prepared statement which can be executed multiple times
      * @throws SqlException if an error occurs
      */
     public function prepare(string $sql, array $params = []): Statement
     {
-        if (!$stmt = $this->connection->prepare($sql)) {
-            $error = [
-                'error' => $this->connection->error,
-                'errno' => $this->connection->errno,
-                'sqlstate' => $this->connection->sqlstate
-            ];
-
-            throw new SqlException('Failed to prepare statement', [$error], $sql, $params);
+        try {
+            if (!$stmt = $this->connection->prepare($sql)) {
+                throw new SqlException('Failed to prepare statement', [$this->getError()], $sql, $params);
+            }
+        } catch (\mysqli_sql_exception $e) {
+            throw new SqlException('Failed to prepare statement', [$this->getError()], $sql, $params);
         }
 
         if (!empty($params)) {

@@ -28,8 +28,13 @@ class Statement extends BaseStatement
             throw new \Exception('Cannot execute closed statement');
         }
 
-        if (!$this->stmt->execute()) {
-            throw new SqlException('Failed to execute prepared statement',
+        try {
+            if (!$this->stmt->execute()) {
+                throw new SqlException('Failed to execute prepared statement',
+                    $this->stmt->error_list, $this->query, $this->params);
+            }
+        } catch (\mysqli_sql_exception $e) {
+            throw new SqlException('Failed to execute prepared statement: ' . $e->getMessage(),
                 $this->stmt->error_list, $this->query, $this->params);
         }
 

@@ -19,10 +19,10 @@
         "php": ">=7.4"
     },
 	"require-dev": {
-        "phpunit/phpunit": "^9.5",
+        "phpunit/phpunit": "^9.5.10",
         "psalm/plugin-phpunit": "^0.16.1",
-        "ramsey/uuid": "^4.1.1",
-        "vimeo/psalm": "^4.9.2"
+        "ramsey/uuid": "^4.2.3",
+        "vimeo/psalm": "^4.15"
     },
     "autoload": {
         "psr-4": {"PeachySQL\\": "lib/"}
