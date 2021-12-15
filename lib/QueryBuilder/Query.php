@@ -52,7 +52,9 @@ class Query
             return new SqlParams('', []);
         }
 
-        $conditions = $params = [];
+        $conditions = [];
+        /** @var list $params */
+        $params = [];
 
         foreach ($columnVals as $column => $value) {
             $column = $this->options->escapeIdentifier($column);
@@ -85,7 +87,8 @@ class Query
                     // use IN(...) syntax
                     $conditions[] = $column . ($shorthand === 'ne' ? ' NOT IN(' : ' IN(')
                         . str_repeat('?,', count($val) - 1) . '?)';
-                    $params = array_merge($params, $val);
+                    /** @var list $val */
+                    $params = [...$params, ...$val];
                 } elseif ($shorthand === 'lk' || $shorthand === 'nl') {
                     foreach ($val as $condition) {
                         $conditions[] = $column . ' ' . self::OPERATOR_MAP[$shorthand] . ' ?';

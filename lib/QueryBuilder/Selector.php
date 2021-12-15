@@ -11,7 +11,7 @@ use PeachySQL\BaseOptions;
  */
 class Selector
 {
-    private string $query;
+    private SqlParams $query;
     private BaseOptions $options;
 
     /** @var WhereClause */
@@ -20,7 +20,7 @@ class Selector
     private ?int $limit = null;
     private ?int $offset = null;
 
-    public function __construct(string $query, BaseOptions $options)
+    public function __construct(SqlParams $query, BaseOptions $options)
     {
         $this->query = $query;
         $this->options = $options;
@@ -83,7 +83,7 @@ class Selector
         $select = new Select($this->options);
         $where = $select->buildWhereClause($this->where);
         $orderBy = $select->buildOrderByClause($this->orderBy);
-        $sql = $this->query . $where->getSql() . $orderBy;
+        $sql = $this->query->getSql() . $where->getSql() . $orderBy;
 
         if ($this->limit !== null && $this->offset !== null) {
             if ($this->orderBy === []) {
@@ -93,6 +93,6 @@ class Selector
             $sql .= ' ' . $select->buildPagination($this->limit, $this->offset);
         }
 
-        return new SqlParams($sql, $where->getParams());
+        return new SqlParams($sql, [...$this->query->getParams(), ...$where->getParams()]);
     }
 }

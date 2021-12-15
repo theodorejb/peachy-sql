@@ -6,6 +6,7 @@ namespace PeachySQL;
 
 use PeachySQL\QueryBuilder\Delete;
 use PeachySQL\QueryBuilder\Insert;
+use PeachySQL\QueryBuilder\SqlParams;
 use PeachySQL\QueryBuilder\Update;
 
 /**
@@ -55,6 +56,11 @@ abstract class PeachySql
     }
 
     public function selectFrom(string $query): QueryableSelector
+    {
+        return new QueryableSelector(new SqlParams($query, []), $this);
+    }
+
+    public function select(SqlParams $query): QueryableSelector
     {
         return new QueryableSelector($query, $this);
     }

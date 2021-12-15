@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace PeachySQL\QueryBuilder;
 
+use PeachySQL\Mysql\Options as MysqlOptions;
+use PeachySQL\SqlServer\Options;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -11,10 +13,19 @@ use PHPUnit\Framework\TestCase;
  */
 class SelectorTest extends TestCase
 {
+    public function testBoundSelect(): void
+    {
+        $query = 'SELECT column, ? FROM TestTable';
+        $selector = new Selector(new SqlParams($query, ['value']), new MysqlOptions());
+        $actual = $selector->where(['column' => 10])->getSqlParams();
+        $this->assertSame($query . ' WHERE `column` = ?', $actual->getSql());
+        $this->assertSame(['value', 10], $actual->getParams());
+    }
+
     public function testWhere(): void
     {
         $query = 'SELECT "username", "password" FROM TestTable';
-        $selector = new Selector($query, new \PeachySQL\SqlServer\Options());
+        $selector = new Selector(new SqlParams($query, []), new Options());
 
         $where = [
             'username' => 'TestUser',
@@ -48,7 +59,7 @@ class SelectorTest extends TestCase
 
     public function testInvalidWhere(): void
     {
-        $query = new Query(new \PeachySQL\SqlServer\Options());
+        $query = new Query(new Options());
 
         try {
             $where = [ 'testcol' => [] ];
@@ -85,7 +96,7 @@ class SelectorTest extends TestCase
     public function testOrderBy(): void
     {
         $query = 'SELECT "username", "lastname" FROM TestTable';
-        $select = new Selector($query, new \PeachySQL\SqlServer\Options());
+        $select = new Selector(new SqlParams($query, []), new Options());
         $actual = $select->orderBy(['lastname', 'firstname'])->getSqlParams();
 
         $expected = $query . ' ORDER BY "lastname", "firstname"';
@@ -93,7 +104,7 @@ class SelectorTest extends TestCase
         $this->assertSame([], $actual->getParams());
 
         $orderBy = ['lastname' => 'asc', 'firstname' => 'asc', 'age' => 'desc'];
-        $actual = (new Selector($query, new \PeachySQL\SqlServer\Options()))->orderBy($orderBy)->getSqlParams();
+        $actual = (new Selector(new SqlParams($query, []), new Options()))->orderBy($orderBy)->getSqlParams();
         $this->assertSame($query . ' ORDER BY "lastname" ASC, "firstname" ASC, "age" DESC', $actual->getSql());
     }
 
@@ -101,14 +112,14 @@ class SelectorTest extends TestCase
     {
         $this->expectException(\Exception::class);
         $this->expectExceptionMessage('nonsense is not a valid sort direction for column "testcol". Use asc or desc.');
-        $select = new Select(new \PeachySQL\SqlServer\Options());
+        $select = new Select(new Options());
         $select->buildOrderByClause(['testcol' => 'nonsense']);
     }
 
     public function testBuildPagination(): void
     {
-        $mySqlSelect = new Select(new \PeachySQL\Mysql\Options());
-        $sqlsrvSelect = new Select(new \PeachySQL\SqlServer\Options());
+        $mySqlSelect = new Select(new MysqlOptions());
+        $sqlsrvSelect = new Select(new Options());
 
         $mySqlPage1 = $mySqlSelect->buildPagination(25, 0);
         $this->assertSame('LIMIT 25 OFFSET 0', $mySqlPage1);
@@ -126,7 +137,7 @@ class SelectorTest extends TestCase
     public function testGetSqlParams(): void
     {
         $query = "SELECT * FROM MyTable a INNER JOIN AnotherTable b ON b.id = a.id";
-        $selector = new Selector($query, new \PeachySQL\SqlServer\Options());
+        $selector = new Selector(new SqlParams($query, []), new Options());
         $result = $selector
             ->where(['a.id' => 1])
             ->orderBy(['a.username'])
@@ -143,7 +154,7 @@ class SelectorTest extends TestCase
         $this->expectException(\Exception::class);
         $this->expectExceptionMessage('Results must be sorted to use an offset');
         $query = "SELECT * FROM MyTable";
-        $selector = new Selector($query, new \PeachySQL\SqlServer\Options());
+        $selector = new Selector(new SqlParams($query, []), new Options());
         $selector->offset(0, 50)->getSqlParams();
     }
 }

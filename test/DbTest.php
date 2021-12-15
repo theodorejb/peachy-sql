@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace PeachySQL;
 
+use PeachySQL\QueryBuilder\SqlParams;
 use PeachySQL\Test\DbConnector;
 use PHPUnit\Framework\TestCase;
 use Ramsey\Uuid\Uuid;
@@ -231,5 +232,23 @@ class DbTest extends TestCase
         // delete the inserted rows
         $numDeleted = $peachySql->deleteFrom(self::TABLE_NAME, ['user_id' => $ids]);
         $this->assertSame($rowCount, $numDeleted);
+    }
+
+    /**
+     * @dataProvider dbTypeProvider
+     */
+    public function testSelectFromBinding(PeachySql $peachySql): void
+    {
+        $row = ['name' => 'Test User', 'dob' => '2000-01-01', 'weight' => 123, 'isDisabled' => true];
+        $id = $peachySql->insertRow(self::TABLE_NAME, $row)->getId();
+
+        $result = $peachySql->select(new SqlParams("SELECT name, ? AS bound FROM " . self::TABLE_NAME, ['value']))
+            ->where(['user_id' => $id])->query()->getFirst();
+
+        $this->assertSame(['name' => 'Test User', 'bound' => 'value'], $result);
+
+        // delete the inserted row
+        $numDeleted = $peachySql->deleteFrom(self::TABLE_NAME, ['user_id' => $id]);
+        $this->assertSame(1, $numDeleted);
     }
 }

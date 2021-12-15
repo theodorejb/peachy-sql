@@ -1,6 +1,8 @@
 # PeachySQL
 
-[![Packagist Version](https://img.shields.io/packagist/v/theodorejb/peachy-sql.svg)](https://packagist.org/packages/theodorejb/peachy-sql) [![Total Downloads](https://img.shields.io/packagist/dt/theodorejb/peachy-sql.svg)](https://packagist.org/packages/theodorejb/peachy-sql) [![License](https://img.shields.io/packagist/l/theodorejb/peachy-sql.svg)](https://packagist.org/packages/theodorejb/peachy-sql) [![Build Status](https://travis-ci.org/theodorejb/peachy-sql.svg?branch=master)](https://travis-ci.org/theodorejb/peachy-sql)
+[![Packagist Version](https://img.shields.io/packagist/v/theodorejb/peachy-sql.svg)](https://packagist.org/packages/theodorejb/peachy-sql)
+[![Total Downloads](https://img.shields.io/packagist/dt/theodorejb/peachy-sql.svg)](https://packagist.org/packages/theodorejb/peachy-sql)
+[![License](https://img.shields.io/packagist/l/theodorejb/peachy-sql.svg)](https://packagist.org/packages/theodorejb/peachy-sql)
 
 PeachySQL is a speedy database abstraction layer which makes it easy to execute
 prepared statements and work with large amounts of data. It supports both MySQL
@@ -55,14 +57,14 @@ echo json_encode($result->getAll());
 
 Both `prepare` and `query` return a `Statement` object with the following methods:
 
-Method        | Behavior
-------------- | --------
-`execute`     | Executes the prepared statement (automatically called when using `query`).
-`getIterator` | Returns a [Generator](http://php.net/manual/en/language.generators.overview.php) object which can be used to iterate over large result sets without caching them in memory.
-`getAll`      | Returns all selected rows as an array of associative arrays.
-`getFirst`    | Returns the first selected row as an associative array (or `null` if no rows were selected).
-`getAffected` | Returns the number of rows affected by the query.
-`close`       | Closes the prepared statement and frees its resources (automatically called when using `query`).
+| Method        | Behavior                                                                                                                                                                    |
+|---------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `execute`     | Executes the prepared statement (automatically called when using `query`).                                                                                                  |
+| `getIterator` | Returns a [Generator](http://php.net/manual/en/language.generators.overview.php) object which can be used to iterate over large result sets without caching them in memory. |
+| `getAll`      | Returns all selected rows as an array of associative arrays.                                                                                                                |
+| `getFirst`    | Returns the first selected row as an associative array (or `null` if no rows were selected).                                                                                |
+| `getAffected` | Returns the number of rows affected by the query.                                                                                                                           |
+| `close`       | Closes the prepared statement and frees its resources (automatically called when using `query`).                                                                            |
 
 If using MySQL, the `Mysql\Statement` object additionally includes a `getInsertId` method.
 
@@ -77,16 +79,16 @@ and deleting records.
 **Note:** to prevent SQL injection, the queries PeachySQL generates for these methods
 always use bound parameters for values, and column names are automatically escaped.
 
-#### selectFrom
+#### select / selectFrom
 
-The `selectFrom` method takes a single argument containing a SQL SELECT statement.
+The `selectFrom` method takes a single string argument containing a SQL SELECT query.
 It returns an object with three chainable methods:
 
 1. `where`
 2. `orderBy`
 3. `offset`
 
-Additionally the object has a `getSqlParams` method which builds the select query,
+Additionally, the object has a `getSqlParams` method which builds the select query,
 and a `query` method which executes the query and returns a `Statement` object.
 
 ```php
@@ -103,6 +105,30 @@ $rows = $peachySql->selectFrom("SELECT * FROM Users u INNER JOIN Customers c ON 
     ->query()->getIterator();
 ```
 
+The `select` method works the same as `selectFrom`, but takes a `SqlParams` object
+rather than a string and supports bound params in the select query:
+
+```php
+use PeachySQL\QueryBuilder\SqlParams;
+
+$sql = "
+    WITH UserVisits AS
+    (
+        SELECT user_id, COUNT(*) AS recent_visits
+        FROM UserHistory
+        WHERE date > ?
+        GROUP BY user_id
+    )
+    SELECT u.fname, u.lname, uv.recent_visits
+    FROM Users u
+    INNER JOIN UserVisits uv ON uv.user_id = u.user_id";
+
+$date = new DateTime('2 months ago');
+$rows = $peachySql->select(new SqlParams($sql, $date->format('Y-m-d')))
+    ->where(['u.status' => 'verified'])
+    ->query()->getIterator();
+```
+
 ##### Where clause generation
 
 In addition to passing basic column => value arrays to the `where` method, you can
@@ -111,18 +137,18 @@ specify more complex conditions by using arrays as values. For example, passing
 
 Full list of recognized operators:
 
-Operator | SQL condition
--------- | -------------
-eq       | =
-ne       | <>
-lt       | <
-le       | <=
-gt       | >
-ge       | >=
-lk       | LIKE
-nl       | NOT LIKE
-nu       | IS NULL
-nn       | IS NOT NULL
+| Operator | SQL condition |
+|----------|---------------|
+| eq       | =             |
+| ne       | <>            |
+| lt       | <             |
+| le       | <=            |
+| gt       | >             |
+| ge       | >=            |
+| lk       | LIKE          |
+| nl       | NOT LIKE      |
+| nu       | IS NULL       |
+| nn       | IS NOT NULL   |
 
 #### insertRow
 

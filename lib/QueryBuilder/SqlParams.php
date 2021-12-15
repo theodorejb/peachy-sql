@@ -10,8 +10,12 @@ namespace PeachySQL\QueryBuilder;
 class SqlParams
 {
     private string $sql;
+    /** @var list */
     private array $params;
 
+    /**
+     * @param list $params
+     */
     public function __construct(string $sql, array $params)
     {
         $this->sql = $sql;
@@ -23,6 +27,9 @@ class SqlParams
         return $this->sql;
     }
 
+    /**
+     * @return list
+     */
     public function getParams(): array
     {
         return $this->params;

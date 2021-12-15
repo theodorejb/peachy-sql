@@ -6,6 +6,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.1.0] - 2021-12-15
+### Added
+- Shorthand `select` method which takes a `SqlParams` object to allow
+bound params in the base select query.
+- Support for MySQL exception error handling mode (default in PHP 8.1).
+
 ## [6.0.3] - 2021-08-06
 ### Changed
 - Improved type declarations for static analysis.
@@ -281,7 +287,8 @@ insert a single row.
 ## [1.0.0] - 2014-02-20
 - Initial release
 
-[Unreleased]: https://github.com/theodorejb/peachy-sql/compare/v6.0.3...HEAD
+[Unreleased]: https://github.com/theodorejb/peachy-sql/compare/v6.1.0...HEAD
+[6.1.0]: https://github.com/theodorejb/peachy-sql/compare/v6.0.3...v6.1.0
 [6.0.3]: https://github.com/theodorejb/peachy-sql/compare/v6.0.2...v6.0.3
 [6.0.2]: https://github.com/theodorejb/peachy-sql/compare/v6.0.1...v6.0.2
 [6.0.1]: https://github.com/theodorejb/peachy-sql/compare/v6.0.0...v6.0.1
