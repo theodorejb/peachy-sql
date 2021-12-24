@@ -13,9 +13,6 @@ class Statement extends BaseStatement
     private int $insertId = 0;
     private ?mysqli_stmt $stmt;
 
-    /** @var \mysqli_result|false|null */
-    private $meta;
-
     public function __construct(mysqli_stmt $stmt, bool $usedPrepare, string $query, array $params)
     {
         parent::__construct($usedPrepare, $query, $params);
@@ -40,9 +37,8 @@ class Statement extends BaseStatement
 
         $this->affected = (int)$this->stmt->affected_rows;
         $this->insertId = (int)$this->stmt->insert_id; // id of first inserted row, otherwise 0;
-        $this->meta = $this->stmt->result_metadata();
 
-        if (!$this->usedPrepare && !$this->meta) {
+        if (!$this->usedPrepare && !$this->stmt->result_metadata()) {
             $this->close(); // no results, so statement can be closed
         }
     }
@@ -57,36 +53,14 @@ class Statement extends BaseStatement
 
     public function getIterator(): \Generator
     {
-        if ($this->stmt !== null && $this->meta) {
-            // retrieve selected rows without depending on mysqlnd-only methods such as get_result
-            $fields = [];
-            /** @var array<string, int|float|bool|string> $rowData */
-            $rowData = [];
+        if ($this->stmt !== null) {
+            $result = $this->stmt->get_result();
 
-            // bind_result() must be passed an argument by reference for each field
-            while ($field = $this->meta->fetch_field()) {
-                /** @var string $name */
-                $name = $field->name;
-                /** @psalm-suppress UnsupportedReferenceUsage */
-                $fields[] = &$rowData[$name];
+            if (!$result) {
+                throw new SqlException('Failed to get result', $this->stmt->error_list, $this->query, $this->params);
             }
 
-            $this->meta->free();
-
-            if (!$this->stmt->bind_result(...$fields)) {
-                throw new SqlException('Failed to bind results', $this->stmt->error_list, $this->query, $this->params);
-            }
-
-            while ($this->stmt->fetch()) {
-                // loop through all the fields and values to prevent
-                // PHP from just copying the same $rowData reference (see
-                // http://www.php.net/manual/en/mysqli-stmt.bind-result.php#92505).
-                $row = [];
-
-                foreach ($rowData as $k => $v) {
-                    $row[$k] = $v;
-                }
-
+            while ($row = $result->fetch_assoc()) {
                 yield $row;
             }
 
@@ -98,6 +72,7 @@ class Statement extends BaseStatement
 
     /**
      * Closes the prepared statement and deallocates the statement handle.
+     * @throws \Exception if the statement has already been closed
      * @throws SqlException if failure closing the statement
      */
     public function close(): void
@@ -111,6 +86,5 @@ class Statement extends BaseStatement
         }
 
         $this->stmt = null;
-        $this->meta = null;
     }
 }
