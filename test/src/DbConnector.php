@@ -41,7 +41,7 @@ class DbConnector
 
             self::$mysqlConn = new mysqli($c->getMysqlHost(), $c->getMysqlUser(), $c->getMysqlPassword(), $c->getMysqlDatabase(), $dbPort);
 
-            if (self::$mysqlConn->connect_errno) {
+            if (self::$mysqlConn->connect_error) {
                 throw new Exception('Failed to connect to MySQL: (' . self::$mysqlConn->connect_errno . ') ' . self::$mysqlConn->connect_error);
             }
 
