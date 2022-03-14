@@ -41,6 +41,7 @@ class InsertTest extends TestCase
         $lastRow = [$colVals[3]];
 
         return [
+            [[], 0, 0, []],
             [$colVals, 0, 0, [$colVals]], // one query
             [$colVals, 1000, 1000, [$colVals]], // one query
             [$colVals, 8, 4, [$colVals]], // one query

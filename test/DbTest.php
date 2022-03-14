@@ -237,6 +237,17 @@ class DbTest extends TestCase
     /**
      * @dataProvider dbTypeProvider
      */
+    public function testEmptyBulkInsert(PeachySql $peachySql): void
+    {
+        $result = $peachySql->insertRows(self::TABLE_NAME, []);
+        $this->assertSame(0, $result->getAffected());
+        $this->assertSame(0, $result->getQueryCount());
+        $this->assertEmpty($result->getIds());
+    }
+
+    /**
+     * @dataProvider dbTypeProvider
+     */
     public function testSelectFromBinding(PeachySql $peachySql): void
     {
         $row = ['name' => 'Test User', 'dob' => '2000-01-01', 'weight' => 123, 'isDisabled' => true];

@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.2.0] - 2022-03-14
+### Added
+- Support for empty bulk insert queries (previously an error was thrown).
+
 ## [6.1.0] - 2021-12-15
 ### Added
 - Shorthand `select` method which takes a `SqlParams` object to allow
@@ -287,7 +291,8 @@ insert a single row.
 ## [1.0.0] - 2014-02-20
 - Initial release
 
-[Unreleased]: https://github.com/theodorejb/peachy-sql/compare/v6.1.0...HEAD
+[Unreleased]: https://github.com/theodorejb/peachy-sql/compare/v6.2.0...HEAD
+[6.2.0]: https://github.com/theodorejb/peachy-sql/compare/v6.1.0...v6.2.0
 [6.1.0]: https://github.com/theodorejb/peachy-sql/compare/v6.0.3...v6.1.0
 [6.0.3]: https://github.com/theodorejb/peachy-sql/compare/v6.0.2...v6.0.3
 [6.0.2]: https://github.com/theodorejb/peachy-sql/compare/v6.0.1...v6.0.2

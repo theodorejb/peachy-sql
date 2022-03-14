@@ -16,12 +16,14 @@ class Insert extends Query
      */
     public static function batchRows(array $colVals, int $maxBoundParams, int $maxRows): array
     {
-        self::validateColValsStructure($colVals);
+        $maxRowsPerQuery = count($colVals);
+
+        if ($maxRowsPerQuery === 0) {
+            return [];
+        }
 
         if ($maxBoundParams > 0) {
             $maxRowsPerQuery = (int)floor($maxBoundParams / count($colVals[0])); // max bound params divided by params per row
-        } else {
-            $maxRowsPerQuery = count($colVals);
         }
 
         if ($maxRows > 0 && $maxRowsPerQuery > $maxRows) {
