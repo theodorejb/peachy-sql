@@ -150,6 +150,11 @@ Full list of recognized operators:
 | nu       | IS NULL       |
 | nn       | IS NOT NULL   |
 
+If a list of values is passed with the `eq` or `ne` operator, it will generate an
+IN(...) or NOT IN(...) condition, respectively. Passing a list with the `lk`, `nl`,
+`nu`, or `nn` operator will generate an AND condition for each value. The `lt`, `le`,
+`gt`, and `ge` operators cannot be used with a list of values.
+
 #### insertRow
 
 The `insertRow` method allows a single row to be inserted from an associative array.

@@ -9,7 +9,8 @@ use PeachySQL\BaseOptions;
 /**
  * Base class used for query generation and validation
  * @psalm-type WhereVal = int|float|bool|string|null
- * @psalm-type WhereClause = array<string, WhereVal | list<WhereVal> | array<string, WhereVal | list<WhereVal>>>
+ * @psalm-type OptWhereList = WhereVal | list<WhereVal>
+ * @psalm-type WhereClause = array<string, OptWhereList | array<string, OptWhereList>>
  */
 class Query
 {
@@ -53,7 +54,6 @@ class Query
         }
 
         $conditions = [];
-        /** @var list $params */
         $params = [];
 
         foreach ($columnVals as $column => $value) {
@@ -63,6 +63,7 @@ class Query
                 throw new \Exception("Filter conditions cannot be empty for {$column} column");
             } elseif (!is_array($value) || isset($value[0])) {
                 // same as eq operator - handle below
+                /** @var array<string, OptWhereList> $value */
                 $value = ['eq' => $value];
             }
 
@@ -87,7 +88,6 @@ class Query
                     // use IN(...) syntax
                     $conditions[] = $column . ($shorthand === 'ne' ? ' NOT IN(' : ' IN(')
                         . str_repeat('?,', count($val) - 1) . '?)';
-                    /** @var list $val */
                     $params = [...$params, ...$val];
                 } elseif ($shorthand === 'lk' || $shorthand === 'nl') {
                     foreach ($val as $condition) {
