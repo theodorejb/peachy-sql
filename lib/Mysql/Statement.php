@@ -38,8 +38,8 @@ class Statement extends BaseStatement
                 $this->stmt->error_list, $this->query, $this->params);
         }
 
-        $this->affected = $this->stmt->affected_rows;
-        $this->insertId = $this->stmt->insert_id; // id of first inserted row, otherwise 0;
+        $this->affected = (int)$this->stmt->affected_rows;
+        $this->insertId = (int)$this->stmt->insert_id; // id of first inserted row, otherwise 0;
         $this->meta = $this->stmt->result_metadata();
 
         if (!$this->usedPrepare && !$this->meta) {
@@ -67,6 +67,7 @@ class Statement extends BaseStatement
             while ($field = $this->meta->fetch_field()) {
                 /** @var string $name */
                 $name = $field->name;
+                /** @psalm-suppress UnsupportedReferenceUsage */
                 $fields[] = &$rowData[$name];
             }
 

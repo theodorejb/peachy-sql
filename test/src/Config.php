@@ -49,6 +49,7 @@ class Config
         return [
             'Database' => 'PeachySQL',
             'ReturnDatesAsStrings' => true,
+            'CharacterSet' => 'UTF-8',
         ];
     }
 }
