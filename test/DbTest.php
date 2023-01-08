@@ -194,11 +194,14 @@ class DbTest extends TestCase
     {
         $rowCount = 525; // the number of rows to insert/update/delete
         $colVals = [];
+        $dob = new \DateTime('1901-01-01');
+        $oneDay = new \DateInterval('P1D');
 
         for ($i = 1; $i <= $rowCount; $i++) {
+            $dob->add($oneDay);
             $colVals[] = [
                 'name' => 'name' . $i,
-                'dob' => (1900 + $i) . '-01-01',
+                'dob' => $dob->format('Y-m-d'),
                 'weight' => round(rand(1001, 2899) / 10, 1),
                 'isDisabled' => 0,
                 'uuid' => Uuid::uuid4()->getBytes(),
