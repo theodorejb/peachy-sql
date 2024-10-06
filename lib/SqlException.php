@@ -11,21 +11,18 @@ class SqlException extends \RuntimeException
 {
     /**
      * The error list returned by the database driver
-     * @readonly
      */
-    public array $errors;
+    public readonly array $errors;
 
     /**
      * The failed SQL query
-     * @readonly
      */
-    public string $query;
+    public readonly string $query;
 
     /**
      * The failed query's bound parameters
-     * @readonly
      */
-    public array $params;
+    public readonly array $params;
 
     /**
      * @param string $msg The error message
@@ -62,35 +59,5 @@ class SqlException extends \RuntimeException
 
         //                       MySQL                        SQL Server
         return $this->errors[0]['sqlstate'] ?? $this->errors[0]['SQLSTATE'] ?? '';
-    }
-
-    /**
-     * Returns the list of errors from sqlsrv_errors() or mysqli::$error_list
-     * @deprecated Use readonly property instead
-     * @api
-     */
-    public function getErrors(): array
-    {
-        return $this->errors;
-    }
-
-    /**
-     * Returns the failed SQL query
-     * @deprecated Use readonly property instead
-     * @api
-     */
-    public function getQuery(): string
-    {
-        return $this->query;
-    }
-
-    /**
-     * Returns the array of bound parameters
-     * @deprecated Use readonly property instead
-     * @api
-     */
-    public function getParams(): array
-    {
-        return $this->params;
     }
 }

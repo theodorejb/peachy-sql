@@ -48,16 +48,6 @@ abstract class PeachySql
      */
     abstract protected function insertBatch(string $table, array $colVals, int $identityIncrement = 1): BulkInsertResult;
 
-    /**
-     * Returns the current PeachySQL options
-     * @deprecated Use public readonly property instead
-     * @api
-     */
-    public function getOptions(): BaseOptions
-    {
-        return $this->options;
-    }
-
     public function selectFrom(string $query): QueryableSelector
     {
         return new QueryableSelector(new SqlParams($query, []), $this);
