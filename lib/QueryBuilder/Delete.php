@@ -12,7 +12,7 @@ class Delete extends Query
 {
     /**
      * Generates a delete query with where clause for the specified table.
-     * @psalm-param WhereClause $where
+     * @param WhereClause $where
      */
     public function buildQuery(string $table, array $where): SqlParams
     {

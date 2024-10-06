@@ -114,7 +114,6 @@ class SqlServer extends PeachySql
 
     /**
      * Performs a single bulk insert query
-     * @param list<array<string, mixed>> $colVals
      */
     protected function insertBatch(string $table, array $colVals, int $identityIncrement = 1): BulkInsertResult
     {

@@ -6,19 +6,19 @@ namespace PeachySQL\QueryBuilder;
 
 /**
  * Class used for update query generation
+ * @psalm-import-type ColValues from Insert
  * @psalm-import-type WhereClause from Query
  */
 class Update extends Query
 {
     /**
      * Generates an update query using the specified set/where arrays
+     * @param ColValues $set
+     * @param WhereClause $where
      * @throws \Exception if the $set or $where arrays are empty
-     * @psalm-param WhereClause $where
      */
     public function buildQuery(string $table, array $set, array $where): SqlParams
     {
-        /** @var array<string, int|float|bool|string> $set */
-
         if (empty($set) || empty($where)) {
             throw new \Exception('Set and where arrays cannot be empty');
         }
@@ -26,6 +26,7 @@ class Update extends Query
         $params = [];
         $sql = "UPDATE {$table} SET ";
 
+        /** @psalm-suppress MixedAssignment */
         foreach ($set as $column => $value) {
             $sql .= $this->options->escapeIdentifier($column) . ' = ?, ';
             $params[] = $value;

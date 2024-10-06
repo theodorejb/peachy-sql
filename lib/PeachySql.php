@@ -12,6 +12,7 @@ use PeachySQL\QueryBuilder\Update;
 /**
  * Provides reusable functionality and can be extended by database-specific classes
  * @psalm-import-type WhereClause from QueryBuilder\Query
+ * @psalm-import-type ColValues from Insert
  */
 abstract class PeachySql
 {
@@ -43,7 +44,7 @@ abstract class PeachySql
     abstract public function query(string $sql, array $params = []): BaseStatement;
 
     /**
-     * @param list<array<string, mixed>> $colVals
+     * @param list<ColValues> $colVals
      */
     abstract protected function insertBatch(string $table, array $colVals, int $identityIncrement = 1): BulkInsertResult;
 
@@ -67,7 +68,7 @@ abstract class PeachySql
 
     /**
      * Inserts one row
-     * @param array<string, mixed> $colVals
+     * @param ColValues $colVals
      */
     public function insertRow(string $table, array $colVals): InsertResult
     {
@@ -78,7 +79,7 @@ abstract class PeachySql
 
     /**
      * Insert multiple rows
-     * @param list<array<string, mixed>> $colVals
+     * @param list<ColValues> $colVals
      */
     public function insertRows(string $table, array $colVals, int $identityIncrement = 1): BulkInsertResult
     {
@@ -99,7 +100,8 @@ abstract class PeachySql
     /**
      * Updates the specified columns and values in rows matching the where clause
      * Returns the number of affected rows
-     * @psalm-param WhereClause $where
+     * @param ColValues $set
+     * @param WhereClause $where
      */
     public function updateRows(string $table, array $set, array $where): int
     {
@@ -111,7 +113,7 @@ abstract class PeachySql
     /**
      * Deletes rows from the table matching the where clause
      * Returns the number of affected rows
-     * @psalm-param WhereClause $where
+     * @param WhereClause $where
      */
     public function deleteFrom(string $table, array $where): int
     {
