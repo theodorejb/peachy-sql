@@ -70,7 +70,7 @@ class SqlServer extends PeachySql
         }
     }
 
-    public function makeBinaryParam(?string $binaryStr, ?int $length = null)
+    public function makeBinaryParam(?string $binaryStr, ?int $length = null): array
     {
         $param = [
             $binaryStr,

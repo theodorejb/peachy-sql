@@ -40,7 +40,7 @@ class Query
      */
     protected function escapeColumns(array $columns): array
     {
-        return array_map([$this->options, 'escapeIdentifier'], $columns);
+        return array_map($this->options->escapeIdentifier(...), $columns);
     }
 
     /**

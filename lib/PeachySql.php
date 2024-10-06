@@ -30,9 +30,8 @@ abstract class PeachySql
 
     /**
      * Takes a binary string and returns a value that can be bound to an insert/update statement
-     * @return string|null|array
      */
-    abstract public function makeBinaryParam(?string $binaryStr, ?int $length = null);
+    abstract public function makeBinaryParam(?string $binaryStr, ?int $length = null): array|string|null;
 
     /**
      * Prepares a SQL query for later execution
