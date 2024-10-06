@@ -27,5 +27,19 @@ class UpdateTest extends TestCase
 
         $this->assertSame($expected, $actual->sql);
         $this->assertSame(['TestUser', null, 21], $actual->params);
+
+        try {
+            $update->buildQuery('TestTable', [], $where);
+            $this->fail('Failed to throw exception for empty set array');
+        } catch (\Exception $e) {
+            $this->assertSame('Set and where arrays cannot be empty', $e->getMessage());
+        }
+
+        try {
+            $update->buildQuery('TestTable', $set, []);
+            $this->fail('Failed to throw exception for empty where array');
+        } catch (\Exception $e) {
+            $this->assertSame('Set and where arrays cannot be empty', $e->getMessage());
+        }
     }
 }

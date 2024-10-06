@@ -49,7 +49,7 @@ class Query
      */
     public function buildWhereClause(array $columnVals): SqlParams
     {
-        if (empty($columnVals)) {
+        if (!$columnVals) {
             return new SqlParams('', []);
         }
 

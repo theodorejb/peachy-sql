@@ -94,7 +94,7 @@ class Mysql extends PeachySql
             throw new SqlException('Failed to prepare statement', [$this->getError()], $sql, $params);
         }
 
-        if (!empty($params)) {
+        if ($params) {
             if (!$stmt->bind_param(self::getMysqlParamTypes($params), ...$params)) {
                 /** @var array $params */
                 throw new SqlException('Failed to bind params', $stmt->error_list, $sql, $params);

@@ -14,7 +14,7 @@ class Select extends Query
      */
     public function buildOrderByClause(array $orderBy): string
     {
-        if (empty($orderBy)) {
+        if (!$orderBy) {
             return '';
         }
 

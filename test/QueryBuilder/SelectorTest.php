@@ -58,6 +58,14 @@ class SelectorTest extends TestCase
         $this->assertSame($params, $actual->params);
     }
 
+    public function testEmptyWhere(): void
+    {
+        $query = new Query(new Options());
+        $result = $query->buildWhereClause([]);
+        $this->assertSame('', $result->sql);
+        $this->assertSame([], $result->params);
+    }
+
     public function testInvalidWhere(): void
     {
         $query = new Query(new Options());
