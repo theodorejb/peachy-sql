@@ -108,8 +108,10 @@ class DbTest extends TestCase
 
         try {
             $peachySql->query($badQuery); // should throw exception
+            $this->fail('Bad query failed to throw exception');
         } catch (SqlException $e) {
             $this->assertSame($badQuery, $e->query);
+            $this->assertSame([], $e->params);
             $this->assertSame('42000', $e->getSqlState());
 
             if ($peachySql instanceof SqlServer) {
@@ -122,11 +124,7 @@ class DbTest extends TestCase
                     . " version for the right syntax to use near '' at line 1";
                 $this->assertSame($expectedMessage, $e->getMessage());
             }
-
-            return;
         }
-
-        $this->fail('Bad query failed to throw exception');
     }
 
     /**

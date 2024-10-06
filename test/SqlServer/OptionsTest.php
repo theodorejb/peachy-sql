@@ -20,10 +20,9 @@ class OptionsTest extends TestCase
 
         try {
             $options->escapeIdentifier(''); // should throw exception
-        } catch (\InvalidArgumentException $expected) {
-            return;
+            $this->fail('escapeIdentifier failed to throw expected exception');
+        } catch (\InvalidArgumentException $e) {
+            $this->assertSame('Identifier cannot be blank', $e->getMessage());
         }
-
-        $this->fail('escapeIdentifier failed to throw expected exception');
     }
 }

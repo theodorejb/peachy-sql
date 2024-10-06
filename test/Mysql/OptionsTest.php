@@ -20,11 +20,10 @@ class OptionsTest extends TestCase
 
         try {
             $options->setMaxBoundParams(-1); // should throw exception
-        } catch (\InvalidArgumentException $expected) {
-            return;
+            $this->fail('setMaxBoundParams failed to throw expected exception');
+        } catch (\InvalidArgumentException $e) {
+            $this->assertSame('The maximum number of bound parameters must be greater than or equal to zero', $e->getMessage());
         }
-
-        $this->fail('setMaxBoundParams failed to throw expected exception');
     }
 
     public function testMaxInsertRows(): void
@@ -35,11 +34,10 @@ class OptionsTest extends TestCase
 
         try {
             $options->setMaxInsertRows(-1); // should throw exception
-        } catch (\InvalidArgumentException $expected) {
-            return;
+            $this->fail('setMaxInsertRows failed to throw expected exception');
+        } catch (\InvalidArgumentException $e) {
+            $this->assertSame('The maximum number of insert rows must be greater than or equal to zero', $e->getMessage());
         }
-
-        $this->fail('setMaxInsertRows failed to throw expected exception');
     }
 
     public function testEscapeIdentifier(): void
@@ -50,10 +48,9 @@ class OptionsTest extends TestCase
 
         try {
             $options->escapeIdentifier(''); // should throw exception
-        } catch (\InvalidArgumentException $expected) {
-            return;
+            $this->fail('escapeIdentifier failed to throw expected exception');
+        } catch (\InvalidArgumentException $e) {
+            $this->assertSame('Identifier cannot be blank', $e->getMessage());
         }
-
-        $this->fail('escapeIdentifier failed to throw expected exception');
     }
 }
