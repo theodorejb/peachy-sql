@@ -65,7 +65,7 @@ class Mysql extends PeachySql
         }
     }
 
-    public function makeBinaryParam(?string $binaryStr, ?int $length = null)
+    public function makeBinaryParam(?string $binaryStr, ?int $length = null): ?string
     {
         // binary values can be inserted directly when using MySQL
         return $binaryStr;
@@ -144,7 +144,7 @@ class Mysql extends PeachySql
     private static function getMysqlParamTypes(array $params): string
     {
         $types = '';
-        /** @var int|float|bool|string $param */
+        /** @var int|float|bool|string|null $param */
 
         foreach ($params as $param) {
             if (is_int($param) || is_bool($param)) {

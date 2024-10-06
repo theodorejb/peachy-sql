@@ -26,7 +26,7 @@ class DbTest extends TestCase
      * Returns an array of PeachySQL implementation instances.
      * @return list<array{0: PeachySql}>
      */
-    public function dbTypeProvider(): array
+    public static function dbTypeProvider(): array
     {
         $config = DbConnector::getConfig();
         $implementations = [];
