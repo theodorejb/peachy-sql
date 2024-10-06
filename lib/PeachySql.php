@@ -72,9 +72,8 @@ abstract class PeachySql
     public function insertRow(string $table, array $colVals): InsertResult
     {
         $result = $this->insertBatch($table, [$colVals]);
-        $ids = $result->getIds();
-        $id = empty($ids) ? 0 : $ids[0];
-        return new InsertResult($id, $result->getAffected());
+        $ids = $result->ids;
+        return new InsertResult($ids ? $ids[0] : 0, $result->affected);
     }
 
     /**
@@ -90,8 +89,8 @@ abstract class PeachySql
 
         foreach ($batches as $batch) {
             $result = $this->insertBatch($table, $batch, $identityIncrement);
-            $ids = array_merge($ids, $result->getIds());
-            $affected += $result->getAffected();
+            $ids = array_merge($ids, $result->ids);
+            $affected += $result->affected;
         }
 
         return new BulkInsertResult($ids, $affected, count($batches));
@@ -106,7 +105,7 @@ abstract class PeachySql
     {
         $update = new Update($this->options);
         $sqlParams = $update->buildQuery($table, $set, $where);
-        return $this->query($sqlParams->getSql(), $sqlParams->getParams())->getAffected();
+        return $this->query($sqlParams->sql, $sqlParams->params)->getAffected();
     }
 
     /**
@@ -118,6 +117,6 @@ abstract class PeachySql
     {
         $delete = new Delete($this->options);
         $sqlParams = $delete->buildQuery($table, $where);
-        return $this->query($sqlParams->getSql(), $sqlParams->getParams())->getAffected();
+        return $this->query($sqlParams->sql, $sqlParams->params)->getAffected();
     }
 }

@@ -5,14 +5,27 @@ declare(strict_types=1);
 namespace PeachySQL;
 
 /**
- * Has methods to retrieve the SQL query, bound parameters, and error array
- * (returned by sqlsrv_errors() or mysqli::$error_list).
+ * Access the SQL query, bound parameters, and error list returned by the DB driver.
  */
 class SqlException extends \RuntimeException
 {
-    private array $errors;
-    private string $query;
-    private array $params;
+    /**
+     * The error list returned by the database driver
+     * @readonly
+     */
+    public array $errors;
+
+    /**
+     * The failed SQL query
+     * @readonly
+     */
+    public string $query;
+
+    /**
+     * The failed query's bound parameters
+     * @readonly
+     */
+    public array $params;
 
     /**
      * @param string $msg The error message
@@ -53,6 +66,7 @@ class SqlException extends \RuntimeException
 
     /**
      * Returns the list of errors from sqlsrv_errors() or mysqli::$error_list
+     * @deprecated Use readonly property instead
      * @api
      */
     public function getErrors(): array
@@ -62,6 +76,8 @@ class SqlException extends \RuntimeException
 
     /**
      * Returns the failed SQL query
+     * @deprecated Use readonly property instead
+     * @api
      */
     public function getQuery(): string
     {
@@ -70,6 +86,7 @@ class SqlException extends \RuntimeException
 
     /**
      * Returns the array of bound parameters
+     * @deprecated Use readonly property instead
      * @api
      */
     public function getParams(): array

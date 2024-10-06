@@ -58,8 +58,8 @@ class DbTest extends TestCase
         ];
 
         $result = $peachySql->insertRows('Test', $colVals);
-        $this->assertSame(2, $result->getAffected());
-        $this->assertEmpty($result->getIds());
+        $this->assertSame(2, $result->affected);
+        $this->assertCount(0, $result->ids);
         $this->assertSame($colVals, $peachySql->selectFrom("SELECT * FROM Test")->query()->getAll());
         $peachySql->query("DROP TABLE Test");
     }
@@ -79,7 +79,7 @@ class DbTest extends TestCase
             'uuid' => $peachySql->makeBinaryParam(Uuid::uuid4()->getBytes(), 16),
         ];
 
-        $id = $peachySql->insertRow(self::TABLE_NAME, $colVals)->getId();
+        $id = $peachySql->insertRow(self::TABLE_NAME, $colVals)->id;
         $sql = 'SELECT user_id, isDisabled FROM Users WHERE user_id = ?';
         $result = $peachySql->query($sql, [$id]);
 
@@ -91,7 +91,7 @@ class DbTest extends TestCase
         $this->assertSame(null, $sameRow); // the row should no longer exist
 
         $peachySql->begin(); // start another transaction
-        $newId = $peachySql->insertRow(self::TABLE_NAME, $colVals)->getId();
+        $newId = $peachySql->insertRow(self::TABLE_NAME, $colVals)->id;
         $peachySql->commit(); // complete the transaction
         $newRow = $peachySql->selectFrom("SELECT user_id FROM " . self::TABLE_NAME)
             ->where(['user_id' => $newId])->query()->getFirst();
@@ -109,7 +109,7 @@ class DbTest extends TestCase
         try {
             $peachySql->query($badQuery); // should throw exception
         } catch (SqlException $e) {
-            $this->assertSame($badQuery, $e->getQuery());
+            $this->assertSame($badQuery, $e->query);
             $this->assertSame('42000', $e->getSqlState());
 
             if ($peachySql instanceof SqlServer) {
@@ -146,7 +146,7 @@ class DbTest extends TestCase
             $insertColVals[] = $row;
         }
 
-        $ids = $peachySql->insertRows(self::TABLE_NAME, $insertColVals)->getIds();
+        $ids = $peachySql->insertRows(self::TABLE_NAME, $insertColVals)->ids;
         $iterator = $peachySql->selectFrom("SELECT * FROM Users")
             ->where(['user_id' => $ids])->query()->getIterator();
 
@@ -218,9 +218,9 @@ class DbTest extends TestCase
         }
 
         $result = $peachySql->insertRows(self::TABLE_NAME, $insertColVals);
-        $this->assertSame($expectedQueries, $result->getQueryCount());
-        $this->assertSame($rowCount, $result->getAffected());
-        $ids = $result->getIds();
+        $this->assertSame($expectedQueries, $result->queryCount);
+        $this->assertSame($rowCount, $result->affected);
+        $ids = $result->ids;
         $this->assertSame($rowCount, count($ids));
         $columns = implode(', ', array_keys($colVals[0]));
 
@@ -244,9 +244,9 @@ class DbTest extends TestCase
     public function testEmptyBulkInsert(PeachySql $peachySql): void
     {
         $result = $peachySql->insertRows(self::TABLE_NAME, []);
-        $this->assertSame(0, $result->getAffected());
-        $this->assertSame(0, $result->getQueryCount());
-        $this->assertEmpty($result->getIds());
+        $this->assertSame(0, $result->affected);
+        $this->assertSame(0, $result->queryCount);
+        $this->assertEmpty($result->ids);
     }
 
     /**
@@ -255,7 +255,7 @@ class DbTest extends TestCase
     public function testSelectFromBinding(PeachySql $peachySql): void
     {
         $row = ['name' => 'Test User', 'dob' => '2000-01-01', 'weight' => 123, 'isDisabled' => true];
-        $id = $peachySql->insertRow(self::TABLE_NAME, $row)->getId();
+        $id = $peachySql->insertRow(self::TABLE_NAME, $row)->id;
 
         $result = $peachySql->select(new SqlParams("SELECT name, ? AS bound FROM " . self::TABLE_NAME, ['value']))
             ->where(['user_id' => $id])->query()->getFirst();

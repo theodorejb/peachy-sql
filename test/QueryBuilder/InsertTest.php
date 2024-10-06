@@ -73,8 +73,8 @@ class InsertTest extends TestCase
 
         $actual = (new Insert(new \PeachySQL\Mysql\Options()))->buildQuery('TestTable', [$colVals]);
         $expected = 'INSERT INTO TestTable (`col1`, `col2`, `col3`) VALUES (?,?,?)';
-        $this->assertSame($expected, $actual->getSql());
-        $this->assertSame(['val1', 'val2', 'val3'], $actual->getParams());
+        $this->assertSame($expected, $actual->sql);
+        $this->assertSame(['val1', 'val2', 'val3'], $actual->params);
     }
 
     /**
@@ -97,7 +97,7 @@ class InsertTest extends TestCase
         $expected = 'INSERT INTO TestTable ("col1", "col2")'
             . ' VALUES (?,?), (?,?);'
             . ' SELECT SCOPE_IDENTITY() AS RowID;';
-        $this->assertSame($expected, $actual->getSql());
-        $this->assertSame(['foo1', 'foo2', 'bar1', 'bar2'], $actual->getParams());
+        $this->assertSame($expected, $actual->sql);
+        $this->assertSame(['foo1', 'foo2', 'bar1', 'bar2'], $actual->params);
     }
 }

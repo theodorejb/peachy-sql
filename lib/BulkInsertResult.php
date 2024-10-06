@@ -6,13 +6,25 @@ namespace PeachySQL;
 
 /**
  * Object returned when performing bulk insert queries
+ * @readonly
  */
 class BulkInsertResult
 {
-    /** @var list<int> */
-    private array $ids;
-    private int $affected;
-    private int $queryCount;
+    /**
+     * The IDs of the inserted rows
+     * @var list<int>
+     */
+    public array $ids;
+
+    /**
+     * The number of affected rows
+     */
+    public int $affected;
+
+    /**
+     * The number of individual queries used to perform the bulk insert
+     */
+    public int $queryCount;
 
     /**
      * @param list<int> $ids
@@ -26,7 +38,9 @@ class BulkInsertResult
 
     /**
      * Returns the IDs of the inserted rows
+     * @deprecated Use readonly property instead
      * @return list<int>
+     * @api
      */
     public function getIds(): array
     {
@@ -35,6 +49,8 @@ class BulkInsertResult
 
     /**
      * Returns the number of affected rows
+     * @deprecated Use readonly property instead
+     * @api
      */
     public function getAffected(): int
     {
@@ -43,6 +59,8 @@ class BulkInsertResult
 
     /**
      * Returns the number of individual queries used to perform the bulk insert
+     * @deprecated Use readonly property instead
+     * @api
      */
     public function getQueryCount(): int
     {

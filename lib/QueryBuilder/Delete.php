@@ -17,7 +17,7 @@ class Delete extends Query
     public function buildQuery(string $table, array $where): SqlParams
     {
         $whereClause = $this->buildWhereClause($where);
-        $sql = "DELETE FROM {$table}" . $whereClause->getSql();
-        return new SqlParams($sql, $whereClause->getParams());
+        $sql = "DELETE FROM {$table}" . $whereClause->sql;
+        return new SqlParams($sql, $whereClause->params);
     }
 }

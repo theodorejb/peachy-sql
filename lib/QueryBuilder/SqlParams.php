@@ -6,15 +6,16 @@ namespace PeachySQL\QueryBuilder;
 
 /**
  * Represents a SQL query and its corresponding parameters
+ * @readonly
  */
 class SqlParams
 {
-    private string $sql;
-    /** @var list */
-    private array $params;
+    public string $sql;
+    /** @var list<mixed> */
+    public array $params;
 
     /**
-     * @param list $params
+     * @param list<mixed> $params
      */
     public function __construct(string $sql, array $params)
     {
@@ -22,13 +23,19 @@ class SqlParams
         $this->params = $params;
     }
 
+    /**
+     * @deprecated Use readonly property instead
+     * @api
+     */
     public function getSql(): string
     {
         return $this->sql;
     }
 
     /**
-     * @return list
+     * @return list<mixed>
+     * @deprecated Use readonly property instead
+     * @api
      */
     public function getParams(): array
     {

@@ -25,7 +25,7 @@ class UpdateTest extends TestCase
         $actual = $update->buildQuery('TestTable', $set, $where);
         $expected = 'UPDATE TestTable SET "username" = ?, "othercol" = ? WHERE "id" = ?';
 
-        $this->assertSame($expected, $actual->getSql());
-        $this->assertSame(['TestUser', null, 21], $actual->getParams());
+        $this->assertSame($expected, $actual->sql);
+        $this->assertSame(['TestUser', null, 21], $actual->params);
     }
 }

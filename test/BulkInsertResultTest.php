@@ -15,8 +15,8 @@ class BulkInsertResultTest extends TestCase
     public function testCreateRetrieve(): void
     {
         $result = new BulkInsertResult([48, 49, 50], 6, 2);
-        $this->assertSame([48, 49, 50], $result->getIds());
-        $this->assertSame(6, $result->getAffected());
-        $this->assertSame(2, $result->getQueryCount());
+        $this->assertSame([48, 49, 50], $result->ids);
+        $this->assertSame(6, $result->affected);
+        $this->assertSame(2, $result->queryCount);
     }
 }

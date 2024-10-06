@@ -6,11 +6,19 @@ namespace PeachySQL;
 
 /**
  * Object returned when inserting a single row
+ * @readonly
  */
 class InsertResult
 {
-    private int $id;
-    private int $affected;
+    /**
+     * The ID of the inserted row (0 if the row doesn't have an auto-incremented ID)
+     */
+    public int $id;
+
+    /**
+     * The number of affected rows
+     */
+    public int $affected;
 
     public function __construct(int $id, int $affected)
     {
@@ -21,6 +29,8 @@ class InsertResult
     /**
      * Returns the ID of the inserted row
      * @throws \Exception if the row doesn't have an auto-incremented ID
+     * @deprecated Use readonly property instead
+     * @api
      */
     public function getId(): int
     {
@@ -33,6 +43,8 @@ class InsertResult
 
     /**
      * Returns the number of affected rows
+     * @deprecated Use readonly property instead
+     * @api
      */
     public function getAffected(): int
     {

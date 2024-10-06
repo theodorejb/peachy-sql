@@ -119,7 +119,7 @@ class SqlServer extends PeachySql
     protected function insertBatch(string $table, array $colVals, int $identityIncrement = 1): BulkInsertResult
     {
         $sqlParams = (new Insert($this->options))->buildQuery($table, $colVals);
-        $result = $this->query($sqlParams->getSql(), $sqlParams->getParams());
+        $result = $this->query($sqlParams->sql, $sqlParams->params);
         $row = $result->getFirst();
 
         if (isset($row['RowID'])) {

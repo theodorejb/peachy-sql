@@ -19,6 +19,6 @@ class QueryableSelector extends Selector
     public function query(): BaseStatement
     {
         $sqlParams = $this->getSqlParams();
-        return $this->peachySql->query($sqlParams->getSql(), $sqlParams->getParams());
+        return $this->peachySql->query($sqlParams->sql, $sqlParams->params);
     }
 }

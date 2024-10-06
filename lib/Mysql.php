@@ -123,7 +123,7 @@ class Mysql extends PeachySql
     protected function insertBatch(string $table, array $colVals, int $identityIncrement = 1): BulkInsertResult
     {
         $sqlParams = (new Insert($this->options))->buildQuery($table, $colVals);
-        $result = $this->query($sqlParams->getSql(), $sqlParams->getParams());
+        $result = $this->query($sqlParams->sql, $sqlParams->params);
         $firstId = $result->getInsertId(); // ID of first inserted row, or zero if no insert ID
 
         if ($firstId) {
@@ -138,7 +138,7 @@ class Mysql extends PeachySql
 
     /**
      * To bind parameters in mysqli, the type of each parameter must be specified.
-     * See http://php.net/manual/en/mysqli-stmt.bind-param.php.
+     * See https://www.php.net/manual/en/mysqli-stmt.bind-param.php.
      * Returns a string containing the type character for each parameter.
      */
     private static function getMysqlParamTypes(array $params): string

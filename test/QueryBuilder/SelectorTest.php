@@ -19,8 +19,8 @@ class SelectorTest extends TestCase
         $query = 'SELECT column, ? FROM TestTable';
         $selector = new Selector(new SqlParams($query, ['value']), new MysqlOptions());
         $actual = $selector->where(['column' => 10])->getSqlParams();
-        $this->assertSame($query . ' WHERE `column` = ?', $actual->getSql());
-        $this->assertSame(['value', 10], $actual->getParams());
+        $this->assertSame($query . ' WHERE `column` = ?', $actual->sql);
+        $this->assertSame(['value', 10], $actual->params);
     }
 
     public function testWhere(): void
@@ -51,11 +51,11 @@ class SelectorTest extends TestCase
             . ' AND "firstname" NOT LIKE ? AND "firstname" NOT LIKE ?'
             . ' AND "datecol" >= ? AND "datecol" < ?'
             . ' AND "numcol" > ? AND "numcol" <= ?';
-        $this->assertSame($expected, $actual->getSql());
+        $this->assertSame($expected, $actual->sql);
 
         $params = ['TestUser', 'Brown', 'TestPassword', 'Password123', 'Password123', 'Admin%',
             'Low%', '%nnet%', '%zabet%', '%dore', '%rah', '2016-05-01', '2016-06-01', 10, 20];
-        $this->assertSame($params, $actual->getParams());
+        $this->assertSame($params, $actual->params);
     }
 
     public function testInvalidWhere(): void
@@ -101,12 +101,12 @@ class SelectorTest extends TestCase
         $actual = $select->orderBy(['lastname', 'firstname'])->getSqlParams();
 
         $expected = $query . ' ORDER BY "lastname", "firstname"';
-        $this->assertSame($expected, $actual->getSql());
-        $this->assertSame([], $actual->getParams());
+        $this->assertSame($expected, $actual->sql);
+        $this->assertSame([], $actual->params);
 
         $orderBy = ['lastname' => 'asc', 'firstname' => 'asc', 'age' => 'desc'];
         $actual = (new Selector(new SqlParams($query, []), new Options()))->orderBy($orderBy)->getSqlParams();
-        $this->assertSame($query . ' ORDER BY "lastname" ASC, "firstname" ASC, "age" DESC', $actual->getSql());
+        $this->assertSame($query . ' ORDER BY "lastname" ASC, "firstname" ASC, "age" DESC', $actual->sql);
     }
 
     public function testInvalidOrderBy(): void
@@ -146,8 +146,8 @@ class SelectorTest extends TestCase
             ->getSqlParams();
 
         $expected = $query . ' WHERE "a"."id" = ? ORDER BY "a"."username" OFFSET 25 ROWS FETCH NEXT 25 ROWS ONLY';
-        $this->assertSame($expected, $result->getSql());
-        $this->assertSame([1], $result->getParams());
+        $this->assertSame($expected, $result->sql);
+        $this->assertSame([1], $result->params);
     }
 
     public function testInvalidPagination(): void

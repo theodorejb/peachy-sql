@@ -33,8 +33,8 @@ class Update extends Query
 
         $sql = substr_replace($sql, '', -2); // remove trailing comma
         $whereClause = $this->buildWhereClause($where);
-        $sql .= $whereClause->getSql();
+        $sql .= $whereClause->sql;
 
-        return new SqlParams($sql, array_merge($params, $whereClause->getParams()));
+        return new SqlParams($sql, array_merge($params, $whereClause->params));
     }
 }

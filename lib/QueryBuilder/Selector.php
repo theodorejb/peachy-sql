@@ -83,7 +83,7 @@ class Selector
         $select = new Select($this->options);
         $where = $select->buildWhereClause($this->where);
         $orderBy = $select->buildOrderByClause($this->orderBy);
-        $sql = $this->query->getSql() . $where->getSql() . $orderBy;
+        $sql = $this->query->sql . $where->sql . $orderBy;
 
         if ($this->limit !== null && $this->offset !== null) {
             if ($this->orderBy === []) {
@@ -93,6 +93,6 @@ class Selector
             $sql .= ' ' . $select->buildPagination($this->limit, $this->offset);
         }
 
-        return new SqlParams($sql, [...$this->query->getParams(), ...$where->getParams()]);
+        return new SqlParams($sql, [...$this->query->params, ...$where->params]);
     }
 }

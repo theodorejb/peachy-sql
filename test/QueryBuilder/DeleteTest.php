@@ -19,7 +19,7 @@ class DeleteTest extends TestCase
         $actual = $delete->buildQuery('TestTable', $where);
         $expected = 'DELETE FROM TestTable WHERE "id" = ? AND "username" IN(?,?)';
 
-        $this->assertSame($expected, $actual->getSql());
-        $this->assertSame([5, 'tester', 'tester2'], $actual->getParams());
+        $this->assertSame($expected, $actual->sql);
+        $this->assertSame([5, 'tester', 'tester2'], $actual->params);
     }
 }

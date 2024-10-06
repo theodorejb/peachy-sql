@@ -27,7 +27,7 @@ $peachySql = new PeachySQL\SqlServer($sqlSrvConn);
 ```
 
 After instantiation, arbitrary statements can be prepared by passing a
-SQL string and array of bound parameters to the `prepare` method:
+SQL string and array of bound parameters to the `prepare()` method:
 
 ```php
 $sql = "UPDATE Users SET fname = ? WHERE user_id = ?";
@@ -46,7 +46,7 @@ $stmt->close();
 ```
 
 Most of the time prepared statements only need to be executed a single time.
-To make this easier, PeachySQL provides a `query` method which automatically
+To make this easier, PeachySQL provides a `query()` method which automatically
 prepares, executes, and closes a statement after results are retrieved:
 
 ```php
@@ -55,20 +55,20 @@ $result = $peachySql->query($sql, ['theo%', 'b%']);
 echo json_encode($result->getAll());
 ```
 
-Both `prepare` and `query` return a `Statement` object with the following methods:
+Both `prepare()` and `query()` return a `Statement` object with the following methods:
 
-| Method        | Behavior                                                                                                                                                                    |
-|---------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `execute`     | Executes the prepared statement (automatically called when using `query`).                                                                                                  |
-| `getIterator` | Returns a [Generator](http://php.net/manual/en/language.generators.overview.php) object which can be used to iterate over large result sets without caching them in memory. |
-| `getAll`      | Returns all selected rows as an array of associative arrays.                                                                                                                |
-| `getFirst`    | Returns the first selected row as an associative array (or `null` if no rows were selected).                                                                                |
-| `getAffected` | Returns the number of rows affected by the query.                                                                                                                           |
-| `close`       | Closes the prepared statement and frees its resources (automatically called when using `query`).                                                                            |
+| Method          | Behavior                                                                                                         |
+|-----------------|------------------------------------------------------------------------------------------------------------------|
+| `execute()`     | Executes the prepared statement (automatically called when using `query()`).                                     |
+| `getIterator()` | Returns a `Generator` object which can be used to iterate over large result sets without caching them in memory. |
+| `getAll()`      | Returns all selected rows as an array of associative arrays.                                                     |
+| `getFirst()`    | Returns the first selected row as an associative array (or `null` if no rows were selected).                     |
+| `getAffected()` | Returns the number of rows affected by the query.                                                                |
+| `close()`       | Closes the prepared statement and frees its resources (automatically called when using `query()`).               |
 
-If using MySQL, the `Mysql\Statement` object additionally includes a `getInsertId` method.
+If using MySQL, the `Mysql\Statement` object additionally includes a `getInsertId()` method.
 
-Internally, `getAll` and `getFirst` are implemented using `getIterator`.
+Internally, `getAll()` and `getFirst()` are implemented using `getIterator()`.
 As such they can only be called once for a given statement.
 
 ### Shorthand methods
@@ -81,15 +81,15 @@ always use bound parameters for values, and column names are automatically escap
 
 #### select / selectFrom
 
-The `selectFrom` method takes a single string argument containing a SQL SELECT query.
+The `selectFrom()` method takes a single string argument containing a SQL SELECT query.
 It returns an object with three chainable methods:
 
-1. `where`
-2. `orderBy`
-3. `offset`
+1. `where()`
+2. `orderBy()`
+3. `offset()`
 
-Additionally, the object has a `getSqlParams` method which builds the select query,
-and a `query` method which executes the query and returns a `Statement` object.
+Additionally, the object has a `getSqlParams()` method which builds the select query,
+and a `query()` method which executes the query and returns a `Statement` object.
 
 ```php
 // select all columns and rows in a table, ordered by last name and then first name
@@ -105,8 +105,8 @@ $rows = $peachySql->selectFrom("SELECT * FROM Users u INNER JOIN Customers c ON 
     ->query()->getIterator();
 ```
 
-The `select` method works the same as `selectFrom`, but takes a `SqlParams` object
-rather than a string and supports bound params in the select query:
+The `select()` method works the same as `selectFrom()`, but takes a `SqlParams`
+object rather than a string and supports bound params in the select query:
 
 ```php
 use PeachySQL\QueryBuilder\SqlParams;
@@ -123,15 +123,16 @@ $sql = "
     FROM Users u
     INNER JOIN UserVisits uv ON uv.user_id = u.user_id";
 
-$date = new DateTime('2 months ago');
-$rows = $peachySql->select(new SqlParams($sql, $date->format('Y-m-d')))
+$date = (new DateTime('2 months ago'))->format('Y-m-d');
+
+$rows = $peachySql->select(new SqlParams($sql, [$date]))
     ->where(['u.status' => 'verified'])
     ->query()->getIterator();
 ```
 
 ##### Where clause generation
 
-In addition to passing basic column => value arrays to the `where` method, you can
+In addition to passing basic column => value arrays to the `where()` method, you can
 specify more complex conditions by using arrays as values. For example, passing
 `['col' => ['lt' => 15, 'gt' => 5]]` would generate the condition `WHERE col < 15 AND col > 5`.
 
@@ -157,8 +158,8 @@ IN(...) or NOT IN(...) condition, respectively. Passing a list with the `lk`, `n
 
 #### insertRow
 
-The `insertRow` method allows a single row to be inserted from an associative array.
-It returns an `InsertResult` object with `getId` and `getAffected` methods.
+The `insertRow()` method allows a single row to be inserted from an associative array.
+It returns an `InsertResult` object with readonly `id` and `affected` properties.
 
 ```php
 $userData = [
@@ -166,13 +167,13 @@ $userData = [
     'lname' => 'Chamberlin'
 ];
 
-$id = $peachySql->insertRow('Users', $userData)->getId();
+$id = $peachySql->insertRow('Users', $userData)->id;
 ```
 
 #### insertRows
 
-The `insertRows` method makes it possible to bulk-insert multiple rows from an array.
-It returns a `BulkInsertResult` object with `getIds`, `getAffected`, and `getQueryCount` methods.
+The `insertRows()` method makes it possible to bulk-insert multiple rows from an array.
+It returns a `BulkInsertResult` object with readonly `ids`, `affected`, and `queryCount` properties.
 
 ```php
 $userData = [
@@ -191,32 +192,32 @@ $userData = [
 ];
 
 $result = $peachySql->insertRows('Users', $userData);
-$ids = $result->getIds(); // e.g. [64, 65, 66]
-$affected = $result->getAffected(); // 3
-$queries = $result->getQueryCount(); // 1
+$ids = $result->ids; // e.g. [64, 65, 66]
+$affected = $result->affected; // 3
+$queries = $result->queryCount; // 1
 ```
 
-An optional third parameter can be passed to `insertRows` to override the default
+An optional third parameter can be passed to `insertRows()` to override the default
 identity increment value:
 
 ```php
 $result = $peachySql->insertRows('Users', $userData, 2);
-$ids = $result->getIds(); // e.g. [64, 66, 68]
+$ids = $result->ids; // e.g. [64, 66, 68]
 ```
 
 Note: SQL Server allows a maximum of 1,000 rows to be inserted at a time, and limits
 individual queries to 2,099 or fewer bound parameters. MySQL supports a maximum of
 65,536 bound parameters per query. These limits can be easily reached when attempting
 to bulk-insert hundreds or thousands of rows at a time. To avoid these limits, the
-`insertRows` method automatically splits large queries into batches to efficiently
-handle any number of rows (`getQueryCount` returns the number of required batches).
+`insertRows()` method automatically splits large queries into batches to efficiently
+handle any number of rows (`queryCount` contains the number of required batches).
 
 #### updateRows and deleteFrom
 
-The `updateRows` method takes three arguments: a table name, an associative array of
+The `updateRows()` method takes three arguments: a table name, an associative array of
 columns/values to update, and a WHERE array to filter which rows are updated.
 
-The `deleteFrom` method takes a table name and a WHERE array to filter the rows to delete.
+The `deleteFrom()` method takes a table name and a WHERE array to filter the rows to delete.
 
 Both methods return the number of affected rows.
 
@@ -231,14 +232,14 @@ $userTable->deleteFrom('Users', ['user_id' => [1, 2, 3]]);
 
 ### Transactions
 
-Call the `begin` method to start a transaction. `prepare`, `execute`, `query`
+Call the `begin()` method to start a transaction. `prepare()`, `execute()`, `query()`
 and any of the shorthand methods can then be called as needed, before committing
-or rolling back the transaction with `commit` or `rollback`.
+or rolling back the transaction with `commit()` or `rollback()`.
 
 ## Author
 
 Theodore Brown  
-<http://theodorejb.me>
+<https://theodorejb.me>
 
 ## License
 

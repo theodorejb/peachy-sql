@@ -15,15 +15,7 @@ class InsertResultTest extends TestCase
     public function testCreateRetrieve(): void
     {
         $result = new InsertResult(24, 2);
-        $this->assertSame(24, $result->getId());
-        $this->assertSame(2, $result->getAffected());
-    }
-
-    public function testNoInsertId(): void
-    {
-        $this->expectException(\Exception::class);
-        $this->expectExceptionMessage('Inserted row does not have an auto-incremented ID');
-        $result = new InsertResult(0, 1);
-        $result->getId();
+        $this->assertSame(24, $result->id);
+        $this->assertSame(2, $result->affected);
     }
 }

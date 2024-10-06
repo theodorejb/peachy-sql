@@ -10,11 +10,13 @@ namespace PeachySQL;
 abstract class BaseStatement
 {
     protected int $affected = 0;
+    /**
+     * True if the statement was created using `prepare()`
+     */
     protected bool $usedPrepare;
     protected string $query;
     protected array $params;
 
-    // $usedPrepare should be true if the statement was created using `prepare`
     public function __construct(bool $usedPrepare, string $query, array $params)
     {
         $this->usedPrepare = $usedPrepare;
