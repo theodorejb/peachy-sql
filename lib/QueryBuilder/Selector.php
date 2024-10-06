@@ -11,27 +11,22 @@ use PeachySQL\BaseOptions;
  */
 class Selector
 {
-    private SqlParams $query;
-    private BaseOptions $options;
-
     /** @var WhereClause */
     private array $where = [];
     private array $orderBy = [];
     private ?int $limit = null;
     private ?int $offset = null;
 
-    public function __construct(SqlParams $query, BaseOptions $options)
-    {
-        $this->query = $query;
-        $this->options = $options;
-    }
+    public function __construct(
+        private readonly SqlParams $query,
+        private readonly BaseOptions $options,
+    ) {}
 
     /**
      * @param WhereClause $filter
-     * @return $this
      * @throws \Exception if called more than once
      */
-    public function where(array $filter)
+    public function where(array $filter): static
     {
         if ($this->where !== []) {
             throw new \Exception('where method can only be called once');
@@ -42,11 +37,9 @@ class Selector
     }
 
     /**
-     * @param array $sort
-     * @return $this
      * @throws \Exception if called more than once
      */
-    public function orderBy(array $sort)
+    public function orderBy(array $sort): static
     {
         if ($this->orderBy !== []) {
             throw new \Exception('orderBy method can only be called once');
@@ -57,12 +50,9 @@ class Selector
     }
 
     /**
-     * @param int $offset
-     * @param int $limit
-     * @return $this
      * @throws \Exception if a parameter is invalid
      */
-    public function offset(int $offset, int $limit)
+    public function offset(int $offset, int $limit): static
     {
         if ($limit < 1) {
             throw new \Exception('Limit must be greater than zero');
