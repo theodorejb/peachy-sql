@@ -236,6 +236,22 @@ Call the `begin()` method to start a transaction. `prepare()`, `execute()`, `que
 and any of the shorthand methods can then be called as needed, before committing
 or rolling back the transaction with `commit()` or `rollback()`.
 
+### Binary columns
+
+In order to insert/update raw binary data in SQL Server (e.g. to a binary or varbinary column),
+the bound parameter must be a special array which sets the encoding type to binary. PeachySQL
+provides a `makeBinaryParam()` method to simplify this:
+
+```php
+$colVals = [
+    'fname' => 'Tony',
+    'lname' => 'Hoare',
+    'uuid' => $peachySql->makeBinaryParam(Uuid::uuid4()->getBytes()),
+];
+
+$peachySql->insertRow('Users', $colVals);
+```
+
 ## Author
 
 Theodore Brown  

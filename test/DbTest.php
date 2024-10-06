@@ -233,6 +233,16 @@ class DbTest extends TestCase
         $numUpdated = $peachySql->updateRows(self::TABLE_NAME, ['name' => 'updated'], ['user_id' => $ids]);
         $this->assertSame($rowCount, $numUpdated);
 
+        // update a binary column
+        $newUuid = Uuid::uuid4()->getBytes();
+        $userId = $ids[0];
+        $set = ['uuid' => $peachySql->makeBinaryParam($newUuid)];
+        $peachySql->updateRows(self::TABLE_NAME, $set, ['user_id' => $userId]);
+        /** @var array{uuid: string} $updatedRow */
+        $updatedRow = $peachySql->selectFrom("SELECT uuid FROM " . self::TABLE_NAME)
+            ->where(['user_id' => $userId])->query()->getFirst();
+        $this->assertSame($newUuid, $updatedRow['uuid']);
+
         // delete the inserted rows
         $numDeleted = $peachySql->deleteFrom(self::TABLE_NAME, ['user_id' => $ids]);
         $this->assertSame($rowCount, $numDeleted);
