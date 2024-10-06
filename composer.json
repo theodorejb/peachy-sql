@@ -20,14 +20,21 @@
     },
 	"require-dev": {
         "phpunit/phpunit": "^9.5.10",
-        "psalm/plugin-phpunit": "^0.18.4",
+        "psalm/plugin-phpunit": "^0.19",
         "ramsey/uuid": "^4.2.3",
-        "vimeo/psalm": "^5.4"
+        "vimeo/psalm": "^5.26"
     },
     "autoload": {
         "psr-4": {"PeachySQL\\": "lib/"}
     },
     "autoload-dev": {
         "psr-4": {"PeachySQL\\Test\\": "test/src/"}
+    },
+    "config": {
+        "sort-packages": true
+    },
+    "scripts": {
+        "analyze": "psalm",
+        "test": "phpunit"
     }
 }

@@ -10,20 +10,15 @@ If you'd like to help out, you've come to the right place!
 
 ## Tests
 
-From a console in the working directory, execute `"vendor/bin/phpunit"` to run all unit tests.
+From a console in the working directory, execute `composer test` to run all unit tests.
 
 ### Database setup
 
-By default, database tests for MySQL will attempt to run on on database named
+By default, database tests for MySQL will attempt to run on a database named
 `PeachySQL` as the root user with a blank password. To run tests on SQL Server
-or override connection settings, create a `config.user.php` file in the test
-directory (see `test/config.php`). Database tests can be skipped entirely by
-running `"vendor/bin/phpunit" --testsuite no-db`.
+or override connection settings, create a `LocalConfig.php` class in the `test/src`
+directory which extends `Config` and overrides the desired methods.
 
-## Coding guidelines
+## Static analysis
 
-Submitted code should comply with the
-[PSR-1 basic coding standard](http://www.php-fig.org/psr/psr-1/) and
-[PSR-2 coding style guide](http://www.php-fig.org/psr/psr-2/). In a nutshell,
-this means 4-space indentation (not tabs), UTF-8 encoding, and specific rules
-for whitespace, capitalization, and namespacing (follow the links for details).
+Run `composer analyze` to detect type-related errors before runtime.

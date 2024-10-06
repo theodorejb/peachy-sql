@@ -73,7 +73,6 @@ class Statement extends BaseStatement
     /**
      * Closes the prepared statement and deallocates the statement handle.
      * @throws \Exception if the statement has already been closed
-     * @throws SqlException if failure closing the statement
      */
     public function close(): void
     {
@@ -81,10 +80,7 @@ class Statement extends BaseStatement
             throw new \Exception('Statement has already been closed');
         }
 
-        if (!$this->stmt->close()) {
-            throw new SqlException('Failed to close statement', $this->stmt->error_list, $this->query, $this->params);
-        }
-
+        $this->stmt->close();
         $this->stmt = null;
     }
 }

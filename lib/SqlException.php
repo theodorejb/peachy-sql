@@ -53,6 +53,7 @@ class SqlException extends \RuntimeException
 
     /**
      * Returns the list of errors from sqlsrv_errors() or mysqli::$error_list
+     * @api
      */
     public function getErrors(): array
     {
@@ -69,6 +70,7 @@ class SqlException extends \RuntimeException
 
     /**
      * Returns the array of bound parameters
+     * @api
      */
     public function getParams(): array
     {
