@@ -111,6 +111,7 @@ class DbTest extends TestCase
             $this->fail('Bad query failed to throw exception');
         } catch (SqlException $e) {
             $this->assertSame($badQuery, $e->query);
+            $this->assertSame([], $e->params);
             $this->assertSame('42000', $e->getSqlState());
 
             if ($peachySql instanceof SqlServer) {
