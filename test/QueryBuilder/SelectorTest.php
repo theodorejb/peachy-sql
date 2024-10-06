@@ -2,9 +2,10 @@
 
 declare(strict_types=1);
 
-namespace PeachySQL\QueryBuilder;
+namespace PeachySQL\Test\QueryBuilder;
 
 use PeachySQL\Mysql\Options as MysqlOptions;
+use PeachySQL\QueryBuilder\{Query, Select, Selector, SqlParams};
 use PeachySQL\SqlServer\Options;
 use PHPUnit\Framework\TestCase;
 

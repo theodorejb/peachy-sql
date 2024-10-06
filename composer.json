@@ -28,7 +28,7 @@
         "psr-4": {"PeachySQL\\": "lib/"}
     },
     "autoload-dev": {
-        "psr-4": {"PeachySQL\\Test\\": "test/src/"}
+        "psr-4": {"PeachySQL\\Test\\": "test/"}
     },
     "config": {
         "sort-packages": true

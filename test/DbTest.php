@@ -2,10 +2,11 @@
 
 declare(strict_types=1);
 
-namespace PeachySQL;
+namespace PeachySQL\Test;
 
+use PeachySQL\{Mysql, PeachySql, SqlException, SqlServer};
 use PeachySQL\QueryBuilder\SqlParams;
-use PeachySQL\Test\DbConnector;
+use PeachySQL\Test\src\DbConnector;
 use PHPUnit\Framework\TestCase;
 use Ramsey\Uuid\Uuid;
 

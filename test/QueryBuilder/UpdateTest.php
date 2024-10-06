@@ -2,8 +2,9 @@
 
 declare(strict_types=1);
 
-namespace PeachySQL\QueryBuilder;
+namespace PeachySQL\Test\QueryBuilder;
 
+use PeachySQL\QueryBuilder\Update;
 use PHPUnit\Framework\TestCase;
 
 /**

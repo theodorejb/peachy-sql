@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use PeachySQL\Test\{DbConnector, Config, LocalConfig};
+use PeachySQL\Test\src\{DbConnector, Config, LocalConfig};
 
 require 'vendor/autoload.php';
 

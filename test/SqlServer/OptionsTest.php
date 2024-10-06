@@ -2,8 +2,9 @@
 
 declare(strict_types=1);
 
-namespace PeachySQL\SqlServer;
+namespace PeachySQL\Test\SqlServer;
 
+use PeachySQL\SqlServer\Options;
 use PHPUnit\Framework\TestCase;
 
 /**

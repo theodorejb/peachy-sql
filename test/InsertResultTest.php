@@ -2,8 +2,9 @@
 
 declare(strict_types=1);
 
-namespace PeachySQL;
+namespace PeachySQL\Test;
 
+use PeachySQL\InsertResult;
 use PHPUnit\Framework\TestCase;
 
 /**

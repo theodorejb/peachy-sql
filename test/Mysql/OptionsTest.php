@@ -2,8 +2,9 @@
 
 declare(strict_types=1);
 
-namespace PeachySQL\Mysql;
+namespace PeachySQL\Test\Mysql;
 
+use PeachySQL\Mysql\Options;
 use PHPUnit\Framework\TestCase;
 
 /**

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace PeachySQL\Test;
+namespace PeachySQL\Test\src;
 
 use Exception;
 use mysqli;
