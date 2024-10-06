@@ -7,7 +7,7 @@ jobs:
 
     strategy:
       matrix:
-        php: [ '7.4', '8.0', '8.1', '8.2' ]
+        php: [ '7.4', '8.0', '8.1', '8.2', '8.3' ]
 
     services:
       mysql:
@@ -39,7 +39,7 @@ jobs:
 
       - name: Run Psalm
         run: psalm --output-format=github
-        if: ${{ matrix.php == '8.2' }}
+        if: ${{ matrix.php == '8.3' }}
 
       - name: Run PHPUnit
         run: vendor/bin/phpunit
