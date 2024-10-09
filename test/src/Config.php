@@ -9,16 +9,6 @@ namespace PeachySQL\Test\src;
  */
 class Config
 {
-    public function testMysql(): bool
-    {
-        return true;
-    }
-
-    public function testSqlsrv(): bool
-    {
-        return false; // don't test by default since it isn't configured on CI
-    }
-
     public function getMysqlHost(): string
     {
         return '127.0.0.1';

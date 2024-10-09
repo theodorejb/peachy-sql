@@ -20,6 +20,12 @@ jobs:
         options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
 
     steps:
+      - name: Install SQL Server
+        uses: Particular/install-sql-server-action@v1.2.0
+        with:
+          connection-string-env-var: MSSQL_CONNECTION_STRING
+          catalog: PeachySQL
+
       - name: Checkout
         uses: actions/checkout@v4
 
