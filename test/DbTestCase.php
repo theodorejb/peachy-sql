@@ -4,46 +4,26 @@ declare(strict_types=1);
 
 namespace PeachySQL\Test;
 
-use PeachySQL\{Mysql, PeachySql, SqlException, SqlServer};
+use PeachySQL\{PeachySql, SqlException, SqlServer};
 use PeachySQL\QueryBuilder\SqlParams;
-use PeachySQL\Test\src\DbConnector;
 use PHPUnit\Framework\TestCase;
 use Ramsey\Uuid\Uuid;
 
 /**
  * Database tests for the PeachySQL library.
  */
-class DbTest extends TestCase
+abstract class DbTestCase extends TestCase
 {
     private string $table = 'Users';
 
-    public static function tearDownAfterClass(): void
-    {
-        DbConnector::deleteTestTables();
-    }
-
     /**
-     * Returns an array of PeachySQL implementation instances.
+     * Returns a list of PeachySQL implementation instances.
      * @return list<array{0: PeachySql}>
      */
-    public static function dbTypeProvider(): array
-    {
-        $config = DbConnector::getConfig();
-        $implementations = [];
-
-        if ($config->testMysql()) {
-            $implementations[] = [new Mysql(DbConnector::getMysqlConn())];
-        }
-
-        if ($config->testSqlsrv()) {
-            $implementations[] = [new SqlServer(DbConnector::getSqlsrvConn())];
-        }
-
-        return $implementations;
-    }
+    abstract public static function dbProvider(): array;
 
     /**
-     * @dataProvider dbTypeProvider
+     * @dataProvider dbProvider
      */
     public function testNoIdentityInsert(PeachySql $peachySql): void
     {
@@ -65,7 +45,7 @@ class DbTest extends TestCase
     }
 
     /**
-     * @dataProvider dbTypeProvider
+     * @dataProvider dbProvider
      */
     public function testTransactions(PeachySql $peachySql): void
     {
@@ -100,7 +80,7 @@ class DbTest extends TestCase
     }
 
     /**
-     * @dataProvider dbTypeProvider
+     * @dataProvider dbProvider
      */
     public function testException(PeachySql $peachySql): void
     {
@@ -128,7 +108,7 @@ class DbTest extends TestCase
     }
 
     /**
-     * @dataProvider dbTypeProvider
+     * @dataProvider dbProvider
      */
     public function testIteratorQuery(PeachySql $peachySql): void
     {
@@ -187,7 +167,7 @@ class DbTest extends TestCase
     }
 
     /**
-     * @dataProvider dbTypeProvider
+     * @dataProvider dbProvider
      */
     public function testInsertBulk(PeachySql $peachySql): void
     {
@@ -247,7 +227,7 @@ class DbTest extends TestCase
     }
 
     /**
-     * @dataProvider dbTypeProvider
+     * @dataProvider dbProvider
      */
     public function testEmptyBulkInsert(PeachySql $peachySql): void
     {
@@ -258,7 +238,7 @@ class DbTest extends TestCase
     }
 
     /**
-     * @dataProvider dbTypeProvider
+     * @dataProvider dbProvider
      */
     public function testSelectFromBinding(PeachySql $peachySql): void
     {

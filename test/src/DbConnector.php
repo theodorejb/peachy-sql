@@ -105,20 +105,17 @@ class DbConnector
         }
     }
 
-    public static function deleteTestTables(): void
+    public static function deleteMysqlTestTable(): void
     {
-        $sql = 'DROP TABLE Users';
-
-        if (self::$mysqlConn) {
-            if (!self::$mysqlConn->query($sql)) {
-                throw new Exception('Failed to drop MySQL test table: ' . print_r(self::$mysqlConn->error_list, true));
-            }
+        if (self::$mysqlConn && !self::$mysqlConn->query("DROP TABLE Users")) {
+            throw new Exception('Failed to drop MySQL test table: ' . print_r(self::$mysqlConn->error_list, true));
         }
+    }
 
-        if (self::$sqlsrvConn) {
-            if (!sqlsrv_query(self::$sqlsrvConn, $sql)) {
-                throw new Exception('Failed to drop SQL Server test table: ' . print_r(sqlsrv_errors(), true));
-            }
+    public static function deleteMssqlTestTable(): void
+    {
+        if (self::$sqlsrvConn && !sqlsrv_query(self::$sqlsrvConn, "DROP TABLE Users")) {
+            throw new Exception('Failed to drop SQL Server test table: ' . print_r(sqlsrv_errors(), true));
         }
     }
 }
