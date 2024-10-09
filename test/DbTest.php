@@ -15,7 +15,7 @@ use Ramsey\Uuid\Uuid;
  */
 class DbTest extends TestCase
 {
-    CONST TABLE_NAME = 'Users';
+    private string $table = 'Users';
 
     public static function tearDownAfterClass(): void
     {
@@ -79,8 +79,8 @@ class DbTest extends TestCase
             'uuid' => $peachySql->makeBinaryParam(Uuid::uuid4()->getBytes(), 16),
         ];
 
-        $id = $peachySql->insertRow(self::TABLE_NAME, $colVals)->id;
-        $sql = 'SELECT user_id, isDisabled FROM Users WHERE user_id = ?';
+        $id = $peachySql->insertRow($this->table, $colVals)->id;
+        $sql = "SELECT user_id, isDisabled FROM {$this->table} WHERE user_id = ?";
         $result = $peachySql->query($sql, [$id]);
 
         $this->assertSame(-1, $result->getAffected());
@@ -91,9 +91,9 @@ class DbTest extends TestCase
         $this->assertSame(null, $sameRow); // the row should no longer exist
 
         $peachySql->begin(); // start another transaction
-        $newId = $peachySql->insertRow(self::TABLE_NAME, $colVals)->id;
+        $newId = $peachySql->insertRow($this->table, $colVals)->id;
         $peachySql->commit(); // complete the transaction
-        $newRow = $peachySql->selectFrom("SELECT user_id FROM " . self::TABLE_NAME)
+        $newRow = $peachySql->selectFrom("SELECT user_id FROM {$this->table}")
             ->where(['user_id' => $newId])->query()->getFirst();
 
         $this->assertSame(['user_id' => $newId], $newRow); // the row should exist
@@ -144,8 +144,8 @@ class DbTest extends TestCase
             $insertColVals[] = $row;
         }
 
-        $ids = $peachySql->insertRows(self::TABLE_NAME, $insertColVals)->ids;
-        $iterator = $peachySql->selectFrom("SELECT * FROM Users")
+        $ids = $peachySql->insertRows($this->table, $insertColVals)->ids;
+        $iterator = $peachySql->selectFrom("SELECT * FROM {$this->table}")
             ->where(['user_id' => $ids])->query()->getIterator();
 
         $this->assertInstanceOf(\Generator::class, $iterator);
@@ -160,7 +160,7 @@ class DbTest extends TestCase
         $this->assertSame($colVals, $colValsCompare);
 
         // use a prepared statement to update both of the rows
-        $sql = "UPDATE Users SET name = ? WHERE user_id = ?";
+        $sql = "UPDATE {$this->table} SET name = ? WHERE user_id = ?";
         $_id = $_name = null;
         $stmt = $peachySql->prepare($sql, [&$_name, &$_id]);
 
@@ -175,7 +175,7 @@ class DbTest extends TestCase
 
         $stmt->close();
 
-        $updatedNames = $peachySql->selectFrom("SELECT name FROM " . self::TABLE_NAME)
+        $updatedNames = $peachySql->selectFrom("SELECT name FROM {$this->table}")
             ->where(['user_id' => $ids])->query()->getAll();
 
         $expected = [
@@ -215,34 +215,34 @@ class DbTest extends TestCase
             $insertColVals[] = $row;
         }
 
-        $result = $peachySql->insertRows(self::TABLE_NAME, $insertColVals);
+        $result = $peachySql->insertRows($this->table, $insertColVals);
         $this->assertSame($expectedQueries, $result->queryCount);
         $this->assertSame($rowCount, $result->affected);
         $ids = $result->ids;
         $this->assertSame($rowCount, count($ids));
         $columns = implode(', ', array_keys($colVals[0]));
 
-        $rows = $peachySql->selectFrom("SELECT {$columns} FROM " . self::TABLE_NAME)
+        $rows = $peachySql->selectFrom("SELECT {$columns} FROM {$this->table}")
             ->where(['user_id' => $ids])->query()->getAll();
 
         $this->assertSame($colVals, $rows);
 
         // update the inserted rows
-        $numUpdated = $peachySql->updateRows(self::TABLE_NAME, ['name' => 'updated'], ['user_id' => $ids]);
+        $numUpdated = $peachySql->updateRows($this->table, ['name' => 'updated'], ['user_id' => $ids]);
         $this->assertSame($rowCount, $numUpdated);
 
         // update a binary column
         $newUuid = Uuid::uuid4()->getBytes();
         $userId = $ids[0];
         $set = ['uuid' => $peachySql->makeBinaryParam($newUuid)];
-        $peachySql->updateRows(self::TABLE_NAME, $set, ['user_id' => $userId]);
+        $peachySql->updateRows($this->table, $set, ['user_id' => $userId]);
         /** @var array{uuid: string} $updatedRow */
-        $updatedRow = $peachySql->selectFrom("SELECT uuid FROM " . self::TABLE_NAME)
+        $updatedRow = $peachySql->selectFrom("SELECT uuid FROM {$this->table}")
             ->where(['user_id' => $userId])->query()->getFirst();
         $this->assertSame($newUuid, $updatedRow['uuid']);
 
         // delete the inserted rows
-        $numDeleted = $peachySql->deleteFrom(self::TABLE_NAME, ['user_id' => $ids]);
+        $numDeleted = $peachySql->deleteFrom($this->table, ['user_id' => $ids]);
         $this->assertSame($rowCount, $numDeleted);
     }
 
@@ -251,7 +251,7 @@ class DbTest extends TestCase
      */
     public function testEmptyBulkInsert(PeachySql $peachySql): void
     {
-        $result = $peachySql->insertRows(self::TABLE_NAME, []);
+        $result = $peachySql->insertRows($this->table, []);
         $this->assertSame(0, $result->affected);
         $this->assertSame(0, $result->queryCount);
         $this->assertEmpty($result->ids);
@@ -263,15 +263,15 @@ class DbTest extends TestCase
     public function testSelectFromBinding(PeachySql $peachySql): void
     {
         $row = ['name' => 'Test User', 'dob' => '2000-01-01', 'weight' => 123, 'isDisabled' => true];
-        $id = $peachySql->insertRow(self::TABLE_NAME, $row)->id;
+        $id = $peachySql->insertRow($this->table, $row)->id;
 
-        $result = $peachySql->select(new SqlParams("SELECT name, ? AS bound FROM " . self::TABLE_NAME, ['value']))
+        $result = $peachySql->select(new SqlParams("SELECT name, ? AS bound FROM {$this->table}", ['value']))
             ->where(['user_id' => $id])->query()->getFirst();
 
         $this->assertSame(['name' => 'Test User', 'bound' => 'value'], $result);
 
         // delete the inserted row
-        $numDeleted = $peachySql->deleteFrom(self::TABLE_NAME, ['user_id' => $id]);
+        $numDeleted = $peachySql->deleteFrom($this->table, ['user_id' => $id]);
         $this->assertSame(1, $numDeleted);
     }
 }
