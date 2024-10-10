@@ -43,13 +43,4 @@ class Select extends Query
 
         return substr_replace($sql, '', -2); // remove trailing comma and space
     }
-
-    public function buildPagination(int $limit, int $offset): string
-    {
-        if ($this->options instanceof \PeachySQL\SqlServer\Options) {
-            return "OFFSET {$offset} ROWS FETCH NEXT {$limit} ROWS ONLY";
-        } else {
-            return "LIMIT {$limit} OFFSET {$offset}";
-        }
-    }
 }
