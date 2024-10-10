@@ -62,6 +62,7 @@ abstract class DbTestCase extends TestCase
         ];
 
         $id = $peachySql->insertRow($this->table, $colVals)->id;
+        // this won't work with pgsql
         $sql = "SELECT user_id, isDisabled FROM {$this->table} WHERE user_id = ?";
         $result = $peachySql->query($sql, [$id]);
 
@@ -134,6 +135,7 @@ abstract class DbTestCase extends TestCase
         $this->assertSame($colVals, $colValsCompare);
 
         // use a prepared statement to update both of the rows
+        // this won't work with pgsql
         $sql = "UPDATE {$this->table} SET name = ? WHERE user_id = ?";
         $_id = $_name = null;
         $stmt = $peachySql->prepare($sql, [&$_name, &$_id]);
@@ -240,6 +242,7 @@ abstract class DbTestCase extends TestCase
         $row = ['name' => 'Test User', 'dob' => '2000-01-01', 'weight' => 123, 'isDisabled' => true];
         $id = $peachySql->insertRow($this->table, $row)->id;
 
+        // this won't work with pgsql
         $result = $peachySql->select(new SqlParams("SELECT name, ? AS bound FROM {$this->table}", ['value']))
             ->where(['user_id' => $id])->query()->getFirst();
 
