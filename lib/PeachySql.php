@@ -83,7 +83,7 @@ abstract class PeachySql
     public function insertRows(string $table, array $colVals, int $identityIncrement = 1): BulkInsertResult
     {
         // check whether the query needs to be split into multiple batches
-        $batches = Insert::batchRows($colVals, $this->options->getMaxBoundParams(), $this->options->getMaxInsertRows());
+        $batches = Insert::batchRows($colVals, $this->options->maxBoundParams, $this->options->maxInsertRows);
         $ids = [];
         $affected = 0;
 

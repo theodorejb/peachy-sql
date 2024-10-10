@@ -11,7 +11,8 @@ use PeachySQL\BaseOptions;
  */
 class Options extends BaseOptions
 {
-    protected int $maxBoundParams = 65536; // 2^16
+    // https://stackoverflow.com/questions/6581573/what-are-the-max-number-of-allowable-parameters-per-database-provider-type
+    public int $maxBoundParams = 65_535; // 2 ** 16 - 1;
 
     // use backticks to delimit identifiers since not everyone uses ANSI mode
     public function escapeIdentifier(string $identifier): string
