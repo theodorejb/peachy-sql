@@ -40,7 +40,25 @@ class Query
      */
     protected function escapeColumns(array $columns): array
     {
-        return array_map($this->options->escapeIdentifier(...), $columns);
+        return array_map($this->escapeIdentifier(...), $columns);
+    }
+
+    /**
+     * Escapes a table or column name, and validates that it isn't blank
+     */
+    public function escapeIdentifier(string $identifier): string
+    {
+        if ($identifier === '') {
+            throw new \InvalidArgumentException('Identifier cannot be blank');
+        }
+
+        $escaper = function (string $identifier): string {
+            $c = $this->options->identifierQuote;
+            return $c . str_replace($c, $c . $c, $identifier) . $c;
+        };
+
+        $qualifiedIdentifiers = array_map($escaper, explode('.', $identifier));
+        return implode('.', $qualifiedIdentifiers);
     }
 
     /**
@@ -57,7 +75,7 @@ class Query
         $params = [];
 
         foreach ($columnVals as $column => $value) {
-            $column = $this->options->escapeIdentifier($column);
+            $column = $this->escapeIdentifier($column);
 
             if (is_array($value) && count($value) === 0) {
                 throw new \Exception("Filter conditions cannot be empty for {$column} column");

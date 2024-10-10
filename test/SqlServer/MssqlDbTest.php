@@ -15,6 +15,16 @@ class MssqlDbTest extends DbTestCase
 {
     private static ?SqlServer $db = null;
 
+    protected function getExpectedBadSyntaxCode(): int
+    {
+        return 102;
+    }
+
+    protected function getExpectedBadSyntaxError(): string
+    {
+        return 'Incorrect syntax';
+    }
+
     public static function dbProvider(): SqlServer
     {
         if (!self::$db) {

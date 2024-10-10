@@ -49,13 +49,7 @@ class Insert extends Query
         $valStr = ' VALUES' . substr_replace(str_repeat($valSetStr, count($colVals)), '', -1); // remove trailing comma
         $params = array_merge(...array_map('array_values', $colVals));
 
-        if ($this->options instanceof \PeachySQL\SqlServer\Options) {
-            $selStr = '; SELECT SCOPE_IDENTITY() AS RowID;';
-        } else {
-            $selStr = '';
-        }
-
-        return new SqlParams($insert . $valStr . $selStr, $params);
+        return new SqlParams($insert . $valStr . $this->options->insertIdSelector, $params);
     }
 
     /**

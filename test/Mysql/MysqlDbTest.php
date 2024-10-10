@@ -15,6 +15,16 @@ class MysqlDbTest extends DbTestCase
 {
     private static ?Mysql $db = null;
 
+    protected function getExpectedBadSyntaxCode(): int
+    {
+        return 1064;
+    }
+
+    protected function getExpectedBadSyntaxError(): string
+    {
+        return 'error in your SQL syntax';
+    }
+
     public static function dbProvider(): Mysql
     {
         if (!self::$db) {

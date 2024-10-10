@@ -28,7 +28,7 @@ class Update extends Query
 
         /** @psalm-suppress MixedAssignment */
         foreach ($set as $column => $value) {
-            $sql .= $this->options->escapeIdentifier($column) . ' = ?, ';
+            $sql .= $this->escapeIdentifier($column) . ' = ?, ';
             $params[] = $value;
         }
 

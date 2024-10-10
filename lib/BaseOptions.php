@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 namespace PeachySQL;
 
 /**
@@ -21,21 +19,11 @@ abstract class BaseOptions
      */
     public int $maxInsertRows = 0;
 
+    public bool $fetchNextSyntax = false;
+    public string $insertIdSelector = '';
+
     /**
-     * Escapes a table or column name, and validates that it isn't blank
+     * The character used to quote identifiers.
      */
-    public function escapeIdentifier(string $identifier): string
-    {
-        if ($identifier === '') {
-            throw new \InvalidArgumentException('Identifier cannot be blank');
-        }
-
-        // use standard double quotes to delimit identifiers
-        $escaper = function (string $identifier): string {
-            return '"' . str_replace('"', '""', $identifier) . '"';
-        };
-
-        $qualifiedIdentifiers = array_map($escaper, explode('.', $identifier));
-        return implode('.', $qualifiedIdentifiers);
-    }
+    public string $identifierQuote = '"';
 }

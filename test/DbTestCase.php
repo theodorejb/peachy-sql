@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace PeachySQL\Test;
 
-use PeachySQL\{PeachySql, SqlException, SqlServer};
+use PeachySQL\{PeachySql, SqlException};
 use PeachySQL\QueryBuilder\SqlParams;
 use PHPUnit\Framework\TestCase;
 use Ramsey\Uuid\Uuid;
@@ -20,6 +20,15 @@ abstract class DbTestCase extends TestCase
      * Returns a list of PeachySQL implementation instances.
      */
     abstract public static function dbProvider(): PeachySql;
+
+    abstract protected function getExpectedBadSyntaxCode(): int;
+
+    abstract protected function getExpectedBadSyntaxError(): string;
+
+    protected function getExpectedBadSqlState(): string
+    {
+        return '42000';
+    }
 
     public function testNoIdentityInsert(): void
     {
@@ -83,18 +92,9 @@ abstract class DbTestCase extends TestCase
             $peachySql->query($badQuery); // should throw exception
             $this->fail('Bad query failed to throw exception');
         } catch (SqlException $e) {
-            $this->assertSame('42000', $e->getSqlState());
-
-            if ($peachySql instanceof SqlServer) {
-                $this->assertSame(102, $e->getCode());
-                $this->assertStringEndsWith("Incorrect syntax near 'WHERE'.", $e->getMessage());
-            } else {
-                $this->assertSame(1064, $e->getCode());
-                $expectedMessage = "Failed to prepare statement: You have an error in your"
-                    . " SQL syntax; check the manual that corresponds to your MySQL server"
-                    . " version for the right syntax to use near '' at line 1";
-                $this->assertSame($expectedMessage, $e->getMessage());
-            }
+            $this->assertSame($this->getExpectedBadSqlState(), $e->getSqlState());
+            $this->assertSame($this->getExpectedBadSyntaxCode(), $e->getCode());
+            $this->assertStringContainsString($this->getExpectedBadSyntaxError(), $e->getMessage());
         }
     }
 
@@ -175,12 +175,13 @@ abstract class DbTestCase extends TestCase
         }
 
         $insertColVals = [];
-        $expectedQueries = ($peachySql instanceof SqlServer) ? 2 : 1;
-
         foreach ($colVals as $row) {
             $row['uuid'] = $peachySql->makeBinaryParam($row['uuid']);
             $insertColVals[] = $row;
         }
+
+        $totalBoundParams = count($insertColVals[0]) * $rowCount;
+        $expectedQueries = ($totalBoundParams > $peachySql->options->maxBoundParams) ? 2 : 1;
 
         $result = $peachySql->insertRows($this->table, $insertColVals);
         $this->assertSame($expectedQueries, $result->queryCount);

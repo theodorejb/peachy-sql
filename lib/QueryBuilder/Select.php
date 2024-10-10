@@ -29,7 +29,7 @@ class Select extends Query
         /** @var array<string, string> $orderBy */
         // [column1 => direction, column2 => direction, ...]
         foreach ($orderBy as $column => $direction) {
-            $column = $this->options->escapeIdentifier($column);
+            $column = $this->escapeIdentifier($column);
             $sql .= $column;
 
             if ($direction === 'asc') {
@@ -46,7 +46,7 @@ class Select extends Query
 
     public function buildPagination(int $limit, int $offset): string
     {
-        if ($this->options instanceof \PeachySQL\SqlServer\Options) {
+        if ($this->options->fetchNextSyntax) {
             return "OFFSET {$offset} ROWS FETCH NEXT {$limit} ROWS ONLY";
         } else {
             return "LIMIT {$limit} OFFSET {$offset}";
