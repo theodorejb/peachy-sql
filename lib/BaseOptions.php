@@ -21,6 +21,8 @@ abstract class BaseOptions
      */
     public int $maxInsertRows = 0;
 
+    public string $insertIdSelector = '';
+
     /**
      * Escapes a table or column name, and validates that it isn't blank
      */
@@ -37,5 +39,10 @@ abstract class BaseOptions
 
         $qualifiedIdentifiers = array_map($escaper, explode('.', $identifier));
         return implode('.', $qualifiedIdentifiers);
+    }
+
+    public function buildPagination(int $limit, int $offset): string
+    {
+        return "LIMIT {$limit} OFFSET {$offset}";
     }
 }

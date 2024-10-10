@@ -80,7 +80,7 @@ class Selector
                 throw new \Exception('Results must be sorted to use an offset');
             }
 
-            $sql .= ' ' . $select->buildPagination($this->limit, $this->offset);
+            $sql .= ' ' . $this->options->buildPagination($this->limit, $this->offset);
         }
 
         return new SqlParams($sql, [...$this->query->params, ...$where->params]);

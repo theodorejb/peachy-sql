@@ -25,4 +25,15 @@ class OptionsTest extends TestCase
             $this->assertSame('Identifier cannot be blank', $e->getMessage());
         }
     }
+
+    public function testBuildPagination(): void
+    {
+        $options = new Options();
+
+        $page1 = $options->buildPagination(25, 0);
+        $this->assertSame('OFFSET 0 ROWS FETCH NEXT 25 ROWS ONLY', $page1);
+
+        $page3 = $options->buildPagination(100, 200);
+        $this->assertSame('OFFSET 200 ROWS FETCH NEXT 100 ROWS ONLY', $page3);
+    }
 }
