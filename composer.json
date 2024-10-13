@@ -39,6 +39,8 @@
     },
     "scripts": {
         "analyze": "psalm",
-        "test": "phpunit"
+        "test": "phpunit",
+        "test-mssql": "phpunit --exclude-group mysql",
+        "test-mysql": "phpunit --exclude-group mssql"
     }
 }

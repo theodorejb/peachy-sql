@@ -42,6 +42,6 @@ jobs:
         if: ${{ matrix.php == '8.3' }}
 
       - name: Run PHPUnit
-        run: vendor/bin/phpunit
+        run: composer test-mysql
         env:
           DB_PORT: ${{ job.services.mysql.ports[3306] }}

@@ -15,7 +15,7 @@ class InsertTest extends TestCase
     /**
      * @return list<array{0: list<array<string, string>>, 1: int, 2: int, 3: list<mixed>}>
      */
-    public function batchRowsTestCases(): array
+    public static function batchRowsTestCases(): array
     {
         $colVals = [
             [

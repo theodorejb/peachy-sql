@@ -15,9 +15,9 @@ From a console in the working directory, execute `composer test` to run all unit
 ### Database setup
 
 By default, database tests for MySQL will attempt to run on a database named
-`PeachySQL` as the root user with a blank password. To run tests on SQL Server
-or override connection settings, create a `LocalConfig.php` class in the `test/src`
-directory which extends `Config` and overrides the desired methods.
+`PeachySQL` as the root user with a blank password. To override connection settings,
+create a `LocalConfig.php` class in the `test/src` directory which extends `Config`
+and overrides the desired methods.
 
 ## Static analysis
 

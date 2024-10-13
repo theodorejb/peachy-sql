@@ -4,49 +4,27 @@ declare(strict_types=1);
 
 namespace PeachySQL\Test;
 
-use PeachySQL\{Mysql, PeachySql, SqlException, SqlServer};
+use PeachySQL\{PeachySql, SqlException, SqlServer};
 use PeachySQL\QueryBuilder\SqlParams;
-use PeachySQL\Test\src\DbConnector;
 use PHPUnit\Framework\TestCase;
 use Ramsey\Uuid\Uuid;
 
 /**
  * Database tests for the PeachySQL library.
  */
-class DbTest extends TestCase
+abstract class DbTestCase extends TestCase
 {
     private string $table = 'Users';
 
-    public static function tearDownAfterClass(): void
-    {
-        DbConnector::deleteTestTables();
-    }
-
     /**
-     * Returns an array of PeachySQL implementation instances.
-     * @return list<array{0: PeachySql}>
+     * Returns a list of PeachySQL implementation instances.
      */
-    public function dbTypeProvider(): array
+    abstract public static function dbProvider(): PeachySql;
+
+    public function testNoIdentityInsert(): void
     {
-        $config = DbConnector::getConfig();
-        $implementations = [];
-
-        if ($config->testMysql()) {
-            $implementations[] = [new Mysql(DbConnector::getMysqlConn())];
-        }
-
-        if ($config->testSqlsrv()) {
-            $implementations[] = [new SqlServer(DbConnector::getSqlsrvConn())];
-        }
-
-        return $implementations;
-    }
-
-    /**
-     * @dataProvider dbTypeProvider
-     */
-    public function testNoIdentityInsert(PeachySql $peachySql): void
-    {
+        $peachySql = static::dbProvider();
+        $peachySql->query("DROP TABLE IF EXISTS Test");
         $peachySql->query("CREATE TABLE Test ( name VARCHAR(50) NOT NULL )");
 
         // affected count should be zero if no rows are updated
@@ -61,14 +39,11 @@ class DbTest extends TestCase
         $this->assertSame(2, $result->affected);
         $this->assertCount(0, $result->ids);
         $this->assertSame($colVals, $peachySql->selectFrom("SELECT * FROM Test")->query()->getAll());
-        $peachySql->query("DROP TABLE Test");
     }
 
-    /**
-     * @dataProvider dbTypeProvider
-     */
-    public function testTransactions(PeachySql $peachySql): void
+    public function testTransactions(): void
     {
+        $peachySql = static::dbProvider();
         $peachySql->begin(); // start transaction
 
         $colVals = [
@@ -99,11 +74,9 @@ class DbTest extends TestCase
         $this->assertSame(['user_id' => $newId], $newRow); // the row should exist
     }
 
-    /**
-     * @dataProvider dbTypeProvider
-     */
-    public function testException(PeachySql $peachySql): void
+    public function testException(): void
     {
+        $peachySql = static::dbProvider();
         $badQuery = 'SELECT * FROM nonExistentTable WHERE';
 
         try {
@@ -127,11 +100,9 @@ class DbTest extends TestCase
         }
     }
 
-    /**
-     * @dataProvider dbTypeProvider
-     */
-    public function testIteratorQuery(PeachySql $peachySql): void
+    public function testIteratorQuery(): void
     {
+        $peachySql = static::dbProvider();
         $colVals = [
             ['name' => 'Martin S. McFly', 'dob' => '1968-06-20', 'weight' => 140.7, 'isDisabled' => true, 'uuid' => Uuid::uuid4()->getBytes()],
             ['name' => 'Emmett L. Brown', 'dob' => '1920-01-01', 'weight' => 155.4, 'isDisabled' => false, 'uuid' => null],
@@ -186,11 +157,9 @@ class DbTest extends TestCase
         $this->assertSame($expected, $updatedNames);
     }
 
-    /**
-     * @dataProvider dbTypeProvider
-     */
-    public function testInsertBulk(PeachySql $peachySql): void
+    public function testInsertBulk(): void
     {
+        $peachySql = static::dbProvider();
         $rowCount = 525; // the number of rows to insert/update/delete
         $colVals = [];
         $dob = new \DateTime('1901-01-01');
@@ -246,22 +215,18 @@ class DbTest extends TestCase
         $this->assertSame($rowCount, $numDeleted);
     }
 
-    /**
-     * @dataProvider dbTypeProvider
-     */
-    public function testEmptyBulkInsert(PeachySql $peachySql): void
+    public function testEmptyBulkInsert(): void
     {
+        $peachySql = static::dbProvider();
         $result = $peachySql->insertRows($this->table, []);
         $this->assertSame(0, $result->affected);
         $this->assertSame(0, $result->queryCount);
         $this->assertEmpty($result->ids);
     }
 
-    /**
-     * @dataProvider dbTypeProvider
-     */
-    public function testSelectFromBinding(PeachySql $peachySql): void
+    public function testSelectFromBinding(): void
     {
+        $peachySql = static::dbProvider();
         $row = ['name' => 'Test User', 'dob' => '2000-01-01', 'weight' => 123, 'isDisabled' => true];
         $id = $peachySql->insertRow($this->table, $row)->id;
 
