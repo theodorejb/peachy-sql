@@ -4,6 +4,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [6.3.1] - 2024-10-13
+### Changed
+- Improved `makeBinaryParam()` implementation for SQL Server.
+
+### Fixed
+- Maximum number of MySQL bound parameters.
+
+### Deprecated
+- Unnecessary `Options` getters and setters.
+
+
 ## [6.3.0] - 2024-10-05
 ### Changed
 - Use `mysqli_stmt::get_result()` instead of `bind_result()` internally
@@ -327,6 +338,7 @@ insert a single row.
 - Initial release
 
 
+[6.3.1]: https://github.com/theodorejb/peachy-sql/compare/v6.3.0...v6.3.1
 [6.3.0]: https://github.com/theodorejb/peachy-sql/compare/v6.2.0...v6.3.0
 [6.2.0]: https://github.com/theodorejb/peachy-sql/compare/v6.1.0...v6.2.0
 [6.1.0]: https://github.com/theodorejb/peachy-sql/compare/v6.0.3...v6.1.0

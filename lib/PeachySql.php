@@ -16,7 +16,8 @@ use PeachySQL\QueryBuilder\Update;
  */
 abstract class PeachySql
 {
-    protected BaseOptions $options;
+    /** @readonly */
+    public BaseOptions $options;
 
     /** Begins a transaction */
     abstract public function begin(): void;
@@ -50,6 +51,8 @@ abstract class PeachySql
 
     /**
      * Returns the current PeachySQL options
+     * @deprecated Use public readonly property instead
+     * @api
      */
     public function getOptions(): BaseOptions
     {
@@ -84,7 +87,7 @@ abstract class PeachySql
     public function insertRows(string $table, array $colVals, int $identityIncrement = 1): BulkInsertResult
     {
         // check whether the query needs to be split into multiple batches
-        $batches = Insert::batchRows($colVals, $this->options->getMaxBoundParams(), $this->options->getMaxInsertRows());
+        $batches = Insert::batchRows($colVals, $this->options->maxBoundParams, $this->options->maxInsertRows);
         $ids = [];
         $affected = 0;
 

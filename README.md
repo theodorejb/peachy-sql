@@ -15,8 +15,8 @@ and SQL Server, and runs on PHP 7.4+.
 ## Usage
 
 Start by instantiating the `Mysql` or `SqlServer` class with a database connection,
-which should be an existing [mysqli object](http://www.php.net/manual/en/mysqli.construct.php)
-or [SQLSRV connection resource](http://www.php.net/manual/en/function.sqlsrv-connect.php):
+which should be an existing [mysqli object](https://www.php.net/manual/en/mysqli.construct.php)
+or [SQLSRV connection resource](https://www.php.net/manual/en/function.sqlsrv-connect.php):
 
 ```php
 $peachySql = new PeachySQL\Mysql($mysqlConn);
@@ -207,7 +207,7 @@ $ids = $result->ids; // e.g. [64, 66, 68]
 
 Note: SQL Server allows a maximum of 1,000 rows to be inserted at a time, and limits
 individual queries to 2,099 or fewer bound parameters. MySQL supports a maximum of
-65,536 bound parameters per query. These limits can be easily reached when attempting
+65,535 bound parameters per query. These limits can be easily reached when attempting
 to bulk-insert hundreds or thousands of rows at a time. To avoid these limits, the
 `insertRows()` method automatically splits large queries into batches to efficiently
 handle any number of rows (`queryCount` contains the number of required batches).

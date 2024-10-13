@@ -12,7 +12,7 @@ class QueryableSelector extends Selector
 
     public function __construct(SqlParams $query, PeachySql $peachySql)
     {
-        parent::__construct($query, $peachySql->getOptions());
+        parent::__construct($query, $peachySql->options);
         $this->peachySql = $peachySql;
     }
 

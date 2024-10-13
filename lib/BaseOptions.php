@@ -9,8 +9,17 @@ namespace PeachySQL;
  */
 abstract class BaseOptions
 {
-    protected int $maxBoundParams = 0;
-    protected int $maxInsertRows = 0;
+    /**
+     * The maximum number of parameters which can be bound in a single query.
+     * If greater than zero, PeachySQL will batch insert queries to avoid the limit.
+     */
+    public int $maxBoundParams = 0;
+
+    /**
+     * The maximum number of rows which can be inserted via a single query.
+     * If greater than zero, PeachySQL will batch insert queries to avoid the limit.
+     */
+    public int $maxInsertRows = 0;
 
     /**
      * Escapes a table or column name, and validates that it isn't blank
@@ -33,6 +42,8 @@ abstract class BaseOptions
     /**
      * Specify the maximum number of parameters which can be bound in a single query.
      * If greater than zero, PeachySQL will batch insert queries to avoid the limit.
+     * @deprecated Use public property instead
+     * @api
      */
     public function setMaxBoundParams(int $maxParams): void
     {
@@ -43,6 +54,10 @@ abstract class BaseOptions
         $this->maxBoundParams = $maxParams;
     }
 
+    /**
+     * @deprecated Use public property instead
+     * @api
+     */
     public function getMaxBoundParams(): int
     {
         return $this->maxBoundParams;
@@ -51,6 +66,8 @@ abstract class BaseOptions
     /**
      * Specify the maximum number of rows which can be inserted via a single query.
      * If greater than zero, PeachySQL will batch insert queries to remove the limit.
+     * @deprecated Use public property instead
+     * @api
      */
     public function setMaxInsertRows(int $maxRows): void
     {
@@ -61,6 +78,10 @@ abstract class BaseOptions
         $this->maxInsertRows = $maxRows;
     }
 
+    /**
+     * @deprecated Use public property instead
+     * @api
+     */
     public function getMaxInsertRows(): int
     {
         return $this->maxInsertRows;

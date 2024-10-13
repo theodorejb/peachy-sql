@@ -11,6 +11,7 @@ use PeachySQL\BaseOptions;
  */
 class Options extends BaseOptions
 {
-    protected int $maxBoundParams = 2099;
-    protected int $maxInsertRows = 1000;
+    // https://learn.microsoft.com/en-us/sql/sql-server/maximum-capacity-specifications-for-sql-server
+    public int $maxBoundParams = 2100 - 1;
+    public int $maxInsertRows = 1000;
 }
