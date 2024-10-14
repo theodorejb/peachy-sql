@@ -52,16 +52,16 @@ abstract class DbTestCase extends TestCase
             'name' => 'George McFly',
             'dob' => '1938-04-01',
             'weight' => 133.8,
-            'isDisabled' => true,
+            'is_disabled' => true,
             'uuid' => $peachySql->makeBinaryParam(Uuid::uuid4()->getBytes(), 16),
         ];
 
         $id = $peachySql->insertRow($this->table, $colVals)->id;
-        $sql = "SELECT user_id, isDisabled FROM {$this->table} WHERE user_id = ?";
+        $sql = "SELECT user_id, is_disabled FROM {$this->table} WHERE user_id = ?";
         $result = $peachySql->query($sql, [$id]);
 
-        $this->assertSame(-1, $result->getAffected());
-        $this->assertSame(['user_id' => $id, 'isDisabled' => 1], $result->getFirst()); // the row should be selectable
+        $this->assertContains($result->getAffected(), [-1, 1]); // 1 for PostgreSQL
+        $this->assertEquals(['user_id' => $id, 'is_disabled' => 1], $result->getFirst()); // the row should be selectable
 
         $peachySql->rollback(); // cancel the transaction
         $sameRow = $peachySql->query($sql, [$id])->getFirst();
@@ -85,10 +85,9 @@ abstract class DbTestCase extends TestCase
             $peachySql->query($badQuery); // should throw exception
             $this->fail('Bad query failed to throw exception');
         } catch (SqlException $e) {
-            $this->assertSame('42000', $e->getSqlState());
+            $this->assertContains($e->getSqlState(), ['42000', '42601']);
             $this->assertSame($this->getExpectedBadSyntaxCode(), $e->getCode());
             $this->assertStringContainsString(' syntax ', $e->getMessage());
-            $this->assertStringContainsString(" near '", $e->getMessage());
         }
     }
 
@@ -96,8 +95,8 @@ abstract class DbTestCase extends TestCase
     {
         $peachySql = static::dbProvider();
         $colVals = [
-            ['name' => 'Martin S. McFly', 'dob' => '1968-06-20', 'weight' => 140.7, 'isDisabled' => true, 'uuid' => Uuid::uuid4()->getBytes()],
-            ['name' => 'Emmett L. Brown', 'dob' => '1920-01-01', 'weight' => 155.4, 'isDisabled' => false, 'uuid' => null],
+            ['name' => 'Martin S. McFly', 'dob' => '1968-06-20', 'weight' => 140.7, 'is_disabled' => true, 'uuid' => Uuid::uuid4()->getBytes()],
+            ['name' => 'Emmett L. Brown', 'dob' => '1920-01-01', 'weight' => 155.4, 'is_disabled' => false, 'uuid' => null],
         ];
 
         $insertColVals = [];
@@ -116,11 +115,17 @@ abstract class DbTestCase extends TestCase
 
         foreach ($iterator as $row) {
             unset($row['user_id']);
-            $row['isDisabled'] = (bool)$row['isDisabled'];
+            $row['is_disabled'] = (bool)$row['is_disabled'];
+
+            if ($row['uuid'] !== null && !is_string($row['uuid'])) {
+                /** @psalm-suppress InvalidArgument */
+                $row['uuid'] = stream_get_contents($row['uuid']); // needed for PostgreSQL
+            }
+
             $colValsCompare[] = $row;
         }
 
-        $this->assertSame($colVals, $colValsCompare);
+        $this->assertEquals($colVals, $colValsCompare);
 
         // use a prepared statement to update both of the rows
         $sql = "UPDATE {$this->table} SET name = ? WHERE user_id = ?";
@@ -163,7 +168,7 @@ abstract class DbTestCase extends TestCase
                 'name' => 'name' . $i,
                 'dob' => $dob->format('Y-m-d'),
                 'weight' => round(rand(1001, 2899) / 10, 1),
-                'isDisabled' => 0,
+                'is_disabled' => 0,
                 'uuid' => Uuid::uuid4()->getBytes(),
             ];
         }
@@ -187,7 +192,15 @@ abstract class DbTestCase extends TestCase
         $rows = $peachySql->selectFrom("SELECT {$columns} FROM {$this->table}")
             ->where(['user_id' => $ids])->query()->getAll();
 
-        $this->assertSame($colVals, $rows);
+        /** @var array{uuid: string|resource} $row */
+        foreach ($rows as &$row) {
+            if (!is_string($row['uuid'])) {
+                /** @psalm-suppress InvalidArgument */
+                $row['uuid'] = stream_get_contents($row['uuid']); // needed for PostgreSQL
+            }
+        }
+
+        $this->assertEquals($colVals, $rows);
 
         // update the inserted rows
         $numUpdated = $peachySql->updateRows($this->table, ['name' => 'updated'], ['user_id' => $ids]);
@@ -198,9 +211,14 @@ abstract class DbTestCase extends TestCase
         $userId = $ids[0];
         $set = ['uuid' => $peachySql->makeBinaryParam($newUuid)];
         $peachySql->updateRows($this->table, $set, ['user_id' => $userId]);
-        /** @var array{uuid: string} $updatedRow */
+        /** @var array{uuid: string|resource} $updatedRow */
         $updatedRow = $peachySql->selectFrom("SELECT uuid FROM {$this->table}")
             ->where(['user_id' => $userId])->query()->getFirst();
+
+        if (!is_string($updatedRow['uuid'])) {
+            $updatedRow['uuid'] = stream_get_contents($updatedRow['uuid']); // needed for PostgreSQL
+        }
+
         $this->assertSame($newUuid, $updatedRow['uuid']);
 
         // delete the inserted rows
@@ -220,7 +238,7 @@ abstract class DbTestCase extends TestCase
     public function testSelectFromBinding(): void
     {
         $peachySql = static::dbProvider();
-        $row = ['name' => 'Test User', 'dob' => '2000-01-01', 'weight' => 123, 'isDisabled' => true];
+        $row = ['name' => 'Test User', 'dob' => '2000-01-01', 'weight' => 123, 'is_disabled' => true];
         $id = $peachySql->insertRow($this->table, $row)->id;
 
         $result = $peachySql->select(new SqlParams("SELECT name, ? AS bound FROM {$this->table}", ['value']))

@@ -29,6 +29,21 @@ class Config
         return 'PeachySQL';
     }
 
+    public function getPgsqlDsn(): string
+    {
+        return "pgsql:host=localhost;dbname=PeachySQL";
+    }
+
+    public function getPgsqlUser(): string
+    {
+        return 'postgres';
+    }
+
+    public function getPgsqlPassword(): string
+    {
+        return '';
+    }
+
     public function getSqlsrvServer(): string
     {
         return '(local)\SQLEXPRESS';
