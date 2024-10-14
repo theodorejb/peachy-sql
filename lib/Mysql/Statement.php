@@ -13,9 +13,9 @@ class Statement extends BaseStatement
     private int $insertId = 0;
     private ?mysqli_stmt $stmt;
 
-    public function __construct(mysqli_stmt $stmt, bool $usedPrepare, string $query, array $params)
+    public function __construct(mysqli_stmt $stmt, bool $usedPrepare)
     {
-        parent::__construct($usedPrepare, $query, $params);
+        parent::__construct($usedPrepare);
         $this->stmt = $stmt;
     }
 
@@ -27,12 +27,10 @@ class Statement extends BaseStatement
 
         try {
             if (!$this->stmt->execute()) {
-                throw new SqlException('Failed to execute prepared statement',
-                    $this->stmt->error_list, $this->query, $this->params);
+                throw $this->getError('Failed to execute prepared statement');
             }
         } catch (\mysqli_sql_exception $e) {
-            throw new SqlException('Failed to execute prepared statement: ' . $e->getMessage(),
-                $this->stmt->error_list, $this->query, $this->params);
+            throw $this->getError('Failed to execute prepared statement');
         }
 
         $this->affected = (int)$this->stmt->affected_rows;
@@ -41,6 +39,14 @@ class Statement extends BaseStatement
         if (!$this->usedPrepare && !$this->stmt->result_metadata()) {
             $this->close(); // no results, so statement can be closed
         }
+    }
+
+    private function getError(string $message): SqlException
+    {
+        if ($this->stmt === null) {
+            throw new \Exception('Cannot get error info for closed statement');
+        }
+        return new SqlException($message, $this->stmt->errno, $this->stmt->error, $this->stmt->sqlstate);
     }
 
     /**
@@ -57,7 +63,7 @@ class Statement extends BaseStatement
             $result = $this->stmt->get_result();
 
             if (!$result) {
-                throw new SqlException('Failed to get result', $this->stmt->error_list, $this->query, $this->params);
+                throw $this->getError('Failed to get result');
             }
 
             while ($row = $result->fetch_assoc()) {

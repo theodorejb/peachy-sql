@@ -83,8 +83,6 @@ abstract class DbTestCase extends TestCase
             $peachySql->query($badQuery); // should throw exception
             $this->fail('Bad query failed to throw exception');
         } catch (SqlException $e) {
-            $this->assertSame($badQuery, $e->query);
-            $this->assertSame([], $e->params);
             $this->assertSame('42000', $e->getSqlState());
 
             if ($peachySql instanceof SqlServer) {
