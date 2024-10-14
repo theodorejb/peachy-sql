@@ -17,7 +17,7 @@ class SqlServer extends PeachySql
      * A SQLSRV connection resource
      * @var resource
      */
-    private $connection;
+    private $conn;
 
     /**
      * @param resource $connection
@@ -28,7 +28,7 @@ class SqlServer extends PeachySql
             throw new \InvalidArgumentException('Connection must be a SQL Server Connection resource');
         }
 
-        $this->connection = $connection;
+        $this->conn = $connection;
 
         if ($options === null) {
             $options = new Options();
@@ -43,8 +43,8 @@ class SqlServer extends PeachySql
      */
     public function begin(): void
     {
-        if (!sqlsrv_begin_transaction($this->connection)) {
-            throw new SqlException('Failed to begin transaction', sqlsrv_errors() ?? []);
+        if (!sqlsrv_begin_transaction($this->conn)) {
+            throw $this->getError('Failed to begin transaction');
         }
     }
 
@@ -54,8 +54,8 @@ class SqlServer extends PeachySql
      */
     public function commit(): void
     {
-        if (!sqlsrv_commit($this->connection)) {
-            throw new SqlException('Failed to commit transaction', sqlsrv_errors() ?? []);
+        if (!sqlsrv_commit($this->conn)) {
+            throw $this->getError('Failed to commit transaction');
         }
     }
 
@@ -65,8 +65,8 @@ class SqlServer extends PeachySql
      */
     public function rollback(): void
     {
-        if (!sqlsrv_rollback($this->connection)) {
-            throw new SqlException('Failed to roll back transaction', sqlsrv_errors() ?? []);
+        if (!sqlsrv_rollback($this->conn)) {
+            throw $this->getError('Failed to roll back transaction');
         }
     }
 
@@ -87,16 +87,37 @@ class SqlServer extends PeachySql
     }
 
     /**
+     * @internal
+     */
+    public static function getError(string $message): SqlException
+    {
+        $errors = sqlsrv_errors() ?? [];
+        $code = 0;
+        $details = '';
+        $sqlState = '';
+
+        if (isset($errors[0])) {
+            /** @var array{SQLSTATE: string, code: int, message: string} $error */
+            $error = $errors[0];
+            $code = $error['code'];
+            $details = $error['message'];
+            $sqlState = $error['SQLSTATE'];
+        }
+
+        return new SqlException($message, $code, $details, $sqlState);
+    }
+
+    /**
      * Returns a prepared statement which can be executed multiple times
      * @throws SqlException if an error occurs
      */
     public function prepare(string $sql, array $params = []): Statement
     {
-        if (!$stmt = sqlsrv_prepare($this->connection, $sql, $params)) {
-            throw new SqlException('Query failed', sqlsrv_errors() ?? [], $sql, $params);
+        if (!$stmt = sqlsrv_prepare($this->conn, $sql, $params)) {
+            throw $this->getError('Query failed');
         }
 
-        return new Statement($stmt, true, $sql, $params);
+        return new Statement($stmt, true);
     }
 
     /**
@@ -105,11 +126,11 @@ class SqlServer extends PeachySql
      */
     public function query(string $sql, array $params = []): Statement
     {
-        if (!$stmt = sqlsrv_query($this->connection, $sql, $params)) {
-            throw new SqlException('Query failed', sqlsrv_errors() ?? [], $sql, $params);
+        if (!$stmt = sqlsrv_query($this->conn, $sql, $params)) {
+            throw $this->getError('Query failed');
         }
 
-        $statement = new Statement($stmt, false, $sql, $params);
+        $statement = new Statement($stmt, false);
         $statement->execute();
         return $statement;
     }

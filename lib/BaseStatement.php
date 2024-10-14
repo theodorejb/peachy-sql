@@ -14,14 +14,10 @@ abstract class BaseStatement
      * True if the statement was created using `prepare()`
      */
     protected bool $usedPrepare;
-    protected string $query;
-    protected array $params;
 
-    public function __construct(bool $usedPrepare, string $query, array $params)
+    public function __construct(bool $usedPrepare)
     {
         $this->usedPrepare = $usedPrepare;
-        $this->query = $query;
-        $this->params = $params;
     }
 
     /**

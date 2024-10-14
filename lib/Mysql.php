@@ -17,12 +17,12 @@ class Mysql extends PeachySql
     /**
      * The connection used to access the database
      */
-    private mysqli $connection;
+    private mysqli $conn;
     private bool $usedPrepare;
 
     public function __construct(mysqli $connection, ?Options $options = null)
     {
-        $this->connection = $connection;
+        $this->conn = $connection;
         $this->usedPrepare = true;
 
         if ($options === null) {
@@ -38,8 +38,8 @@ class Mysql extends PeachySql
      */
     public function begin(): void
     {
-        if (!$this->connection->begin_transaction()) {
-            throw new SqlException('Failed to begin transaction', $this->connection->error_list);
+        if (!$this->conn->begin_transaction()) {
+            throw $this->getError('Failed to begin transaction');
         }
     }
 
@@ -49,8 +49,8 @@ class Mysql extends PeachySql
      */
     public function commit(): void
     {
-        if (!$this->connection->commit()) {
-            throw new SqlException('Failed to commit transaction', $this->connection->error_list);
+        if (!$this->conn->commit()) {
+            throw $this->getError('Failed to commit transaction');
         }
     }
 
@@ -60,8 +60,8 @@ class Mysql extends PeachySql
      */
     public function rollback(): void
     {
-        if (!$this->connection->rollback()) {
-            throw new SqlException('Failed to roll back transaction', $this->connection->error_list);
+        if (!$this->conn->rollback()) {
+            throw $this->getError('Failed to roll back transaction');
         }
     }
 
@@ -71,13 +71,9 @@ class Mysql extends PeachySql
         return $binaryStr;
     }
 
-    private function getError(): array
+    private function getError(string $message): SqlException
     {
-        return [
-            'error' => $this->connection->error,
-            'errno' => $this->connection->errno,
-            'sqlstate' => $this->connection->sqlstate
-        ];
+        return new SqlException($message, $this->conn->errno, $this->conn->error, $this->conn->sqlstate);
     }
 
     /**
@@ -87,22 +83,22 @@ class Mysql extends PeachySql
     public function prepare(string $sql, array $params = []): Statement
     {
         try {
-            if (!$stmt = $this->connection->prepare($sql)) {
-                throw new SqlException('Failed to prepare statement', [$this->getError()], $sql, $params);
+            if (!$stmt = $this->conn->prepare($sql)) {
+                throw $this->getError('Failed to prepare statement');
             }
         } catch (\mysqli_sql_exception $e) {
-            throw new SqlException('Failed to prepare statement', [$this->getError()], $sql, $params);
+            throw $this->getError('Failed to prepare statement');
         }
 
         if ($params) {
             if (!$stmt->bind_param(self::getMysqlParamTypes($params), ...$params)) {
                 /** @var array $params */
-                throw new SqlException('Failed to bind params', $stmt->error_list, $sql, $params);
+                throw new SqlException('Failed to bind params', $stmt->errno, $stmt->error, $stmt->sqlstate);
             }
         }
 
         /** @var array $params */
-        return new Statement($stmt, $this->usedPrepare, $sql, $params);
+        return new Statement($stmt, $this->usedPrepare);
     }
 
     /**
