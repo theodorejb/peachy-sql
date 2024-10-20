@@ -62,7 +62,7 @@ class MssqlDbTest extends DbTestCase
             DROP TABLE IF EXISTS Users;
             CREATE TABLE Users (
                 user_id INT PRIMARY KEY IDENTITY(1,1) NOT NULL,
-                name VARCHAR(50) NOT NULL,
+                name NVARCHAR(50) NOT NULL,
                 dob DATE NOT NULL,
                 weight FLOAT NOT NULL,
                 is_disabled BIT NOT NULL,

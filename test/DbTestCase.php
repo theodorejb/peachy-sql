@@ -56,9 +56,9 @@ abstract class DbTestCase extends TestCase
         $peachySql->begin(); // start transaction
 
         $colVals = [
-            'name' => 'George McFly',
-            'dob' => '1938-04-01',
-            'weight' => 133.8,
+            'name' => 'Raymond Boyce',
+            'dob' => '1946-01-01',
+            'weight' => 140,
             'is_disabled' => true,
             'uuid' => $peachySql->makeBinaryParam(Uuid::uuid4()->getBytes(), 16),
         ];
@@ -101,9 +101,10 @@ abstract class DbTestCase extends TestCase
     public function testIteratorQuery(): void
     {
         $peachySql = static::dbProvider();
+
         $colVals = [
-            ['name' => 'Martin S. McFly', 'dob' => '1968-06-20', 'weight' => 140.7, 'is_disabled' => true, 'uuid' => Uuid::uuid4()->getBytes()],
-            ['name' => 'Emmett L. Brown', 'dob' => '1920-01-01', 'weight' => 155.4, 'is_disabled' => false, 'uuid' => null],
+            ['name' => 'ElePHPant 🐘', 'dob' => '1995-06-08', 'weight' => 13558.43, 'is_disabled' => true, 'uuid' => Uuid::uuid4()->getBytes()],
+            ['name' => 'Tux 🐧', 'dob' => '1991-09-17', 'weight' => 51.8, 'is_disabled' => false, 'uuid' => null],
         ];
 
         $insertColVals = [];
@@ -134,25 +135,22 @@ abstract class DbTestCase extends TestCase
         $stmt = $peachySql->prepare($sql, [&$_name, &$_id]);
 
         $realNames = [
-            $ids[0] => 'Michael J. Fox',
-            $ids[1] => 'Christopher A. Lloyd',
+            ['user_id' => $ids[0], 'name' => 'Rasmus Lerdorf'],
+            ['user_id' => $ids[1], 'name' => 'Linus Torvalds'],
         ];
 
-        foreach ($realNames as $_id => $_name) {
+        foreach ($realNames as $_row) {
+            $_id = $_row['user_id'];
+            $_name = $_row['name'];
             $stmt->execute();
         }
 
         $stmt->close();
 
-        $updatedNames = $peachySql->selectFrom("SELECT name FROM {$this->table}")
+        $updatedNames = $peachySql->selectFrom("SELECT user_id, name FROM {$this->table}")
             ->where(['user_id' => $ids])->query()->getAll();
 
-        $expected = [
-            ['name' => $realNames[$ids[0]]],
-            ['name' => $realNames[$ids[1]]],
-        ];
-
-        $this->assertSame($expected, $updatedNames);
+        $this->assertSame($realNames, $updatedNames);
     }
 
     public function testInsertBulk(): void

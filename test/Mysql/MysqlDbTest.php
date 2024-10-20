@@ -57,7 +57,7 @@ class MysqlDbTest extends DbTestCase
                 user_id INT PRIMARY KEY AUTO_INCREMENT NOT NULL,
                 name VARCHAR(50) NOT NULL,
                 dob DATE NOT NULL,
-                weight FLOAT NOT NULL,
+                weight DOUBLE NOT NULL,
                 is_disabled BOOLEAN NOT NULL,
                 uuid BINARY(16) NULL
             )";
