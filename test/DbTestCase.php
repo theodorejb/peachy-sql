@@ -139,24 +139,27 @@ abstract class DbTestCase extends TestCase
         $this->assertSame($colVals, $colValsCompare);
 
         // use a prepared statement to update both of the rows
-        $sql = "UPDATE {$this->table} SET name = ? WHERE user_id = ?";
+        $sql = "UPDATE {$this->table} SET name = ?, uuid = ? WHERE user_id = ?";
         $_id = $_name = null;
-        $stmt = $peachySql->prepare($sql, [&$_name, &$_id]);
+        $_uuid = $peachySql->makeBinaryParam(null);
+        $stmt = $peachySql->prepare($sql, [&$_name, &$_uuid, &$_id]);
 
         $realNames = [
-            ['user_id' => $ids[0], 'name' => 'Rasmus Lerdorf'],
-            ['user_id' => $ids[1], 'name' => 'Linus Torvalds'],
+            ['user_id' => $ids[0], 'name' => 'Rasmus Lerdorf', 'uuid' => Uuid::uuid4()->getBytes()],
+            ['user_id' => $ids[1], 'name' => 'Linus Torvalds', 'uuid' => Uuid::uuid4()->getBytes()],
         ];
 
         foreach ($realNames as $_row) {
             $_id = $_row['user_id'];
             $_name = $_row['name'];
+            /** @psalm-suppress MixedArrayAssignment */
+            $_uuid[0] = $_row['uuid'];
             $stmt->execute();
         }
 
         $stmt->close();
 
-        $result = $peachySql->selectFrom("SELECT user_id, name FROM {$this->table}")
+        $result = $peachySql->selectFrom("SELECT user_id, name, uuid FROM {$this->table}")
             ->where(['user_id' => $ids])->query();
         $updatedNames = $result->getAll();
         $this->assertSame($options->affectedIsRowCount ? 2 : -1, $result->getAffected());
