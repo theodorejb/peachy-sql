@@ -58,7 +58,7 @@ class MysqlDbTest extends DbTestCase
                 name VARCHAR(50) NOT NULL,
                 dob DATE NOT NULL,
                 weight FLOAT NOT NULL,
-                isDisabled BOOLEAN NOT NULL,
+                is_disabled BOOLEAN NOT NULL,
                 uuid BINARY(16) NULL
             )";
 

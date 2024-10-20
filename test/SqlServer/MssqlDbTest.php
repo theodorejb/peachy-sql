@@ -65,7 +65,7 @@ class MssqlDbTest extends DbTestCase
                 name VARCHAR(50) NOT NULL,
                 dob DATE NOT NULL,
                 weight FLOAT NOT NULL,
-                isDisabled BIT NOT NULL,
+                is_disabled BIT NOT NULL,
                 uuid BINARY(16) NULL
             )";
 

@@ -59,16 +59,16 @@ abstract class DbTestCase extends TestCase
             'name' => 'George McFly',
             'dob' => '1938-04-01',
             'weight' => 133.8,
-            'isDisabled' => true,
+            'is_disabled' => true,
             'uuid' => $peachySql->makeBinaryParam(Uuid::uuid4()->getBytes(), 16),
         ];
 
         $id = $peachySql->insertRow($this->table, $colVals)->id;
-        $sql = "SELECT user_id, isDisabled FROM {$this->table} WHERE user_id = ?";
+        $sql = "SELECT user_id, is_disabled FROM {$this->table} WHERE user_id = ?";
         $result = $peachySql->query($sql, [$id]);
 
         $this->assertSame(-1, $result->getAffected());
-        $this->assertSame(['user_id' => $id, 'isDisabled' => 1], $result->getFirst()); // the row should be selectable
+        $this->assertSame(['user_id' => $id, 'is_disabled' => 1], $result->getFirst()); // the row should be selectable
 
         $peachySql->rollback(); // cancel the transaction
         $sameRow = $peachySql->query($sql, [$id])->getFirst();
@@ -102,8 +102,8 @@ abstract class DbTestCase extends TestCase
     {
         $peachySql = static::dbProvider();
         $colVals = [
-            ['name' => 'Martin S. McFly', 'dob' => '1968-06-20', 'weight' => 140.7, 'isDisabled' => true, 'uuid' => Uuid::uuid4()->getBytes()],
-            ['name' => 'Emmett L. Brown', 'dob' => '1920-01-01', 'weight' => 155.4, 'isDisabled' => false, 'uuid' => null],
+            ['name' => 'Martin S. McFly', 'dob' => '1968-06-20', 'weight' => 140.7, 'is_disabled' => true, 'uuid' => Uuid::uuid4()->getBytes()],
+            ['name' => 'Emmett L. Brown', 'dob' => '1920-01-01', 'weight' => 155.4, 'is_disabled' => false, 'uuid' => null],
         ];
 
         $insertColVals = [];
@@ -122,7 +122,7 @@ abstract class DbTestCase extends TestCase
 
         foreach ($iterator as $row) {
             unset($row['user_id']);
-            $row['isDisabled'] = (bool)$row['isDisabled'];
+            $row['is_disabled'] = (bool)$row['is_disabled'];
             $colValsCompare[] = $row;
         }
 
@@ -169,7 +169,7 @@ abstract class DbTestCase extends TestCase
                 'name' => 'name' . $i,
                 'dob' => $dob->format('Y-m-d'),
                 'weight' => round(rand(1001, 2899) / 10, 1),
-                'isDisabled' => 0,
+                'is_disabled' => 0,
                 'uuid' => Uuid::uuid4()->getBytes(),
             ];
         }
@@ -226,7 +226,7 @@ abstract class DbTestCase extends TestCase
     public function testSelectFromBinding(): void
     {
         $peachySql = static::dbProvider();
-        $row = ['name' => 'Test User', 'dob' => '2000-01-01', 'weight' => 123, 'isDisabled' => true];
+        $row = ['name' => 'Test User', 'dob' => '2000-01-01', 'weight' => 123, 'is_disabled' => true];
         $id = $peachySql->insertRow($this->table, $row)->id;
 
         $result = $peachySql->select(new SqlParams("SELECT name, ? AS bound FROM {$this->table}", ['value']))
