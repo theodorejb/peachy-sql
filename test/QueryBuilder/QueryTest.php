@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace PeachySQL\Test\QueryBuilder;
 
-use PeachySQL\Mysql\Options;
+use PeachySQL\Options;
 use PeachySQL\QueryBuilder\Query;
 use PHPUnit\Framework\TestCase;
 
@@ -15,7 +15,7 @@ class QueryTest extends TestCase
 {
     public function testEscapeIdentifier(): void
     {
-        $options = new \PeachySQL\SqlServer\Options();
+        $options = new Options();
         $query = new Query($options);
         $actual = $query->escapeIdentifier('Test"Identifier');
         $this->assertSame('"Test""Identifier"', $actual);
@@ -27,7 +27,7 @@ class QueryTest extends TestCase
             $this->assertSame('Identifier cannot be blank', $e->getMessage());
         }
 
-        $query = new Query(new Options()); // test syntax for MySQL without ANSI_QUOTES enabled
+        $options->identifierQuote = '`'; // test syntax for MySQL without ANSI_QUOTES enabled
         $actual = $query->escapeIdentifier('My`Identifier');
         $this->assertSame('`My``Identifier`', $actual);
     }

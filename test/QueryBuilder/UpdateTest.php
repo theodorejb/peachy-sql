@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace PeachySQL\Test\QueryBuilder;
 
+use PeachySQL\Options;
 use PeachySQL\QueryBuilder\Update;
 use PHPUnit\Framework\TestCase;
 
@@ -21,7 +22,7 @@ class UpdateTest extends TestCase
 
         $where = ['id' => 21];
 
-        $update = new Update(new \PeachySQL\SqlServer\Options());
+        $update = new Update(new Options());
         $actual = $update->buildQuery('TestTable', $set, $where);
         $expected = 'UPDATE TestTable SET "username" = ?, "othercol" = ? WHERE "id" = ?';
 

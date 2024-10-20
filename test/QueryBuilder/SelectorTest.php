@@ -4,9 +4,8 @@ declare(strict_types=1);
 
 namespace PeachySQL\Test\QueryBuilder;
 
-use PeachySQL\Mysql\Options as MysqlOptions;
+use PeachySQL\Options;
 use PeachySQL\QueryBuilder\{Query, Select, Selector, SqlParams};
-use PeachySQL\SqlServer\Options;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -17,9 +16,9 @@ class SelectorTest extends TestCase
     public function testBoundSelect(): void
     {
         $query = 'SELECT column, ? FROM TestTable';
-        $selector = new Selector(new SqlParams($query, ['value']), new MysqlOptions());
+        $selector = new Selector(new SqlParams($query, ['value']), new Options());
         $actual = $selector->where(['column' => 10])->getSqlParams();
-        $this->assertSame($query . ' WHERE `column` = ?', $actual->sql);
+        $this->assertSame($query . ' WHERE "column" = ?', $actual->sql);
         $this->assertSame(['value', 10], $actual->params);
     }
 
@@ -127,20 +126,20 @@ class SelectorTest extends TestCase
 
     public function testBuildPagination(): void
     {
-        $mySqlSelect = new Select(new MysqlOptions());
-        $sqlsrvSelect = new Select(new Options());
+        $select = new Select(new Options());
+        $page1 = $select->buildPagination(25, 0);
+        $page3 = $select->buildPagination(100, 200);
+        $this->assertSame('LIMIT 25 OFFSET 0', $page1);
+        $this->assertSame('LIMIT 100 OFFSET 200', $page3);
 
-        $mySqlPage1 = $mySqlSelect->buildPagination(25, 0);
-        $this->assertSame('LIMIT 25 OFFSET 0', $mySqlPage1);
+        $fetchNextOptions = new Options();
+        $fetchNextOptions->fetchNextSyntax = true; // test syntax for SQL Server
+        $select = new Select($fetchNextOptions);
 
-        $sqlsrvPage1 = $sqlsrvSelect->buildPagination(25, 0);
-        $this->assertSame('OFFSET 0 ROWS FETCH NEXT 25 ROWS ONLY', $sqlsrvPage1);
-
-        $mySqlPage3 = $mySqlSelect->buildPagination(100, 200);
-        $this->assertSame('LIMIT 100 OFFSET 200', $mySqlPage3);
-
-        $sqlsrvPage3 = $sqlsrvSelect->buildPagination(100, 200);
-        $this->assertSame('OFFSET 200 ROWS FETCH NEXT 100 ROWS ONLY', $sqlsrvPage3);
+        $page1 = $select->buildPagination(25, 0);
+        $page3 = $select->buildPagination(100, 200);
+        $this->assertSame('OFFSET 0 ROWS FETCH NEXT 25 ROWS ONLY', $page1);
+        $this->assertSame('OFFSET 200 ROWS FETCH NEXT 100 ROWS ONLY', $page3);
     }
 
     public function testGetSqlParams(): void
@@ -150,10 +149,10 @@ class SelectorTest extends TestCase
         $result = $selector
             ->where(['a.id' => 1])
             ->orderBy(['a.username'])
-            ->offset(25, 25)
+            ->offset(10, 25)
             ->getSqlParams();
 
-        $expected = $query . ' WHERE "a"."id" = ? ORDER BY "a"."username" OFFSET 25 ROWS FETCH NEXT 25 ROWS ONLY';
+        $expected = $query . ' WHERE "a"."id" = ? ORDER BY "a"."username" LIMIT 25 OFFSET 10';
         $this->assertSame($expected, $result->sql);
         $this->assertSame([1], $result->params);
     }

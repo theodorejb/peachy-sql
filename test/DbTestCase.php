@@ -36,6 +36,12 @@ abstract class DbTestCase extends TestCase
         $peachySql->query("DROP TABLE IF EXISTS Test");
         $peachySql->query("CREATE TABLE Test ( name VARCHAR(50) NOT NULL )");
 
+        if ($peachySql->options->multiRowset) {
+            // ensure that row can be selected from second result set
+            $sql = "INSERT INTO Test (name) VALUES ('multi'); SELECT name FROM Test";
+            $this->assertSame(['name' => 'multi'], $peachySql->query($sql)->getFirst());
+        }
+
         // affected count should be zero if no rows are updated
         $this->assertSame(0, $peachySql->updateRows('Test', ['name' => 'test'], ['name' => 'non existent']));
 
@@ -47,7 +53,7 @@ abstract class DbTestCase extends TestCase
         $result = $peachySql->insertRows('Test', $colVals);
         $this->assertSame(2, $result->affected);
         $this->assertCount(0, $result->ids);
-        $this->assertSame($colVals, $peachySql->selectFrom("SELECT * FROM Test")->query()->getAll());
+        $this->assertSame($colVals, $peachySql->query("SELECT * FROM Test WHERE name <> 'multi'")->getAll());
     }
 
     public function testTransactions(): void
@@ -60,15 +66,17 @@ abstract class DbTestCase extends TestCase
             'dob' => '1946-01-01',
             'weight' => 140,
             'is_disabled' => true,
-            'uuid' => $peachySql->makeBinaryParam(Uuid::uuid4()->getBytes(), 16),
+            'uuid' => $peachySql->makeBinaryParam(Uuid::uuid4()->getBytes()),
         ];
 
         $id = $peachySql->insertRow($this->table, $colVals)->id;
         $sql = "SELECT user_id, is_disabled FROM {$this->table} WHERE user_id = ?";
         $result = $peachySql->query($sql, [$id]);
 
-        $this->assertSame(-1, $result->getAffected());
-        $this->assertSame(['user_id' => $id, 'is_disabled' => 1], $result->getFirst()); // the row should be selectable
+        $options = $peachySql->options;
+        $this->assertSame($options->affectedIsRowCount ? 1 : -1, $result->getAffected());
+        $expected = ['user_id' => $id, 'is_disabled' => 1];
+        $this->assertSame($expected, $result->getFirst()); // the row should be selectable
 
         $peachySql->rollback(); // cancel the transaction
         $sameRow = $peachySql->query($sql, [$id])->getFirst();
@@ -101,6 +109,7 @@ abstract class DbTestCase extends TestCase
     public function testIteratorQuery(): void
     {
         $peachySql = static::dbProvider();
+        $options = $peachySql->options;
 
         $colVals = [
             ['name' => 'ElePHPant 🐘', 'dob' => '1995-06-08', 'weight' => 13558.43, 'is_disabled' => true, 'uuid' => Uuid::uuid4()->getBytes()],
@@ -147,8 +156,10 @@ abstract class DbTestCase extends TestCase
 
         $stmt->close();
 
-        $updatedNames = $peachySql->selectFrom("SELECT user_id, name FROM {$this->table}")
-            ->where(['user_id' => $ids])->query()->getAll();
+        $result = $peachySql->selectFrom("SELECT user_id, name FROM {$this->table}")
+            ->where(['user_id' => $ids])->query();
+        $updatedNames = $result->getAll();
+        $this->assertSame($options->affectedIsRowCount ? 2 : -1, $result->getAffected());
 
         $this->assertSame($realNames, $updatedNames);
     }

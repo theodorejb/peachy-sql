@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace PeachySQL\Test\Mysql;
 
-use PeachySQL\Mysql;
+use PDO;
+use PeachySQL\PeachySql;
 use PeachySQL\Test\DbTestCase;
 use PeachySQL\Test\src\App;
 
@@ -13,7 +14,7 @@ use PeachySQL\Test\src\App;
  */
 class MysqlDbTest extends DbTestCase
 {
-    private static ?Mysql $db = null;
+    private static ?PeachySql $db = null;
 
     protected function getExpectedBadSyntaxCode(): int
     {
@@ -25,32 +26,23 @@ class MysqlDbTest extends DbTestCase
         return 'error in your SQL syntax';
     }
 
-    public static function dbProvider(): Mysql
+    public static function dbProvider(): PeachySql
     {
         if (!self::$db) {
             $c = App::$config;
-            $port = getenv('DB_PORT');
 
-            if ($port === false) {
-                $port = 3306;
-            } else {
-                $port = (int) $port;
-            }
+            $pdo = new PDO($c->getMysqlDsn(), $c->getMysqlUser(), $c->getMysqlPassword(), [
+                PDO::ATTR_EMULATE_PREPARES => false,
+            ]);
 
-            $mysqli = new \mysqli($c->getMysqlHost(), $c->getMysqlUser(), $c->getMysqlPassword(), $c->getMysqlDatabase(), $port);
-
-            if ($mysqli->connect_error !== null) {
-                throw new \Exception('Failed to connect to MySQL: ' . $mysqli->connect_error);
-            }
-
-            self::$db = new Mysql($mysqli);
+            self::$db = new PeachySql($pdo);
             self::createTestTable(self::$db);
         }
 
         return self::$db;
     }
 
-    private static function createTestTable(Mysql $db): void
+    private static function createTestTable(PeachySql $db): void
     {
         $sql = "
             CREATE TABLE Users (

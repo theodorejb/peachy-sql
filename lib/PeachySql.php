@@ -4,49 +4,175 @@ declare(strict_types=1);
 
 namespace PeachySQL;
 
-use PeachySQL\QueryBuilder\Delete;
-use PeachySQL\QueryBuilder\Insert;
-use PeachySQL\QueryBuilder\SqlParams;
-use PeachySQL\QueryBuilder\Update;
+use PDO;
+use PeachySQL\QueryBuilder\{Delete, Insert, SqlParams, Update};
 
 /**
- * Provides reusable functionality and can be extended by database-specific classes
+ * Simplifies building and running common queries.
  * @psalm-import-type WhereClause from QueryBuilder\Query
  * @psalm-import-type ColValues from Insert
  */
-abstract class PeachySql
+class PeachySql
 {
-    /** @readonly */
-    public BaseOptions $options;
+    public Options $options;
+    private PDO $conn;
+    private bool $usedPrepare;
 
-    /** Begins a transaction */
-    abstract public function begin(): void;
+    public function __construct(PDO $connection, ?Options $options = null)
+    {
+        $this->conn = $connection;
+        $this->usedPrepare = true;
 
-    /** Commits a transaction begun with begin() */
-    abstract public function commit(): void;
+        if ($options === null) {
+            $driver = $connection->getAttribute(PDO::ATTR_DRIVER_NAME);
+            $options = new Options();
 
-    /** Rolls back a transaction begun with begin() */
-    abstract public function rollback(): void;
+            if ($driver === 'sqlsrv') {
+                // https://learn.microsoft.com/en-us/sql/sql-server/maximum-capacity-specifications-for-sql-server
+                $options->maxBoundParams = 2100 - 1;
+                $options->maxInsertRows = 1000;
+                $options->affectedIsRowCount = false;
+                $options->fetchNextSyntax = true;
+                $options->sqlsrvBinaryEncoding = true;
+                $options->multiRowset = true;
+            } elseif ($driver === 'mysql') {
+                $options->lastIdIsFirstOfBatch = true;
+                $options->identifierQuote = '`'; // needed since not everyone uses ANSI mode
+            }
+        }
+
+        $this->options = $options;
+    }
+
+    /**
+     * Begins a transaction
+     * @throws SqlException if an error occurs
+     */
+    public function begin(): void
+    {
+        if (!$this->conn->beginTransaction()) {
+            throw $this->getError('Failed to begin transaction', $this->conn->errorInfo());
+        }
+    }
+
+    /**
+     * Commits a transaction begun with begin()
+     * @throws SqlException if an error occurs
+     */
+    public function commit(): void
+    {
+        if (!$this->conn->commit()) {
+            throw $this->getError('Failed to commit transaction', $this->conn->errorInfo());
+        }
+    }
+
+    /**
+     * Rolls back a transaction begun with begin()
+     * @throws SqlException if an error occurs
+     */
+    public function rollback(): void
+    {
+        if (!$this->conn->rollback()) {
+            throw $this->getError('Failed to roll back transaction', $this->conn->errorInfo());
+        }
+    }
 
     /**
      * Takes a binary string and returns a value that can be bound to an insert/update statement
+     * @return array{0: string|null, 1: int, 2: int, 3: mixed}
      */
-    abstract public function makeBinaryParam(?string $binaryStr, ?int $length = null): array|string|null;
+    final public function makeBinaryParam(?string $binaryStr): array
+    {
+        $driverOptions = $this->options->sqlsrvBinaryEncoding ? PDO::SQLSRV_ENCODING_BINARY : null;
+        return [$binaryStr, PDO::PARAM_LOB, 0, $driverOptions];
+    }
+
+    /** @internal */
+    public static function getError(string $message, array $error): SqlException
+    {
+        /** @var array{0: string, 1: int|null, 2: string|null} $error */
+        $code = $error[1] ?? 0;
+        $details = $error[2] ?? '';
+        $sqlState = $error[0];
+
+        return new SqlException($message, $code, $details, $sqlState);
+    }
 
     /**
-     * Prepares a SQL query for later execution
+     * Returns a prepared statement which can be executed multiple times
+     * @throws SqlException if an error occurs
      */
-    abstract public function prepare(string $sql, array $params = []): BaseStatement;
+    public function prepare(string $sql, array $params = []): Statement
+    {
+        try {
+            if (!$stmt = $this->conn->prepare($sql)) {
+                throw $this->getError('Failed to prepare statement', $this->conn->errorInfo());
+            }
+
+            $i = 0;
+            /** @psalm-suppress MixedAssignment */
+            foreach ($params as &$param) {
+                $i++;
+
+                if (is_bool($param)) {
+                    $stmt->bindParam($i, $param, PDO::PARAM_BOOL);
+                } elseif (is_int($param)) {
+                    $stmt->bindParam($i, $param, PDO::PARAM_INT);
+                } elseif (is_array($param)) {
+                    /** @var array{0: mixed, 1: int, 2?: int, 3?: mixed} $param */
+                    $stmt->bindParam($i, $param[0], $param[1], $param[2] ?? 0, $param[3] ?? null);
+                } else {
+                    $stmt->bindParam($i, $param, PDO::PARAM_STR);
+                }
+            }
+        } catch (\PDOException $e) {
+            throw $this->getError('Failed to prepare statement', $this->conn->errorInfo());
+        }
+
+        return new Statement($stmt, $this->usedPrepare, $this->options);
+    }
 
     /**
-     * Executes a single SQL query
+     * Prepares and executes a single query with bound parameters
      */
-    abstract public function query(string $sql, array $params = []): BaseStatement;
+    public function query(string $sql, array $params = []): Statement
+    {
+        $this->usedPrepare = false;
+        $stmt = $this->prepare($sql, $params);
+        $this->usedPrepare = true;
+        $stmt->execute();
+        return $stmt;
+    }
 
     /**
      * @param list<ColValues> $colVals
      */
-    abstract protected function insertBatch(string $table, array $colVals, int $identityIncrement = 1): BulkInsertResult;
+    private function insertBatch(string $table, array $colVals, int $identityIncrement = 1): BulkInsertResult
+    {
+        $sqlParams = (new Insert($this->options))->buildQuery($table, $colVals);
+        $result = $this->query($sqlParams->sql, $sqlParams->params);
+
+        try {
+            $lastId = (int) $this->conn->lastInsertId();
+        } catch (\PDOException $e) {
+            $lastId = 0;
+        }
+
+        if ($lastId) {
+            if ($this->options->lastIdIsFirstOfBatch) {
+                $firstId = $lastId;
+                $lastId = $firstId + $identityIncrement * (count($colVals) - 1);
+            } else {
+                $firstId = $lastId - $identityIncrement * (count($colVals) - 1);
+            }
+
+            $ids = range($firstId, $lastId, $identityIncrement);
+        } else {
+            $ids = [];
+        }
+
+        return new BulkInsertResult($ids, $result->getAffected());
+    }
 
     public function selectFrom(string $query): QueryableSelector
     {

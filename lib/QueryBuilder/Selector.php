@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace PeachySQL\QueryBuilder;
 
-use PeachySQL\BaseOptions;
+use PeachySQL\Options;
 
 /**
  * @psalm-import-type WhereClause from Query
@@ -19,7 +19,7 @@ class Selector
 
     public function __construct(
         private readonly SqlParams $query,
-        private readonly BaseOptions $options,
+        private readonly Options $options,
     ) {}
 
     /**

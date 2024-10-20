@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace PeachySQL\Test\QueryBuilder;
 
+use PeachySQL\Options;
 use PeachySQL\QueryBuilder\Delete;
 use PHPUnit\Framework\TestCase;
 
@@ -14,7 +15,7 @@ class DeleteTest extends TestCase
 {
     public function testBuildQuery(): void
     {
-        $delete = new Delete(new \PeachySQL\SqlServer\Options());
+        $delete = new Delete(new Options());
         $where = ['id' => 5, 'username' => ['tester', 'tester2']];
         $actual = $delete->buildQuery('TestTable', $where);
         $expected = 'DELETE FROM TestTable WHERE "id" = ? AND "username" IN(?,?)';

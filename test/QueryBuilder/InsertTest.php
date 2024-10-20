@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace PeachySQL\Test\QueryBuilder;
 
+use PeachySQL\Options;
 use PeachySQL\QueryBuilder\Insert;
 use PHPUnit\Framework\TestCase;
 
@@ -71,8 +72,8 @@ class InsertTest extends TestCase
             'col3' => 'val3',
         ];
 
-        $actual = (new Insert(new \PeachySQL\Mysql\Options()))->buildQuery('TestTable', [$colVals]);
-        $expected = 'INSERT INTO TestTable (`col1`, `col2`, `col3`) VALUES (?,?,?)';
+        $actual = (new Insert(new Options()))->buildQuery('TestTable', [$colVals]);
+        $expected = 'INSERT INTO TestTable ("col1", "col2", "col3") VALUES (?,?,?)';
         $this->assertSame($expected, $actual->sql);
         $this->assertSame(['val1', 'val2', 'val3'], $actual->params);
     }
@@ -93,10 +94,9 @@ class InsertTest extends TestCase
             ],
         ];
 
-        $actual = (new Insert(new \PeachySQL\SqlServer\Options()))->buildQuery('TestTable', $colVals);
+        $actual = (new Insert(new Options()))->buildQuery('TestTable', $colVals);
         $expected = 'INSERT INTO TestTable ("col1", "col2")'
-            . ' VALUES (?,?), (?,?);'
-            . ' SELECT SCOPE_IDENTITY() AS RowID;';
+            . ' VALUES (?,?), (?,?)';
         $this->assertSame($expected, $actual->sql);
         $this->assertSame(['foo1', 'foo2', 'bar1', 'bar2'], $actual->params);
     }

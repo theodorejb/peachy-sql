@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace PeachySQL\Test\SqlServer;
 
-use PeachySQL\SqlServer;
+use PDO;
+use PeachySQL\PeachySql;
 use PeachySQL\Test\DbTestCase;
 use PeachySQL\Test\src\App;
 
@@ -13,7 +14,7 @@ use PeachySQL\Test\src\App;
  */
 class MssqlDbTest extends DbTestCase
 {
-    private static ?SqlServer $db = null;
+    private static ?PeachySql $db = null;
 
     protected function getExpectedBadSyntaxCode(): int
     {
@@ -25,13 +26,14 @@ class MssqlDbTest extends DbTestCase
         return 'Incorrect syntax';
     }
 
-    public static function dbProvider(): SqlServer
+    public static function dbProvider(): PeachySql
     {
         if (!self::$db) {
             $c = App::$config;
             $server = $c->getSqlsrvServer();
-            $connInfo = $c->getSqlsrvConnInfo();
             $connStr = getenv('MSSQL_CONNECTION_STRING');
+            $username = '';
+            $password = '';
 
             if ($connStr !== false) {
                 // running tests with GitHub Actions
@@ -39,24 +41,29 @@ class MssqlDbTest extends DbTestCase
                 if ($server === false) {
                     throw new \Exception('SQLCMDSERVER not set');
                 }
-                $connInfo['UID'] = getenv('SQLCMDUSER');
-                $connInfo['PWD'] = getenv('SQLCMDPASSWORD');
+                $envUsername = getenv('SQLCMDUSER');
+                $envPassword = getenv('SQLCMDPASSWORD');
+
+                if (is_string($envUsername) && is_string($envPassword)) {
+                    $username = $envUsername;
+                    $password = $envPassword;
+                }
             }
 
-            $connection = sqlsrv_connect($server, $connInfo);
+            $pdo = new PDO("sqlsrv:server=$server", $username, $password, [
+                PDO::ATTR_EMULATE_PREPARES => false,
+                PDO::SQLSRV_ATTR_FETCHES_NUMERIC_TYPE => true,
+                'Database' => 'PeachySQL',
+            ]);
 
-            if (!$connection) {
-                throw new \Exception('Failed to connect to SQL server: ' . print_r(sqlsrv_errors(), true));
-            }
-
-            self::$db = new SqlServer($connection);
+            self::$db = new PeachySql($pdo);
             self::createTestTable(self::$db);
         }
 
         return self::$db;
     }
 
-    private static function createTestTable(SqlServer $db): void
+    private static function createTestTable(PeachySql $db): void
     {
         $sql = "
             DROP TABLE IF EXISTS Users;

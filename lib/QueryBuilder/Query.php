@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace PeachySQL\QueryBuilder;
 
-use PeachySQL\BaseOptions;
+use PeachySQL\Options;
 
 /**
  * Base class used for query generation and validation
@@ -14,7 +14,7 @@ use PeachySQL\BaseOptions;
  */
 class Query
 {
-    protected BaseOptions $options;
+    protected Options $options;
 
     private const OPERATOR_MAP = [
         'eq' => '=',
@@ -29,7 +29,7 @@ class Query
         'nn' => 'IS NOT NULL',
     ];
 
-    public function __construct(BaseOptions $options)
+    public function __construct(Options $options)
     {
         $this->options = $options;
     }
