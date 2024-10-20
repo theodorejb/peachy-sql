@@ -38,6 +38,10 @@ class PeachySql
             } elseif ($driver === 'mysql') {
                 $options->lastIdIsFirstOfBatch = true;
                 $options->identifierQuote = '`'; // needed since not everyone uses ANSI mode
+            } elseif ($driver === 'pgsql') {
+                $options->binarySelectedAsStream = true;
+                $options->nativeBoolColumns = true;
+                $options->floatSelectedAsString = true;
             }
         }
 

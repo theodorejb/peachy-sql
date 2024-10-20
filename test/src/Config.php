@@ -24,6 +24,21 @@ class Config
         return '';
     }
 
+    public function getPgsqlDsn(string $database): string
+    {
+        return "pgsql:host=localhost;dbname=$database";
+    }
+
+    public function getPgsqlUser(): string
+    {
+        return 'postgres';
+    }
+
+    public function getPgsqlPassword(): string
+    {
+        return 'postgres';
+    }
+
     public function getSqlsrvServer(): string
     {
         return '(local)\SQLEXPRESS';

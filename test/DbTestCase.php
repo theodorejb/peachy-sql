@@ -75,7 +75,7 @@ abstract class DbTestCase extends TestCase
 
         $options = $peachySql->options;
         $this->assertSame($options->affectedIsRowCount ? 1 : -1, $result->getAffected());
-        $expected = ['user_id' => $id, 'is_disabled' => 1];
+        $expected = ['user_id' => $id, 'is_disabled' => $options->nativeBoolColumns ? true : 1];
         $this->assertSame($expected, $result->getFirst()); // the row should be selectable
 
         $peachySql->rollback(); // cancel the transaction
@@ -132,7 +132,18 @@ abstract class DbTestCase extends TestCase
 
         foreach ($iterator as $row) {
             unset($row['user_id']);
-            $row['is_disabled'] = (bool)$row['is_disabled'];
+
+            if ($options->floatSelectedAsString) {
+                $row['weight'] = (float) $row['weight'];
+            }
+            if (!$options->nativeBoolColumns) {
+                $row['is_disabled'] = (bool) $row['is_disabled'];
+            }
+            if ($options->binarySelectedAsStream && $row['uuid'] !== null) {
+                /** @psalm-suppress MixedArgument */
+                $row['uuid'] = stream_get_contents($row['uuid']);
+            }
+
             $colValsCompare[] = $row;
         }
 
@@ -164,6 +175,13 @@ abstract class DbTestCase extends TestCase
         $updatedNames = $result->getAll();
         $this->assertSame($options->affectedIsRowCount ? 2 : -1, $result->getAffected());
 
+        if ($options->binarySelectedAsStream) {
+            /** @var array{uuid: resource} $row */
+            foreach ($updatedNames as &$row) {
+                $row['uuid'] = stream_get_contents($row['uuid']);
+            }
+        }
+
         $this->assertSame($realNames, $updatedNames);
     }
 
@@ -192,8 +210,9 @@ abstract class DbTestCase extends TestCase
             $insertColVals[] = $row;
         }
 
+        $options = $peachySql->options;
         $totalBoundParams = count($insertColVals[0]) * $rowCount;
-        $expectedQueries = ($totalBoundParams > $peachySql->options->maxBoundParams) ? 2 : 1;
+        $expectedQueries = ($totalBoundParams > $options->maxBoundParams) ? 2 : 1;
 
         $result = $peachySql->insertRows($this->table, $insertColVals);
         $this->assertSame($expectedQueries, $result->queryCount);
@@ -204,6 +223,22 @@ abstract class DbTestCase extends TestCase
 
         $rows = $peachySql->selectFrom("SELECT {$columns} FROM {$this->table}")
             ->where(['user_id' => $ids])->query()->getAll();
+
+        if ($options->binarySelectedAsStream || $options->nativeBoolColumns || $options->floatSelectedAsString) {
+            /** @var array{weight: float|string, is_disabled: int|bool, uuid: string|resource} $row */
+            foreach ($rows as &$row) {
+                if (!is_float($row['weight'])) {
+                    $row['weight'] = (float) $row['weight'];
+                }
+                if (!is_int($row['is_disabled'])) {
+                    $row['is_disabled'] = (int) $row['is_disabled'];
+                }
+                if (!is_string($row['uuid'])) {
+                    /** @psalm-suppress InvalidArgument */
+                    $row['uuid'] = stream_get_contents($row['uuid']);
+                }
+            }
+        }
 
         $this->assertSame($colVals, $rows);
 
@@ -216,9 +251,14 @@ abstract class DbTestCase extends TestCase
         $userId = $ids[0];
         $set = ['uuid' => $peachySql->makeBinaryParam($newUuid)];
         $peachySql->updateRows($this->table, $set, ['user_id' => $userId]);
-        /** @var array{uuid: string} $updatedRow */
+        /** @var array{uuid: string|resource} $updatedRow */
         $updatedRow = $peachySql->selectFrom("SELECT uuid FROM {$this->table}")
             ->where(['user_id' => $userId])->query()->getFirst();
+
+        if (!is_string($updatedRow['uuid'])) {
+            $updatedRow['uuid'] = stream_get_contents($updatedRow['uuid']); // needed for PostgreSQL
+        }
+
         $this->assertSame($newUuid, $updatedRow['uuid']);
 
         // delete the inserted rows

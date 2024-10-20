@@ -24,6 +24,9 @@ class Options
     public bool $fetchNextSyntax = false;
     public bool $multiRowset = false;
     public bool $sqlsrvBinaryEncoding = false;
+    public bool $binarySelectedAsStream = false;
+    public bool $nativeBoolColumns = false;
+    public bool $floatSelectedAsString = false;
 
     /**
      * The character used to quote identifiers.
