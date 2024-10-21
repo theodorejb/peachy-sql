@@ -17,6 +17,6 @@ class BulkInsertResult
     public function __construct(
         public readonly array $ids,
         public readonly int $affected,
-        public readonly int $queryCount = 1
+        public readonly int $queryCount = 1,
     ) {}
 }

@@ -70,7 +70,7 @@ class SelectorTest extends TestCase
         $query = new Query(new Options());
 
         try {
-            $where = [ 'testcol' => [] ];
+            $where = ['testcol' => []];
             $query->buildWhereClause($where);
             $this->fail('Failed to throw exception for empty filter conditions');
         } catch (\Exception $e) {
@@ -78,7 +78,7 @@ class SelectorTest extends TestCase
         }
 
         try {
-            $where = [ 'testcol' => ['foo' => 'bar'] ];
+            $where = ['testcol' => ['foo' => 'bar']];
             $query->buildWhereClause($where);
             $this->fail('Failed to throw exception for invalid comparison operator');
         } catch (\Exception $e) {
@@ -93,7 +93,7 @@ class SelectorTest extends TestCase
         }
 
         try {
-            $where = [ 'testcol' => ['gt' => [3, 4]] ];
+            $where = ['testcol' => ['gt' => [3, 4]]];
             $query->buildWhereClause($where);
             $this->fail('Failed to throw exception when using array with an incompatible comparison operator');
         } catch (\Exception $e) {

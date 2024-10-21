@@ -17,7 +17,7 @@ class UpdateTest extends TestCase
     {
         $set = [
             'username' => 'TestUser',
-            'othercol' => null
+            'othercol' => null,
         ];
 
         $where = ['id' => 21];

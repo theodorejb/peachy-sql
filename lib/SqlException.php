@@ -14,7 +14,8 @@ class SqlException extends \RuntimeException
      */
     private readonly string $sqlState;
 
-    public function __construct(string $message, int $code, string $details, string $sqlState) {
+    public function __construct(string $message, int $code, string $details, string $sqlState)
+    {
         if ($details !== '') {
             $message .= ": $details";
         }

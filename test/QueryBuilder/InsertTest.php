@@ -21,19 +21,19 @@ class InsertTest extends TestCase
         $colVals = [
             [
                 'column1' => 'test',
-                'column2' => 'test2'
+                'column2' => 'test2',
             ],
             [
                 'column1' => 'test3',
-                'column2' => 'test4'
+                'column2' => 'test4',
             ],
             [
                 'column1' => 'test5',
-                'column2' => 'test6'
+                'column2' => 'test6',
             ],
             [
                 'column1' => 'test7',
-                'column2' => 'test8'
+                'column2' => 'test8',
             ],
         ];
 

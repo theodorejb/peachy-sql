@@ -24,7 +24,7 @@ class Insert extends Query
         }
 
         if ($maxBoundParams > 0) {
-            $maxRowsPerQuery = (int)floor($maxBoundParams / count($colVals[0])); // max bound params divided by params per row
+            $maxRowsPerQuery = (int) floor($maxBoundParams / count($colVals[0])); // max bound params divided by params per row
         }
 
         if ($maxRows > 0 && $maxRowsPerQuery > $maxRows) {

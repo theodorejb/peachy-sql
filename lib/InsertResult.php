@@ -15,6 +15,6 @@ class InsertResult
      */
     public function __construct(
         public readonly int $id,
-        public readonly int $affected
+        public readonly int $affected,
     ) {}
 }

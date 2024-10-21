@@ -20,6 +20,7 @@
         "ext-pdo": "*"
     },
     "require-dev": {
+        "friendsofphp/php-cs-fixer": "^3.64",
         "phpunit/phpunit": "^10.5",
         "psalm/plugin-phpunit": "^0.19",
         "ramsey/uuid": "^4.2.3",
@@ -40,6 +41,7 @@
     },
     "scripts": {
         "analyze": "psalm",
+        "cs-fix": "php-cs-fixer fix -v",
         "test": "phpunit",
         "test-mssql": "phpunit --exclude-group mysql,pgsql",
         "test-mysql": "phpunit --exclude-group mssql,pgsql",

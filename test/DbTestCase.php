@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace PeachySQL\Test;
 
-use PeachySQL\{PeachySql, SqlException};
 use PeachySQL\QueryBuilder\SqlParams;
+use PeachySQL\{PeachySql, SqlException};
 use PHPUnit\Framework\TestCase;
 use Ramsey\Uuid\Uuid;
 

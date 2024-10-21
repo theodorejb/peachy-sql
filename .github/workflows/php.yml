@@ -55,3 +55,7 @@ jobs:
         run: composer test-without-mssql
         env:
           POSTGRES_HOST: localhost
+
+      - name: Check Formatting
+        run: vendor/bin/php-cs-fixer fix -v --dry-run --stop-on-violation --using-cache=no
+        if: ${{ matrix.php == '8.3' }}
