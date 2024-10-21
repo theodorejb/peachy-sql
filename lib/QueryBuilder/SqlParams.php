@@ -1,8 +1,6 @@
 <?php
 
-declare(strict_types=1);
-
-namespace PeachySQL\QueryBuilder;
+namespace DevTheorem\PeachySQL\QueryBuilder;
 
 /**
  * Represents a SQL query and its corresponding parameters

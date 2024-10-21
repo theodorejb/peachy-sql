@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace PeachySQL\QueryBuilder;
+namespace DevTheorem\PeachySQL\QueryBuilder;
 
-use PeachySQL\Options;
+use DevTheorem\PeachySQL\Options;
 
 /**
  * Base class used for query generation and validation

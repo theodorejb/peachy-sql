@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace PeachySQL\QueryBuilder;
+namespace DevTheorem\PeachySQL\QueryBuilder;
 
-use PeachySQL\Options;
+use DevTheorem\PeachySQL\Options;
 
 /**
  * @psalm-import-type WhereClause from Query

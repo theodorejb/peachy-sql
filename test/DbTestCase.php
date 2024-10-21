@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace PeachySQL\Test;
+namespace DevTheorem\PeachySQL\Test;
 
-use PeachySQL\QueryBuilder\SqlParams;
-use PeachySQL\{PeachySql, SqlException};
+use DevTheorem\PeachySQL\QueryBuilder\SqlParams;
+use DevTheorem\PeachySQL\{PeachySql, SqlException};
 use PHPUnit\Framework\TestCase;
 use Ramsey\Uuid\Uuid;
 

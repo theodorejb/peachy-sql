@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace PeachySQL\Test;
+namespace DevTheorem\PeachySQL\Test;
 
-use PeachySQL\InsertResult;
+use DevTheorem\PeachySQL\InsertResult;
 use PHPUnit\Framework\TestCase;
 
 /**

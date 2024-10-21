@@ -109,7 +109,7 @@ The `select()` method works the same as `selectFrom()`, but takes a `SqlParams`
 object rather than a string and supports bound params in the select query:
 
 ```php
-use PeachySQL\QueryBuilder\SqlParams;
+use DevTheorem\PeachySQL\QueryBuilder\SqlParams;
 
 $sql = "
     WITH UserVisits AS

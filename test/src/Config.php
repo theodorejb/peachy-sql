@@ -1,8 +1,6 @@
 <?php
 
-declare(strict_types=1);
-
-namespace PeachySQL\Test\src;
+namespace DevTheorem\PeachySQL\Test\src;
 
 /**
  * Default test config. Values can be overridden with a LocalConfig child class.

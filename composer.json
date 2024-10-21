@@ -1,11 +1,11 @@
 {
-    "name": "theodorejb/peachy-sql",
-    "description": "A small, speedy database abstraction layer for PHP",
+    "name": "devtheorem/peachy-sql",
+    "description": "A high-performance query builder and runner for PHP",
     "license": "MIT",
     "keywords": [
         "database",
-        "abstraction",
-        "mysql",
+        "MySQL",
+        "PostgreSQL",
         "SQL Server",
         "sqlsrv"
     ],
@@ -28,12 +28,12 @@
     },
     "autoload": {
         "psr-4": {
-            "PeachySQL\\": "lib/"
+            "DevTheorem\\PeachySQL\\": "lib/"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "PeachySQL\\Test\\": "test/"
+            "DevTheorem\\PeachySQL\\Test\\": "test/"
         }
     },
     "config": {

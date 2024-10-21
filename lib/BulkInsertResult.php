@@ -1,8 +1,6 @@
 <?php
 
-declare(strict_types=1);
-
-namespace PeachySQL;
+namespace DevTheorem\PeachySQL;
 
 /**
  * Object returned when performing bulk insert queries

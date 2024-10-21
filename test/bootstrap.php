@@ -1,8 +1,6 @@
 <?php
 
-declare(strict_types=1);
-
-use PeachySQL\Test\src\{App, Config, LocalConfig};
+use DevTheorem\PeachySQL\Test\src\{App, Config, LocalConfig};
 
 require 'vendor/autoload.php';
 

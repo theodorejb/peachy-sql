@@ -1,8 +1,6 @@
 <?php
 
-declare(strict_types=1);
-
-namespace PeachySQL;
+namespace DevTheorem\PeachySQL;
 
 /**
  * Access the error info returned by the DB driver.

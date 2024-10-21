@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace PeachySQL;
+namespace DevTheorem\PeachySQL;
 
-use PeachySQL\QueryBuilder\{Selector, SqlParams};
+use DevTheorem\PeachySQL\QueryBuilder\{Selector, SqlParams};
 
 class QueryableSelector extends Selector
 {

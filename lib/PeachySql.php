@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace PeachySQL;
+namespace DevTheorem\PeachySQL;
 
+use DevTheorem\PeachySQL\QueryBuilder\{Delete, Insert, SqlParams, Update};
 use PDO;
-use PeachySQL\QueryBuilder\{Delete, Insert, SqlParams, Update};
 
 /**
  * Simplifies building and running common queries.

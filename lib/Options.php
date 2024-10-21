@@ -1,6 +1,6 @@
 <?php
 
-namespace PeachySQL;
+namespace DevTheorem\PeachySQL;
 
 /**
  * Base class for PeachySQL configuration state

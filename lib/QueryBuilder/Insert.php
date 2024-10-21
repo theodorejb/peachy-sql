@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace PeachySQL\QueryBuilder;
+namespace DevTheorem\PeachySQL\QueryBuilder;
 
 /**
  * Class used for insert query generation

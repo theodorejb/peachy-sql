@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace PeachySQL\Test\QueryBuilder;
+namespace DevTheorem\PeachySQL\Test\QueryBuilder;
 
-use PeachySQL\Options;
-use PeachySQL\QueryBuilder\{Query, Select, Selector, SqlParams};
+use DevTheorem\PeachySQL\Options;
+use DevTheorem\PeachySQL\QueryBuilder\{Query, Select, Selector, SqlParams};
 use PHPUnit\Framework\TestCase;
 
 /**

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace PeachySQL;
+namespace DevTheorem\PeachySQL;
 
 use PDO;
 use PDOException;

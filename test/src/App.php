@@ -1,6 +1,6 @@
 <?php
 
-namespace PeachySQL\Test\src;
+namespace DevTheorem\PeachySQL\Test\src;
 
 class App
 {

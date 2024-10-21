@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace PeachySQL\Test\Mysql;
+namespace DevTheorem\PeachySQL\Test\Mysql;
 
+use DevTheorem\PeachySQL\PeachySql;
+use DevTheorem\PeachySQL\Test\DbTestCase;
+use DevTheorem\PeachySQL\Test\src\App;
 use PDO;
-use PeachySQL\PeachySql;
-use PeachySQL\Test\DbTestCase;
-use PeachySQL\Test\src\App;
 
 /**
  * @group mysql
